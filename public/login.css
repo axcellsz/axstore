@@ -1,1 +1,179 @@
+/* ==========================
+   LAYOUT DASAR
+========================== */
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  color: #222;
+
+  /* semua konten didorong ke bawah layar */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  box-sizing: border-box;
+
+  padding: 16px;
+}
+
+/* #alert di atas, semua konten mulai dari #title ke bawah */
+#title {
+  margin-top: auto; /* trik: dorong title (dan elemen sesudahnya) ke bawah */
+}
+
+/* ==========================
+   TEKS HEAD & SUBTITLE
+========================== */
+
+#title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+#subtitle {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+/* ==========================
+   SCREEN (LOGIN / REGISTER / RESET)
+========================== */
+
+.screen {
+  display: none; /* nanti di-show via JS */
+}
+
+/* Biar form tidak nempel ke pinggir */
+.screen form {
+  width: 100%;
+}
+
+/* ==========================
+   LABEL & INPUT
+========================== */
+
+label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #444;
+}
+
+input {
+  width: 100%;
+  font-size: 14px;
+  padding: 8px 2px;
+  box-sizing: border-box;
+
+  /* Hanya garis tipis di bawah */
+  border: none;
+  border-bottom: 1px solid #bbb;
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+
+  margin-bottom: 14px;
+}
+
+input:focus {
+  border-bottom-color: #000;
+}
+
+/* ==========================
+   TOMBOL
+========================== */
+
+button {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 15px;
+  cursor: pointer;
+
+  /* Persegi panjang tanpa warna solid */
+  background: transparent;
+  border-radius: 4px;
+  border: 1px solid #333;
+  color: #333;
+
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+button:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: #111;
+}
+
+/* ==========================
+   LINKS (DAFTAR / RESET / KEMBALI)
+========================== */
+
+.links {
+  margin-top: 10px;
+  font-size: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.links .click {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #2c3eff;
+}
+
+/* ==========================
+   ALERT (POJOK KANAN ATAS)
+========================== */
+
+#alert {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e0e0e0;
+
+  color: #d00000; /* default: merah (gagal) */
+  display: none;
+
+  max-width: 60vw;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+/* kalau Bapak nanti mau ubah via JS:
+   #alert.classList.add('success') atau 'error'
+*/
+#alert.success {
+  color: #0a8f3c;          /* hijau untuk sukses */
+  border-color: #9fd6af;
+}
+
+#alert.error {
+  color: #d00000;          /* merah untuk gagal */
+  border-color: #f0aaaa;
+}
+
+/* ==========================
+   MOBILE FRIENDLY
+========================== */
+
+@media (min-width: 480px) {
+  body {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
