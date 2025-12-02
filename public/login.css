@@ -1,149 +1,131 @@
-/* login.css - replace whole file with this */
+/* login.css - full replace */
 
-/* page fullscreen, non-scroll */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: #050505; /* dark background */
-  color: #e6e6e6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow: hidden; /* disable page scroll */
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+/* fullscreen, prevent page scroll */
+html,body {
+  height:100%;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  background:#050505;
+  color:#e6e6e6;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  -webkit-font-smoothing:antialiased;
 }
 
-/* container that holds all content and sticks content to bottom */
+/* wrapper sticks content to bottom, consistent footprints */
 #content-wrapper{
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end; /* put content near bottom */
-  box-sizing: border-box;
-  padding: 28px 20px 34px; /* top, left/right, bottom */
-  gap: 6px;
-  position: relative;
-  /* subtle gold glow at edges */
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end; /* content at bottom */
+  box-sizing:border-box;
+  padding:32px 20px 36px; /* top right/left bottom */
+  gap:10px;
+  position:relative;
   background:
-    radial-gradient(ellipse at top center, rgba(170,140,60,0.06), transparent 20%),
-    linear-gradient(90deg, rgba(0,0,0,0.95), rgba(0,0,0,0.92));
+    radial-gradient(ellipse at top center, rgba(170,140,60,0.03), transparent 18%),
+    linear-gradient(90deg, rgba(0,0,0,0.98), rgba(0,0,0,0.95));
 }
 
-/* base title & subtitle spacing */
+/* Title area */
+.header {
+  margin-bottom: 6px;
+}
 #title {
-  font-size: 36px;
-  font-weight: 800;
-  color: #f6d77c;
-  margin: 0 0 8px 0;
-  text-shadow: 0 4px 20px rgba(200,160,50,0.12);
-  line-height: 1;
+  font-size:34px;
+  margin:0;
+  color:#f6d77c;
+  font-weight:800;
+  text-shadow: 0 6px 30px rgba(200,150,40,0.06);
 }
-
 #subtitle {
-  font-size: 15px;
-  color: rgba(230,230,230,0.85);
-  margin-bottom: 18px;
+  margin-top:8px;
+  color:rgba(230,230,230,0.85);
+  font-size:14px;
 }
 
-/* screens */
-.screen { display: none; }
-.screen.active { display: block; }
+/* screen containers */
+.screen { display:none; }
+.screen.active { display:block; }
 
-/* ensure each screen's content area has consistent vertical space
-   (so button sits at similar place) */
+/* each screen's internal block has fixed footprint to align controls */
 .screen .form-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  /* push the controls to bottom slightly and keep consistent height */
-  padding-bottom: 6px;
-  min-height: calc(40vh); /* ensure same vertical footprint for each screen */
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-height:40vh; /* consistent footprint - tweak if needed */
+  padding-bottom:6px;
 }
 
 /* labels */
-.screen label {
-  display: block;
-  font-size: 14px;
-  color: rgba(230,230,230,0.9);
-  margin-bottom: 6px;
+label {
+  font-size:13px;
+  color:rgba(230,230,230,0.9);
+  margin-bottom:6px;
 }
 
-/* inputs: thin underline only, transparent background */
-.screen input[type="text"],
-.screen input[type="password"],
-.screen input[type="tel"] {
-  font-size: 16px;
-  padding: 8px 4px;
-  background: transparent;
-  color: #eee;
-  border: 0;
-  border-bottom: 1px solid rgba(255,255,255,0.15);
-  outline: none;
-  box-sizing: border-box;
+/* inputs: underline only */
+input[type="text"], input[type="password"], input[type="tel"] {
+  width:100%;
+  background:transparent;
+  color:#eee;
+  border:0;
+  border-bottom:1px solid rgba(255,255,255,0.12);
+  padding:8px 4px;
+  font-size:16px;
+  outline:none;
+  box-sizing:border-box;
 }
 
-/* caret/focus underline (gold, slightly thicker) */
-.screen input:focus {
-  border-bottom: 2px solid #caa93b;
+/* focus underline (gold) */
+input:focus {
+  border-bottom:2px solid #caa93b;
 }
 
-/* big button: rectangular, transparent fill, gold outline */
-.screen button {
-  width: 100%;
-  padding: 14px 18px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1.8px solid rgba(202,169,59,0.9);
-  background: linear-gradient(180deg, rgba(30,24,12,0.12), rgba(0,0,0,0.12));
-  color: #eedd9a;
-  cursor: pointer;
+/* button: rectangular, outline gold, transparent fill */
+button.primary {
+  width:100%;
+  padding:14px 16px;
+  border-radius:10px;
+  border:2px solid rgba(202,169,59,0.95);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));
+  color:#fae9a8;
+  font-size:16px;
+  cursor:pointer;
   box-shadow: 0 8px 28px rgba(200,150,40,0.06), inset 0 1px 0 rgba(255,255,255,0.02);
 }
 
-/* make sure button near bottom has consistent placement */
-.screen .controls {
-  margin-top: 8px;
-}
-
-/* small links (bottom) */
+/* links row below controls - keep consistent position */
 .links {
-  display: flex;
-  gap: 18px;
-  margin-top: 10px;
-  font-size: 14px;
-  color: #e6d899;
+  display:flex;
+  gap:18px;
+  margin-top:10px;
+  font-size:14px;
+}
+.links .link {
+  color:#e6d899;
+  text-decoration:underline;
+  cursor:pointer;
 }
 
-.links .click {
-  color: #e6d899;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-/* ALERT box top-right */
+/* alert top-right */
 #alert {
-  position: fixed;
-  right: 14px;
-  top: 14px;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  display: none;
-  z-index: 9999;
-  box-shadow: 0 6px 22px rgba(0,0,0,0.45);
-  background: rgba(20,20,20,0.9);
-  color: #fff;
+  position:fixed;
+  top:14px;
+  right:14px;
+  z-index:9999;
+  padding:8px 12px;
+  border-radius:16px;
+  font-size:13px;
+  display:none;
+  box-shadow:0 8px 28px rgba(0,0,0,0.5);
 }
+#alert.success { background: rgba(10,40,10,0.95); color:#9ef08a; }
+#alert.error { background: rgba(40,10,10,0.95); color:#ff9b9b; }
 
-/* success vs error */
-#alert.success { color: #0a3; background: rgba(8,30,10,0.95); }
-#alert.error { color: #f66; background: rgba(40,10,10,0.95); }
-
-/* small screens: ensure comfortable spacing */
-@media (max-width: 420px) {
-  #title { font-size: 32px; }
-  #content-wrapper { padding: 26px 18px 30px; }
+/* small screens tweak */
+@media (max-width:420px){
+  #title { font-size:30px; }
+  #content-wrapper{ padding:28px 18px 34px; }
+  .screen .form-wrapper { min-height:38vh; }
 }
-
-/* accessibility - prevent accidental page scroll via keyboard */
-:focus { outline: none; }
