@@ -2,36 +2,37 @@
    LAYOUT DASAR
 ========================== */
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow: hidden; /* tidak bisa di-scroll */
 }
 
 body {
   font-family: Arial, sans-serif;
-  background: #050505;          /* dark mode lebih pekat */
+  background: #050505;          /* dark mode */
   color: #e7e7e7;
+
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;    /* konten condong ke bawah */
+  justify-content: center;      /* pusat vertikal */
+  align-items: center;          /* pusat horizontal */
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 14px 16px 18px;
+  padding: 0 16px;
 
-  /* Gold shadow ringan seluruh halaman */
+  /* Gold shadow di tepi */
   box-shadow: inset 0 0 40px rgba(255, 215, 0, 0.08);
-
-  /* izinkan scroll kalau darurat, biar konten tidak kepotong */
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
-/* bungkus title + subtitle + screen */
+/* Bungkus semua konten utama */
 #content-wrapper {
-  max-width: 480px;
   width: 100%;
-  margin: 0 auto;
+  max-width: 480px;
+
+  /* geser sedikit ke bawah dari tengah */
+  transform: translateY(12vh);
 }
 
 /* ==========================
@@ -54,11 +55,11 @@ body {
 }
 
 /* ==========================
-   SCREEN
+   SCREEN (LOGIN / REGISTER / RESET)
 ========================== */
 
 .screen {
-  display: none;
+  display: none; /* diatur via JS */
 }
 
 /* ==========================
@@ -142,7 +143,7 @@ button:hover {
 }
 
 /* ==========================
-   ALERT
+   ALERT (POJOK KANAN ATAS)
 ========================== */
 
 #alert {
@@ -176,15 +177,12 @@ button:hover {
 }
 
 /* ==========================
-   RESPONSIVE
+   RESPONSIVE (LAYAR LEBAR)
 ========================== */
 
 @media (min-width: 480px) {
-  body {
-    justify-content: center;      /* di layar besar agak naik dikit */
-  }
-
   #content-wrapper {
     max-width: 420px;
+    transform: translateY(6vh); /* agak kurang turun di layar besar */
   }
 }
