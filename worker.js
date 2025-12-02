@@ -327,18 +327,13 @@ export default {
       // --------------------------
       // STATIC FILES
       // --------------------------
-      if (env.ASSETS && typeof env.ASSETS.fetch === "function") {
-        return env.ASSETS.fetch(request);
-      }
+// Setelah semua proteksi dan routing dijalankan → baru fallback ke asset
+if (env.ASSETS) {
+  return env.ASSETS.fetch(request);
+}
 
-      return new Response(
-        "Assets binding (ASSETS) tidak ditemukan. Cek wrangler.toml [assets].",
-        {
-          status: 500,
-          headers: { "content-type": "text/plain; charset=utf-8" }
-        }
-      );
-
+// fallback
+return new Response("Not found", { status: 404 });
     } catch (err) {
       const msg = err && err.message ? err.message : String(err);
       return new Response("Worker error: " + msg, {
