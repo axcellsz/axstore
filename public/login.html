@@ -5,18 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auth</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 24px;
-      max-width: 420px;
-      margin: 0 auto;
-    }
+    body { font-family: Arial, sans-serif; padding: 24px; max-width: 420px; margin: 0 auto; }
     h2 { margin-top: 16px; margin-bottom: 8px; }
     .subtitle { font-size: 0.9rem; color: #555; margin-bottom: 20px; }
-
     .screen { display: none; }
     .screen.active { display: block; }
-
     label { display: block; font-size: 0.9rem; margin-bottom: 4px; }
     input {
       width: 100%;
@@ -39,10 +32,8 @@
       margin-top: 4px;
     }
     button:hover { opacity: 0.9; }
-
     .text-small { font-size: 0.9rem; margin-top: 10px; }
     .link { color: blue; text-decoration: underline; cursor: pointer; }
-
     #alert {
       position: fixed;
       top: 16px;
@@ -57,13 +48,7 @@
       max-width: 260px;
     }
     #alert.show { display: inline-flex; align-items: center; justify-content: center; }
-
-    .hint {
-      font-size: 0.8rem;
-      color: #777;
-      margin-top: -8px;
-      margin-bottom: 10px;
-    }
+    .hint { font-size: 0.8rem; color: #777; margin-top: -8px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -122,13 +107,13 @@
 
   <!-- RESET STEP 1: INPUT NO WA -->
   <div id="screen-reset-step1" class="screen">
-    <form action="/do-reset-start" method="POST">
+    <form id="reset-step1-form" action="/do-reset-start" method="POST">
       <label>No. WhatsApp</label>
       <input type="text" name="phone" placeholder="08xxxxxxxxxx / 628xxxx / +628xxxx" required>
 
       <div class="hint">
-        Silakan chat ke WhatsApp 081646805770 untuk meminta kode reset,
-        atau klik link yang terbuka otomatis setelah nomor dikirim.
+        Setelah tekan tombol Reset, akan terbuka chat WhatsApp 081646805770
+        untuk meminta kode reset.
       </div>
 
       <button type="submit">Reset</button>
@@ -140,7 +125,7 @@
     </p>
   </div>
 
-  <!-- RESET STEP 2: INPUT RESET CODE (tanpa text WA) -->
+  <!-- RESET STEP 2: INPUT RESET CODE -->
   <div id="screen-reset-step2" class="screen">
     <form action="/do-reset-verify" method="POST">
       <input type="hidden" name="phone" id="reset-code-phone-hidden">
@@ -237,6 +222,20 @@
       alertBox.classList.add("show");
     }
 
+    // buka WA sekali saat user klik tombol Reset di step1
+    (function attachResetWAHandler() {
+      const form = document.getElementById("reset-step1-form");
+      if (!form) return;
+      form.addEventListener("submit", function () {
+        try {
+          window.open(
+            "https://wa.me/6281646805770?text=buatkan%20kode%20reset%20password!",
+            "_blank"
+          );
+        } catch (e) {}
+      });
+    })();
+
     (function initFromQuery() {
       const params = new URLSearchParams(window.location.search);
       const screenParam = params.get("screen") || "login";
@@ -244,7 +243,6 @@
       const error = params.get("error");
       const status = params.get("status");
       const phone = params.get("phone") || "";
-      const wa = params.get("wa"); // flag buka WA sekali
 
       let screen = "login";
 
@@ -267,16 +265,6 @@
         const d = document.getElementById("reset-code-phone-display");
         if (h) h.value = phone;
         if (d) d.value = phone;
-
-        // buka WA hanya sekali, saat datang dari step1 (wa=1) dan tidak ada error
-        if (wa === "1" && !error) {
-          try {
-            window.open(
-              "https://wa.me/6281646805770?text=buatkan%20kode%20reset%20password!",
-              "_blank"
-            );
-          } catch (e) {}
-        }
       }
 
       if (screen === "reset-step3") {
