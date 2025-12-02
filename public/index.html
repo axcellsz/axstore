@@ -1,32 +1,44 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <script>
-  (function () {
-    try {
-      var cookies = document.cookie || "";
-      var hasSession = cookies
-        .split(";")
-        .map(function (c) { return c.trim(); })
-        .some(function (c) { return c.indexOf("session_user=") === 0; });
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard</title>
 
-      if (!hasSession) {
-        window.location.href = "/login.html?screen=login";
-      }
-    } catch (e) {
-      window.location.href = "/login.html?screen=login";
-    }
-  })();
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+</style>
+
+<script>
+// ---------------------------------------
+// CEK SESSION LOGIN
+// ---------------------------------------
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+}
+
+// cek cookie session
+const session = getCookie("session_user");
+
+if (!session) {
+  // tidak ada sesi → tendang ke login
+  window.location.href = "login.html?screen=login";
+}
 </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hallo Indonesia</title>
+
 </head>
-<body style="font-family: Arial; padding: 20px;">
-  <h1>Hallo Indonesia!</h1>
+<body>
 
-  <p>Anda sudah login 🎉</p>
+<h1>Hallo Indonesia!</h1>
+<p>Anda sudah login 🎉</p>
 
-  <a href="/logout">Logout</a>
+<a href="/logout">Logout</a>
+
 </body>
 </html>
