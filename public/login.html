@@ -156,7 +156,16 @@ document.addEventListener("DOMContentLoaded", () => {
       title.textContent = "Reset Password";
       subtitle.textContent = "Buat password baru.";
     }
+
+    // small accessibility: move focus to first input inside the shown screen
+    try {
+      const firstInput = (el && el.querySelector && el.querySelector('input, button, textarea, select'));
+      if (firstInput) firstInput.focus();
+    } catch (e) {}
   }
+
+  // expose to global so inline onclick works
+  window.switchScreen = switchScreen;
 
   function showAlert(message, type) {
     const alertBox = document.getElementById("alert");
@@ -166,9 +175,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (type === "success") alertBox.classList.add("success");
     else if (type === "error") alertBox.classList.add("error");
     alertBox.style.display = message ? "block" : "none";
-    // auto-hide
+    // auto-hide after 4.2s
     if (message) setTimeout(()=>{ alertBox.style.display = "none"; }, 4200);
   }
+
+  window.showAlert = showAlert; // optional to call from inline or console
 
   // attach WA open on reset form
   const resetForm = document.getElementById("reset-step1-form");
