@@ -1,215 +1,366 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auth</title>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Login</title>
 
-  <!-- CSS External -->
-  <link rel="stylesheet" href="/login.css">
+  <!-- Pakai CSS gaya project lama, bisa rename ke /login.css -->
+  <link rel="stylesheet" href="/login.css" />
 </head>
 <body>
+  <!-- ALERT KECIL DI KANAN ATAS -->
+  <div id="alert" class="" style="display:none;"></div>
 
-  <!-- ALERT -->
-  <div id="alert"></div>
+  <!-- WRAPPER FULLSCREEN (mirip #app tapi khusus login) -->
+  <div id="login-root">
+    <div class="screen-card">
+      <div class="profile-container">
+        <!-- ====== LOGIN ====== -->
+        <div id="tab-login" class="tab-content active">
+          <div class="screen-title" style="margin-bottom:12px;">Masuk</div>
 
-  <!-- FULLSCREEN CARD -->
-  <div class="card">
+          <form id="login-form" class="profile-form" action="/do-login" method="POST">
+            <label for="login-phone">No WhatsApp</label>
+            <input
+              id="login-phone"
+              name="phone"
+              type="tel"
+              class="input-box"
+              placeholder="08xxxxxxxxxx / 628xxxx / +628xxxx"
+              required
+            />
 
-    <h2 id="title">Masuk</h2>
-    <div id="subtitle">Silakan login dengan No. WhatsApp dan password.</div>
+            <label for="login-password">Password</label>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              class="input-box"
+              placeholder="Masukkan password"
+              required
+            />
 
-    <!-- LOGIN -->
-    <div id="screen-login" class="screen active">
-      <form action="/do-login" method="POST">
-        <label>No. WhatsApp</label>
-        <input type="text" name="phone" required placeholder="08xxxx / 628xxxx / +628xxxx">
+            <button type="submit" class="profile-btn">Masuk</button>
 
-        <label>Password</label>
-        <input type="password" name="password" required>
+            <div class="form-switch-text">
+              Belum punya akun? <span id="go-register">Daftar</span>
+            </div>
+            <div class="form-switch-text">
+              Lupa password? <span id="go-reset">Reset password</span>
+            </div>
+          </form>
+        </div>
 
-        <button type="submit">Masuk</button>
-      </form>
+        <!-- ====== REGISTER ====== -->
+        <div id="tab-register" class="tab-content">
+          <div class="screen-title" style="margin-bottom:12px;">Daftar Akun</div>
 
-      <div class="links">
-        <span onclick="switchScreen('register')" class="link">Daftar akun</span>
-        <span onclick="switchScreen('reset-step1')" class="link">Reset password</span>
+          <form id="register-form" class="profile-form" action="/do-register" method="POST">
+            <label for="reg-name">Nama</label>
+            <input
+              id="reg-name"
+              name="name"
+              type="text"
+              class="input-box"
+              placeholder="Masukkan nama lengkap"
+              required
+            />
+
+            <label for="reg-phone">No WhatsApp</label>
+            <input
+              id="reg-phone"
+              name="phone"
+              type="tel"
+              class="input-box"
+              placeholder="08xxxxxxxxxx / 628xxxx / +628xxxx"
+              required
+            />
+
+            <label for="reg-password">Password</label>
+            <input
+              id="reg-password"
+              name="password"
+              type="password"
+              class="input-box"
+              placeholder="Masukkan password"
+              required
+            />
+
+            <label for="reg-confirm">Masukkan ulang password</label>
+            <input
+              id="reg-confirm"
+              name="confirm_password"
+              type="password"
+              class="input-box"
+              placeholder="Ulangi password"
+              required
+            />
+
+            <button type="submit" class="profile-btn">Daftar</button>
+
+            <div class="form-switch-text">
+              Sudah punya akun? <span id="go-login">Masuk</span>
+            </div>
+          </form>
+        </div>
+
+        <!-- ====== RESET STEP 1: INPUT NO WA ====== -->
+        <div id="tab-reset-step1" class="tab-content">
+          <div class="screen-title" style="margin-bottom:12px;">Reset Password</div>
+
+          <form
+            id="reset-step1-form"
+            class="profile-form"
+            action="/do-reset-start"
+            method="POST"
+          >
+            <label for="reset-phone">No WhatsApp</label>
+            <input
+              id="reset-phone"
+              name="phone"
+              type="tel"
+              class="input-box"
+              placeholder="08xxxxxxxxxx / 628xxxx / +628xxxx"
+              required
+            />
+
+            <button type="submit" class="profile-btn">Kirim Reset</button>
+
+            <div class="form-switch-text">
+              Ingat password? <span id="go-login-from-reset1">Masuk</span>
+            </div>
+          </form>
+        </div>
+
+        <!-- ====== RESET STEP 2: INPUT KODE ====== -->
+        <div id="tab-reset-step2" class="tab-content">
+          <div class="screen-title" style="margin-bottom:12px;">Reset Password</div>
+
+          <form
+            id="reset-step2-form"
+            class="profile-form"
+            action="/do-reset-verify"
+            method="POST"
+          >
+            <input type="hidden" name="phone" id="reset-code-phone-hidden" />
+
+            <label>No WhatsApp</label>
+            <input
+              id="reset-code-phone-display"
+              type="text"
+              class="input-box"
+              disabled
+            />
+
+            <label for="reset-code">Kode reset</label>
+            <input
+              id="reset-code"
+              name="reset_code"
+              type="text"
+              class="input-box"
+              placeholder="Masukkan kode reset"
+              required
+            />
+
+            <button type="submit" class="profile-btn">Verifikasi Kode</button>
+
+            <div class="form-switch-text">
+              Kembali ke awal reset?
+              <span id="go-reset-again">Input ulang No WhatsApp</span>
+            </div>
+          </form>
+        </div>
+
+        <!-- ====== RESET STEP 3: PASSWORD BARU ====== -->
+        <div id="tab-reset-step3" class="tab-content">
+          <div class="screen-title" style="margin-bottom:12px;">Reset Password</div>
+
+          <form
+            id="reset-step3-form"
+            class="profile-form"
+            action="/do-reset-final"
+            method="POST"
+          >
+            <input type="hidden" name="phone" id="reset-newpass-phone-hidden" />
+
+            <label>No WhatsApp</label>
+            <input
+              id="reset-newpass-phone-display"
+              type="text"
+              class="input-box"
+              disabled
+            />
+
+            <label for="new-password">Masukkan password baru</label>
+            <input
+              id="new-password"
+              name="new_password"
+              type="password"
+              class="input-box"
+              required
+            />
+
+            <label for="new-password-confirm">Ulangi password baru</label>
+            <input
+              id="new-password-confirm"
+              name="confirm_new_password"
+              type="password"
+              class="input-box"
+              required
+            />
+
+            <button type="submit" class="profile-btn">Simpan password</button>
+
+            <div class="form-switch-text">
+              Selesai? <span id="go-login-from-reset3">Masuk</span>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- REGISTER -->
-    <div id="screen-register" class="screen">
-      <form action="/do-register" method="POST">
-        <label>Nama</label>
-        <input type="text" name="name" required>
-
-        <label>No. WhatsApp</label>
-        <input type="text" name="phone" required>
-
-        <label>Password</label>
-        <input type="password" name="password" required>
-
-        <label>Masukan ulang password</label>
-        <input type="password" name="confirm_password" required>
-
-        <button type="submit">Daftar</button>
-      </form>
-
-      <div class="links">
-        <span onclick="switchScreen('login')" class="link">Sudah punya akun? Masuk</span>
-      </div>
-    </div>
-
-    <!-- RESET STEP 1 -->
-    <div id="screen-reset-step1" class="screen">
-      <form id="reset-step1-form" action="/do-reset-start" method="POST">
-        <label>No. WhatsApp</label>
-        <input type="text" name="phone" required>
-
-        <button type="submit">Reset</button>
-      </form>
-
-      <div class="links">
-        <span onclick="switchScreen('login')" class="link">Masuk</span>
-      </div>
-    </div>
-
-    <!-- RESET STEP 2 -->
-    <div id="screen-reset-step2" class="screen">
-      <form action="/do-reset-verify" method="POST">
-        <input type="hidden" name="phone" id="reset-code-phone-hidden">
-
-        <label>No. WhatsApp</label>
-        <input type="text" id="reset-code-phone-display" disabled>
-
-        <label>Reset code</label>
-        <input type="text" name="reset_code" required>
-
-        <button type="submit">Verifikasi</button>
-      </form>
-
-      <div class="links">
-        <span onclick="switchScreen('reset-step1')" class="link">Ulangi</span>
-        <span onclick="switchScreen('login')" class="link">Masuk</span>
-      </div>
-    </div>
-
-    <!-- RESET STEP 3 -->
-    <div id="screen-reset-step3" class="screen">
-      <form action="/do-reset-final" method="POST">
-        <input type="hidden" name="phone" id="reset-newpass-phone-hidden">
-
-        <label>No. WhatsApp</label>
-        <input type="text" id="reset-newpass-phone-display" disabled>
-
-        <label>Password baru</label>
-        <input type="password" name="new_password" required>
-
-        <label>Ulangi password baru</label>
-        <input type="password" name="confirm_new_password" required>
-
-        <button type="submit">Simpan</button>
-      </form>
-
-      <div class="links">
-        <span onclick="switchScreen('login')" class="link">Masuk</span>
-      </div>
-    </div>
-
-  </div> <!-- END CARD -->
-
-  <!-- JAVASCRIPT -->
+  <!-- SCRIPT LOGIKA LOGIN / DAFTAR / RESET -->
   <script>
-    function hideAll() {
-      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-    }
-
-    function switchScreen(screen) {
-      hideAll();
-      document.getElementById("screen-" + screen).classList.add("active");
-
-      const title = document.getElementById("title");
-      const subtitle = document.getElementById("subtitle");
-
-      if (screen === "login") {
-        title.textContent = "Masuk";
-        subtitle.textContent = "Silakan login dengan No. WhatsApp dan password.";
-      } else if (screen === "register") {
-        title.textContent = "Daftar";
-        subtitle.textContent = "Buat akun baru.";
-      } else if (screen === "reset-step1") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Masukan No WhatsApp yang terdaftar.";
-      } else if (screen === "reset-step2") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Masukan kode reset.";
-      } else if (screen === "reset-step3") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Buat password baru.";
+    // ---------------------------
+    // HELPER ALERT
+    // ---------------------------
+    function showAlert(message, type) {
+      const box = document.getElementById("alert");
+      box.textContent = message || "";
+      box.className = type === "success" ? "success" : "error";
+      box.style.display = message ? "block" : "none";
+      if (message) {
+        setTimeout(() => {
+          box.style.display = "none";
+        }, 3000);
       }
     }
 
-    // WA otomatis pada step1
-    document.getElementById("reset-step1-form")?.addEventListener("submit", () => {
-      window.open(
-        "https://wa.me/6281646805770?text=buatkan%20kode%20reset%20password!",
-        "_blank"
-      );
+    // ---------------------------
+    // SWITCH TAB
+    // ---------------------------
+    function setActiveTab(tabId) {
+      document.querySelectorAll(".tab-content").forEach((el) => {
+        el.classList.remove("active");
+      });
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add("active");
+    }
+
+    // expose kalau perlu dipanggil inline (ga kepakai sih sekarang)
+    window.setActiveTab = setActiveTab;
+
+    // ---------------------------
+    // EVENT LINK
+    // ---------------------------
+    document.getElementById("go-register")?.addEventListener("click", () => {
+      setActiveTab("tab-register");
     });
 
-    // INIT dari URL
-    (function init() {
+    document.getElementById("go-login")?.addEventListener("click", () => {
+      setActiveTab("tab-login");
+    });
+
+    document.getElementById("go-reset")?.addEventListener("click", () => {
+      setActiveTab("tab-reset-step1");
+    });
+
+    document
+      .getElementById("go-login-from-reset1")
+      ?.addEventListener("click", () => {
+        setActiveTab("tab-login");
+      });
+
+    document.getElementById("go-reset-again")?.addEventListener("click", () => {
+      setActiveTab("tab-reset-step1");
+    });
+
+    document
+      .getElementById("go-login-from-reset3")
+      ?.addEventListener("click", () => {
+        setActiveTab("tab-login");
+      });
+
+    // ---------------------------
+    // BUKA WA OTOMATIS SAAT RESET STEP1
+    // ---------------------------
+    document
+      .getElementById("reset-step1-form")
+      ?.addEventListener("submit", function () {
+        try {
+          window.open(
+            "https://wa.me/6281646805770?text=buatkan%20kode%20reset%20password!",
+            "_blank"
+          );
+        } catch (e) {}
+      });
+
+    // ---------------------------
+    // INIT DARI QUERY PARAM
+    // ---------------------------
+    (function initFromURL() {
       const params = new URLSearchParams(window.location.search);
-      const screenParam = params.get("screen") || "login";
-      const step = params.get("step");
+      const screen = params.get("screen") || "login";
+      const step = params.get("step") || "phone";
       const error = params.get("error");
       const status = params.get("status");
       const phone = params.get("phone") || "";
 
-      if (screenParam === "register") switchScreen("register");
-      else if (screenParam === "reset" && step === "code") {
-        document.getElementById("reset-code-phone-hidden").value = phone;
-        document.getElementById("reset-code-phone-display").value = phone;
-        switchScreen("reset-step2");
+      // tentukan tab aktif
+      if (screen === "register") {
+        setActiveTab("tab-register");
+      } else if (screen === "reset") {
+        if (step === "code") {
+          // step 2
+          if (phone) {
+            const h = document.getElementById("reset-code-phone-hidden");
+            const d = document.getElementById("reset-code-phone-display");
+            if (h) h.value = phone;
+            if (d) d.value = phone;
+          }
+          setActiveTab("tab-reset-step2");
+        } else if (step === "newpass") {
+          // step 3
+          if (phone) {
+            const h2 = document.getElementById("reset-newpass-phone-hidden");
+            const d2 = document.getElementById("reset-newpass-phone-display");
+            if (h2) h2.value = phone;
+            if (d2) d2.value = phone;
+          }
+          setActiveTab("tab-reset-step3");
+        } else {
+          setActiveTab("tab-reset-step1");
+        }
+      } else {
+        setActiveTab("tab-login");
       }
-      else if (screenParam === "reset" && step === "newpass") {
-        document.getElementById("reset-newpass-phone-hidden").value = phone;
-        document.getElementById("reset-newpass-phone-display").value = phone;
-        switchScreen("reset-step3");
-      }
-      else if (screenParam === "reset") switchScreen("reset-step1");
-      else switchScreen("login");
 
-      // ALERT
+      // mapping error => alert
       if (error) {
-        const map = {
-          invalid_phone: "Masukan No WhatsApp dengan benar",
-          not_registered: "No WhatsApp belum terdaftar",
-          wrong_password: "Password salah",
-          exists: "Nomor sudah terdaftar",
-          pass_mismatch: "Buat ulang password dengan benar",
-          code_invalid: "Kode reset tidak sesuai"
-        };
-        showAlert(map[error] || "Terjadi kesalahan", false);
-      }
-
-      if (status && !error) {
-        const map = {
-          registered: "Registrasi sukses",
-          reset_ok: "Password berhasil direset"
-        };
-        showAlert(map[status], true);
+        let msg = "Terjadi kesalahan";
+        if (error === "invalid_phone")
+          msg = "Masukan No WhatsApp dengan benar";
+        else if (error === "not_registered")
+          msg = "No WhatsApp belum terdaftar";
+        else if (error === "wrong_password") msg = "Password salah";
+        else if (error === "exists") msg = "Nomor sudah terdaftar";
+        else if (error === "pass_mismatch")
+          msg = "Buat ulang password dengan benar";
+        else if (error === "code_invalid") msg = "Kode reset tidak sesuai";
+        showAlert(msg, "error");
+      } else if (status) {
+        let msg = "";
+        if (status === "registered") msg = "Registrasi sukses";
+        else if (status === "reset_ok")
+          msg = "Password berhasil direset. Silakan login.";
+        if (msg) showAlert(msg, "success");
       }
     })();
-
-    function showAlert(msg, success=false) {
-      const alertBox = document.getElementById("alert");
-      alertBox.textContent = msg;
-      alertBox.className = success ? "success" : "error";
-      alertBox.style.display = "block";
-      setTimeout(() => alertBox.style.display = "none", 3000);
-    }
   </script>
-
 </body>
 </html>
