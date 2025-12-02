@@ -36,20 +36,25 @@ async function hashPassword(pwd) {
   const data = encoder.encode(pwd);
   const hash = await crypto.subtle.digest("SHA-256", data);
   return [...new Uint8Array(hash)]
-    .map(b => b.toString(16).padStart(2, "0"))
+    .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
 const SESSION_COOKIE = "session_user";
 
 function getCookie(cookies, name) {
-  return cookies
-    .split(";")
-    .map((c) => c.trim())
-    .find((c) => c.startsWith(name + "="))
-    ?.split("=")[1] ?? null;
+  return (
+    cookies
+      .split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(name + "="))
+      ?.split("=")[1] ?? null
+  );
 }
 
+// ---------------------
+// MAIN WORKER
+// ---------------------
 export default {
   async fetch(request, env) {
     try {
@@ -83,22 +88,8 @@ export default {
       }
 
       // --------------------------
-      // PROTECT INDEX.HTML & ROOT
-      // --------------------------
-      const isIndexRequest =
-        path === "/" ||
-        path === "/index.html" ||
-        path.endsWith("/index.html");
-
-      if (isIndexRequest && !loggedIn) {
-        return Response.redirect(
-          `${base.origin}/login.html?screen=login`,
-          302
-        );
-      }
-//---------------------------
       // LOGIN
-// --------------------------
+      // --------------------------
       if (path === "/do-login" && request.method === "POST") {
         const form = await request.formData();
         const phoneInput = form.get("phone");
@@ -135,8 +126,8 @@ export default {
           status: 302,
           headers: {
             "Set-Cookie": `${SESSION_COOKIE}=${phone}; Path=/; HttpOnly; Secure; SameSite=Lax`,
-            "Location": `${base.origin}/index.html`
-          }
+            "Location": `${base.origin}/index.html`,
+          },
         });
       }
 
@@ -180,7 +171,7 @@ export default {
           name,
           phone,
           passwordHash: pwdHash,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
 
         await env.axstore_data.put(userKey, JSON.stringify(data));
@@ -201,10 +192,10 @@ export default {
         const phone = normalizePhone(phoneInput);
         if (!phone) {
           return Response.redirect(
-    `${base.origin}/login.html?screen=reset&step=code&phone=${phone}&wa=1`,
-    302
-  );
-}
+            `${base.origin}/login.html?screen=reset&error=invalid_phone`,
+            302
+          );
+        }
 
         const userKey = "user:" + phone;
         const exist = await env.axstore_data.get(userKey);
@@ -319,27 +310,25 @@ export default {
           status: 302,
           headers: {
             "Set-Cookie": `${SESSION_COOKIE}=; Path=/; Max-Age=0`,
-            "Location": `${base.origin}/login.html?screen=login`
-          }
+            "Location": `${base.origin}/login.html?screen=login`,
+          },
         });
       }
 
       // --------------------------
       // STATIC FILES
       // --------------------------
-// Setelah semua proteksi dan routing dijalankan → baru fallback ke asset
-if (env.ASSETS) {
-  return env.ASSETS.fetch(request);
-}
+      if (env.ASSETS) {
+        return env.ASSETS.fetch(request);
+      }
 
-// fallback
-return new Response("Not found", { status: 404 });
+      return new Response("Not found", { status: 404 });
     } catch (err) {
       const msg = err && err.message ? err.message : String(err);
       return new Response("Worker error: " + msg, {
         status: 500,
-        headers: { "content-type": "text/plain; charset=utf-8" }
+        headers: { "content-type": "text/plain; charset=utf-8" },
       });
     }
-  }
+  },
 };
