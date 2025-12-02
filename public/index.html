@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <script>
+  (function () {
+    try {
+      var cookies = document.cookie || "";
+      var hasSession = cookies
+        .split(";")
+        .map(function (c) { return c.trim(); })
+        .some(function (c) { return c.indexOf("session_user=") === 0; });
+
+      if (!hasSession) {
+        window.location.href = "/login.html?screen=login";
+      }
+    } catch (e) {
+      window.location.href = "/login.html?screen=login";
+    }
+  })();
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hallo Indonesia</title>
