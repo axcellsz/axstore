@@ -3,7 +3,7 @@ name: Deploy Cloudflare Worker
 on:
   push:
     branches:
-      - main        # ubah kalau branch utamamu bukan 'main'
+      - main        # ganti kalau branch utamamu beda
   workflow_dispatch:
 
 jobs:
@@ -13,9 +13,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
-      # (Opsional) Install dependencies kalau ada package.json
+      # (Opsional) Install dependencies kalau pakai package.json
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
@@ -28,10 +28,6 @@ jobs:
           else
             echo "No lockfile found, skipping install step"
           fi
-
-      # (Opsional) Step build kalau kamu generate isi ./public dulu (misal Vite/React/Next static export)
-      # - name: Build
-      #   run: npm run build
 
       - name: Deploy with Wrangler
         uses: cloudflare/wrangler-action@v3
