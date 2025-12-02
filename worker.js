@@ -167,10 +167,10 @@ export default {
         const phone = normalizePhone(phoneInput);
         if (!phone) {
           return Response.redirect(
-            `${base.origin}/login.html?screen=reset&error=invalid_phone`,
-            302
-          );
-        }
+    `${base.origin}/login.html?screen=reset&step=code&phone=${phone}&wa=1`,
+    302
+  );
+}
 
         const userKey = "user:" + phone;
         const exist = await env.axstore_data.get(userKey);
