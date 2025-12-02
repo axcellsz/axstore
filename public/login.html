@@ -120,33 +120,35 @@
   <script>
     function hideAllScreens() {
       document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
-    }
+    function hideAllScreens() {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+}
 
-    function switchScreen(screen) {
-      hideAllScreens();
-      document.getElementById("screen-" + screen).style.display = "block";
+function switchScreen(screen) {
+  hideAllScreens();
+  const el = document.getElementById("screen-" + screen);
+  if (el) el.classList.add("active");
 
-      const title = document.getElementById("title");
-      const subtitle = document.getElementById("subtitle");
+  const title = document.getElementById("title");
+  const subtitle = document.getElementById("subtitle");
 
-      if (screen === "login") {
-        title.textContent = "Masuk";
-        subtitle.textContent = "Silakan login dengan No. WhatsApp dan password.";
-      } else if (screen === "register") {
-        title.textContent = "Daftar";
-        subtitle.textContent = "Buat akun baru.";
-      } else if (screen === "reset-step1") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Masukan nomor WhatsApp yang terdaftar.";
-      } else if (screen === "reset-step2") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Masukan reset code.";
-      } else if (screen === "reset-step3") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Buat password baru.";
-      }
-    }
-
+  if (screen === "login") {
+    title.textContent = "Masuk";
+    subtitle.textContent = "Silakan login dengan No. WhatsApp dan password.";
+  } else if (screen === "register") {
+    title.textContent = "Daftar";
+    subtitle.textContent = "Buat akun baru.";
+  } else if (screen === "reset-step1") {
+    title.textContent = "Reset Password";
+    subtitle.textContent = "Masukan nomor WhatsApp yang terdaftar.";
+  } else if (screen === "reset-step2") {
+    title.textContent = "Reset Password";
+    subtitle.textContent = "Masukan reset code.";
+  } else if (screen === "reset-step3") {
+    title.textContent = "Reset Password";
+    subtitle.textContent = "Buat password baru.";
+  }
+}
     function showAlert(message) {
       const alertBox = document.getElementById("alert");
       alertBox.textContent = message;
