@@ -6,169 +6,201 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
-  background: #000;
-  overflow: hidden;          /* Tidak bisa scroll */
+  overflow: hidden; /* halaman tidak scroll, yang scroll cuma di dalam card kalau perlu */
+  background: linear-gradient(180deg, #dbeafe 0%, #f1f5f9 40%, #f8fafc 100%);
+}
+
+/* ROOT LOGIN (tengah layar) */
+#login-root {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+  align-items: flex-end; /* card duduk di bawah */
 }
 
 /* ===========================
-   ALERT
+   ALERT (pojok kanan atas)
 =========================== */
 
 #alert {
   position: fixed;
-  top: 15px;
-  right: 15px;
-  padding: 10px 16px;
-  border-radius: 8px;
+  top: 12px;
+  right: 12px;
+  padding: 8px 14px;
   font-size: 14px;
+  border-radius: 10px;
   display: none;
-  z-index: 999;
-  background: #222;
-  border-left: 4px solid;
-}
-
-#alert.error {
-  color: #ff5c5c;
-  border-color: #ff5c5c;
+  background: #ffffff;
+  border-left: 4px solid #dc2626;
+  color: #b91c1c;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 #alert.success {
-  color: #8aff8a;
-  border-color: #8aff8a;
+  border-left-color: #16a34a;
+  color: #15803d;
 }
 
 /* ===========================
-   CARD (Container utama)
+   CARD LOGIN
 =========================== */
 
-.card {
+.screen-card {
   width: 100%;
   max-width: 480px;
-  height: 78%;
-  background: rgba(10, 10, 10, 0.95);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  padding: 24px;
-  padding-bottom: 40px;
+  height: 82%; /* tinggi card, bisa diubah 78–90% sesuai selera */
+  background: #ffffff;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 20px 18px 24px;
+  box-sizing: border-box;
 
-  /* Shadow emas */
-  box-shadow: 0 -8px 30px rgba(255, 215, 0, 0.08);
-  
-  overflow-y: auto;     /* Scroll internal */
+  box-shadow:
+    0 -4px 12px rgba(15, 23, 42, 0.12),
+    0 -12px 32px rgba(15, 23, 42, 0.16);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* yang di dalam card yang boleh scroll */
 }
 
-/* scrollbar halus */
-.card::-webkit-scrollbar {
-  width: 6px;
-}
-.card::-webkit-scrollbar-thumb {
-  background: rgba(255, 215, 0, 0.25);
-  border-radius: 10px;
+/* container dalam card: flex column, isi didorong ke bawah */
+.profile-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* ===========================
-   TITLE + SUBTITLE
+   TAB / SCREEN
 =========================== */
 
-#title {
-  font-size: 32px;
+.tab-content {
+  display: none;
+  margin-top: auto; /* TRIK PENTING: dorong form ke bawah card */
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ===========================
+   TITLE DI DALAM CARD
+=========================== */
+
+.screen-title {
+  font-size: 22px;
   font-weight: 700;
-  color: #FFD84D;
+  color: #0f172a;
   margin-bottom: 4px;
 }
 
-#subtitle {
-  font-size: 16px;
-  color: #d8d8d8;
-  margin-bottom: 28px;
+.profile-container .screen-title + .profile-form {
+  margin-top: 10px;
 }
 
 /* ===========================
-   INPUT
+   FORM DASAR
 =========================== */
 
-label {
-  color: #e4e4e4;
-  font-size: 15px;
-  margin-top: 12px;
-  margin-bottom: 4px;
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto 10px;
 }
 
-input {
+.profile-form label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-left: 2px;
+}
+
+/* INPUT garis bawah tipis */
+.input-box {
   width: 100%;
-  background: transparent;
+  padding: 8px 0;
   border: none;
-  border-bottom: 1px solid #444;
-  padding: 10px 2px;
+  border-bottom: 2px solid #cbd5e1;
+  background: transparent;
   font-size: 15px;
-  color: #f0f0f0;
   outline: none;
 }
 
-input:focus {
-  border-bottom: 1px solid #FFD84D;
+.input-box:focus {
+  border-bottom-color: #0f172a;
+}
+
+.input-box::placeholder {
+  color: #9ca3af;
 }
 
 /* ===========================
-   BUTTON
+   TOMBOL UTAMA
 =========================== */
 
-button {
+.profile-btn {
+  margin-top: 8px;
+  padding: 12px 0;
   width: 100%;
-  margin-top: 24px;
-  padding: 14px 0;
-
-  background: rgba(255, 215, 0, 0.10);
-  color: #FFD84D;
-  border: 1px solid #FFD84D;
+  max-width: 440px;
   border-radius: 12px;
-
-  font-size: 17px;
+  border: none;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-
-  transition: 0.2s;
+  align-self: center;
 }
 
-button:hover {
-  background: rgba(255, 215, 0, 0.20);
+.profile-btn:active {
+  transform: scale(0.97);
 }
 
 /* ===========================
-   LINKS
+   TEXT LINK KECIL BAWAH
 =========================== */
 
-.links {
-  margin-top: 16px;
-  display: flex;
-  justify-content: center;
-  gap: 22px;
+.form-switch-text {
+  text-align: center;
+  font-size: 13px;
+  color: #475569;
+  margin-top: 8px;
 }
 
-.link {
-  color: #FFD84D;
-  font-size: 15px;
-  text-decoration: underline;
+.form-switch-text span {
+  color: #0f172a;
+  font-weight: 600;
   cursor: pointer;
 }
 
 /* ===========================
-   SCREEN HANDLING
+   RESPONSIVE KECIL
 =========================== */
 
-.screen {
-  display: none;
-}
+@media (max-width: 400px) {
+  .screen-card {
+    height: 88%;
+    padding: 18px 14px 22px;
+  }
 
-.screen.active {
-  display: block;
+  .screen-title {
+    font-size: 20px;
+  }
 }
