@@ -42,29 +42,41 @@ async function hashPassword(pwd) {
 
 const SESSION_COOKIE = "session_user";
 
+function getCookie(cookies, name) {
+  return cookies
+    .split(";")
+    .map(c => c.trim())
+    .find(c => c.startsWith(name + "="))
+    ?.split("=")[1] ?? null;
+}
 export default {
   async fetch(request, env) {
     try {
       const base = new URL(request.url);
       const path = base.pathname;
       const cookies = request.headers.get("Cookie") || "";
-      const loggedIn = cookies.includes(`${SESSION_COOKIE}=`);
+
+      // ambil nilai cookie sesi secara aman
+      const sessionUser = getCookie(cookies, SESSION_COOKIE);
+      const loggedIn = !!sessionUser;
 
       // --------------------------
-      // PROTECT INDEX.HTML
+      // PROTECT INDEX.HTML & ROOT
       // --------------------------
-      if (path === "/" || path === "/index.html") {
-        if (!loggedIn) {
-          return Response.redirect(
-            `${base.origin}/login.html?screen=login`,
-            302
-          );
-        }
+      const isIndexRequest =
+        path === "/" ||
+        path === "/index.html" ||
+        path.endsWith("/index.html");
+
+      if (isIndexRequest && !loggedIn) {
+        return Response.redirect(
+          `${base.origin}/login.html?screen=login`,
+          302
+        );
       }
-
-      // --------------------------
+//---------------------------
       // LOGIN
-      // --------------------------
+// --------------------------
       if (path === "/do-login" && request.method === "POST") {
         const form = await request.formData();
         const phoneInput = form.get("phone");
