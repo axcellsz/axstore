@@ -1,218 +1,149 @@
-/* ==========================
-   LAYOUT DASAR
-========================== */
+/* login.css - replace whole file with this */
 
-html,
-body {
+/* page fullscreen, non-scroll */
+html, body {
+  height: 100%;
   margin: 0;
   padding: 0;
-  height: 100%;
-  overflow: hidden; /* tidak bisa di-scroll */
+  background: #050505; /* dark background */
+  color: #e6e6e6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden; /* disable page scroll */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  background: #050505;          /* dark mode */
-  color: #e7e7e7;
-
+/* container that holds all content and sticks content to bottom */
+#content-wrapper{
+  height: 100vh;
   display: flex;
-  justify-content: center;      /* pusat vertikal */
-  align-items: center;          /* pusat horizontal */
-  min-height: 100vh;
+  flex-direction: column;
+  justify-content: flex-end; /* put content near bottom */
   box-sizing: border-box;
-  padding: 0 16px;
-
-  /* Gold shadow di tepi */
-  box-shadow: inset 0 0 40px rgba(255, 215, 0, 0.08);
+  padding: 28px 20px 34px; /* top, left/right, bottom */
+  gap: 6px;
+  position: relative;
+  /* subtle gold glow at edges */
+  background:
+    radial-gradient(ellipse at top center, rgba(170,140,60,0.06), transparent 20%),
+    linear-gradient(90deg, rgba(0,0,0,0.95), rgba(0,0,0,0.92));
 }
 
-/* Bungkus semua konten utama */
-#content-wrapper {
-  width: 100%;
-  max-width: 480px;
-
-  /* geser sedikit ke bawah dari tengah */
-  transform: translateY(12vh);
-}
-
-/* ==========================
-   HEADERS
-========================== */
-
+/* base title & subtitle spacing */
 #title {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 36px;
+  font-weight: 800;
+  color: #f6d77c;
   margin: 0 0 8px 0;
-
-  color: #ffe082; /* gold soft */
-  text-shadow: 0 0 5px rgba(255, 215, 0, 0.35);
+  text-shadow: 0 4px 20px rgba(200,160,50,0.12);
+  line-height: 1;
 }
 
 #subtitle {
-  font-size: 13px;
-  color: #aaa;
-  margin: 0 0 14px 0;
+  font-size: 15px;
+  color: rgba(230,230,230,0.85);
+  margin-bottom: 18px;
 }
 
-/* ==========================
-   SCREEN (LOGIN / REGISTER / RESET)
-========================== */
+/* screens */
+.screen { display: none; }
+.screen.active { display: block; }
 
-.screen {
-  display: none; /* diatur via JS */
-}
-
-/* ==========================
-   INPUT FIELD
-========================== */
-
-label {
-  display: block;
-  font-size: 12px;
-  margin-bottom: 2px;
-  color: #cfcfcf;
-}
-
-input {
-  width: 100%;
-  font-size: 14px;
-  padding: 8px 2px 4px 2px;
-
-  background: transparent;
-  color: #f5f5f5;
-
-  border: none;
-  border-bottom: 1px solid #555; /* garis tipis */
-  outline: none;
-
-  margin-bottom: 12px;
-}
-
-input::placeholder {
-  color: #777;
-}
-
-input:focus {
-  border-bottom: 1px solid #ffd54f; /* garis gold saat fokus */
-  box-shadow: 0 3px 5px -3px rgba(255, 215, 0, 0.4);
-}
-
-/* ==========================
-   BUTTON
-========================== */
-
-button {
-  width: 100%;
-  padding: 10px 0;
-  font-size: 14px;
-  cursor: pointer;
-
-  background: rgba(255, 215, 0, 0.05);
-  border-radius: 6px;
-  border: 1px solid #ffd54f66; /* gold soft */
-
-  color: #ffe082;
-
-  transition: 0.2s ease;
-  margin-top: 4px;
-}
-
-button:hover {
-  background: rgba(255, 215, 0, 0.12);
-  border-color: #ffd54f;
-  color: #fff4c2;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.25);
-}
-
-/* ==========================
-   LINKS
-========================== */
-
-.links {
-  margin-top: 8px;
-  font-size: 12px;
+/* ensure each screen's content area has consistent vertical space
+   (so button sits at similar place) */
+.screen .form-wrapper {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-direction: column;
+  gap: 16px;
+  /* push the controls to bottom slightly and keep consistent height */
+  padding-bottom: 6px;
+  min-height: calc(40vh); /* ensure same vertical footprint for each screen */
+}
+
+/* labels */
+.screen label {
+  display: block;
+  font-size: 14px;
+  color: rgba(230,230,230,0.9);
+  margin-bottom: 6px;
+}
+
+/* inputs: thin underline only, transparent background */
+.screen input[type="text"],
+.screen input[type="password"],
+.screen input[type="tel"] {
+  font-size: 16px;
+  padding: 8px 4px;
+  background: transparent;
+  color: #eee;
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* caret/focus underline (gold, slightly thicker) */
+.screen input:focus {
+  border-bottom: 2px solid #caa93b;
+}
+
+/* big button: rectangular, transparent fill, gold outline */
+.screen button {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1.8px solid rgba(202,169,59,0.9);
+  background: linear-gradient(180deg, rgba(30,24,12,0.12), rgba(0,0,0,0.12));
+  color: #eedd9a;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(200,150,40,0.06), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+/* make sure button near bottom has consistent placement */
+.screen .controls {
+  margin-top: 8px;
+}
+
+/* small links (bottom) */
+.links {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #e6d899;
 }
 
 .links .click {
+  color: #e6d899;
   text-decoration: underline;
   cursor: pointer;
-  color: #ffeb99;
 }
 
-/* ==========================
-   ALERT (POJOK KANAN ATAS)
-========================== */
-
+/* ALERT box top-right */
 #alert {
   position: fixed;
-  top: 10px;
-  right: 10px;
-
-  font-size: 11px;
-  padding: 6px 10px;
-  border-radius: 8px;
-
-  background: rgba(15, 15, 15, 0.95);
-  border: 1px solid #444;
-
-  color: #ff6b6b; /* default merah */
+  right: 14px;
+  top: 14px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 13px;
   display: none;
-  z-index: 999;
-
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.25);
-  backdrop-filter: blur(4px);
+  z-index: 9999;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.45);
+  background: rgba(20,20,20,0.9);
+  color: #fff;
 }
 
-#alert.success {
-  color: #7CFC8A;
-  border-color: #5cd47e;
+/* success vs error */
+#alert.success { color: #0a3; background: rgba(8,30,10,0.95); }
+#alert.error { color: #f66; background: rgba(40,10,10,0.95); }
+
+/* small screens: ensure comfortable spacing */
+@media (max-width: 420px) {
+  #title { font-size: 32px; }
+  #content-wrapper { padding: 26px 18px 30px; }
 }
 
-#alert.error {
-  color: #ff6b6b;
-  border-color: #ff8585;
-}
-
-/* ==========================
-   RESPONSIVE (LAYAR LEBAR)
-========================== */
-
-@media (min-width: 480px) {
-  #content-wrapper {
-    max-width: 420px;
-    transform: translateY(6vh); /* agak kurang turun di layar besar */
-  }
-}
-
-
-/* ====== SCREEN LAYOUT: jaga tombol selalu pada posisi sama ====== */
-
-/* default: disembunyikan (JS akan menambahkan kelas .active) */
-.screen {
-  display: none;
-}
-
-/* screen yang aktif: jadikan flex column dan dorong konten ke bawah */
-.screen.active {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;    /* tombol akan berada di bagian bawah area screen */
-  min-height: 40vh;             /* tinggi area tiap screen, sesuaikan jika perlu */
-  gap: 10px;
-}
-
-/* pastikan form mengisi area dan tombol ada di bagian bawah form */
-.screen form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-/* buat tombol tetap berada di ujung bawah form jika ada elemen lain di atas */
-.screen form .spacer {
-  flex: 1 1 auto; /* kalau perlu spacer sebelum tombol */
-}
+/* accessibility - prevent accidental page scroll via keyboard */
+:focus { outline: none; }
