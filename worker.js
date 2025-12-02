@@ -45,10 +45,11 @@ const SESSION_COOKIE = "session_user";
 function getCookie(cookies, name) {
   return cookies
     .split(";")
-    .map(c => c.trim())
-    .find(c => c.startsWith(name + "="))
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(name + "="))
     ?.split("=")[1] ?? null;
 }
+
 export default {
   async fetch(request, env) {
     try {
@@ -56,9 +57,30 @@ export default {
       const path = base.pathname;
       const cookies = request.headers.get("Cookie") || "";
 
-      // ambil nilai cookie sesi secara aman
+      // baca cookie sesi dengan aman
       const sessionUser = getCookie(cookies, SESSION_COOKIE);
       const loggedIn = !!sessionUser;
+
+      // --------------------------
+      // GLOBAL PROTECT (SEMUA PATH)
+      // --------------------------
+      const isPublicPath =
+        path === "/login.html" ||
+        path === "/login" ||
+        path === "/do-login" ||
+        path === "/do-register" ||
+        path === "/do-reset-start" ||
+        path === "/do-reset-verify" ||
+        path === "/do-reset-final" ||
+        path === "/favicon.ico";
+
+      // kalau belum login dan bukan path publik -> paksa ke login
+      if (!loggedIn && !isPublicPath) {
+        return Response.redirect(
+          `${base.origin}/login.html?screen=login`,
+          302
+        );
+      }
 
       // --------------------------
       // PROTECT INDEX.HTML & ROOT
