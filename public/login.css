@@ -186,3 +186,33 @@ button:hover {
     transform: translateY(6vh); /* agak kurang turun di layar besar */
   }
 }
+
+
+/* ====== SCREEN LAYOUT: jaga tombol selalu pada posisi sama ====== */
+
+/* default: disembunyikan (JS akan menambahkan kelas .active) */
+.screen {
+  display: none;
+}
+
+/* screen yang aktif: jadikan flex column dan dorong konten ke bawah */
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;    /* tombol akan berada di bagian bawah area screen */
+  min-height: 40vh;             /* tinggi area tiap screen, sesuaikan jika perlu */
+  gap: 10px;
+}
+
+/* pastikan form mengisi area dan tombol ada di bagian bawah form */
+.screen form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* buat tombol tetap berada di ujung bawah form jika ada elemen lain di atas */
+.screen form .spacer {
+  flex: 1 1 auto; /* kalau perlu spacer sebelum tombol */
+}
