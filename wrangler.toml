@@ -1,1 +1,14 @@
+name = "axstore"
+main = "worker.js"
+compatibility_date = "2025-12-02"
 
+account_id = "2be8757c27accc0e32b2e7b191dab316"
+workers_dev = true
+
+# Static assets dari folder ./public
+assets = { directory = "public" }
+
+# KV namespace
+kv_namespaces = [
+  { binding = "axstore_data", id = "672959a6c9724465a3110f1a64a62c36" }
+]
