@@ -15,7 +15,7 @@ function normalizePhone(phoneRaw) {
   } else if (phone.startsWith("628")) {
     // sudah benar
   } else if (phone.startsWith("08")) {
-    phone = "628" + phone.slice(1);
+    phone = "62" + phone.slice(1);
   } else {
     return null;
   }
