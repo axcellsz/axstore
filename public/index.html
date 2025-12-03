@@ -10,7 +10,8 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
     }
 
     body {
@@ -54,18 +55,66 @@
       color: #ffffff;
       font-size: 14px;
       font-weight: 500;
+      cursor: pointer;
     }
 
     a.logout:hover {
       opacity: 0.9;
     }
   </style>
+
+  <script>
+    (function () {
+      const LOGIN_URL = "/login?screen=login";
+
+      // Ambil sesi dari localStorage
+      const sessionRaw = localStorage.getItem("axstore_user");
+
+      if (!sessionRaw) {
+        // Tidak ada sesi, paksa ke login
+        window.location.href = LOGIN_URL;
+        return;
+      }
+
+      let user = null;
+      try {
+        user = JSON.parse(sessionRaw);
+      } catch (err) {
+        // Data rusak → hapus dan paksa login ulang
+        localStorage.removeItem("axstore_user");
+        window.location.href = LOGIN_URL;
+        return;
+      }
+
+      // Simpan user ke global agar bisa dipakai di bawah
+      window.__AX_USER = user;
+
+      window.doLogout = function () {
+        localStorage.removeItem("axstore_user");
+        window.location.href = LOGIN_URL;
+      };
+    })();
+  </script>
 </head>
 <body>
+
   <div class="card">
     <h1>Halo, selamat datang!</h1>
-    <p>Anda sudah login ke dashboard.</p>
-    <a href="/logout" class="logout">Keluar</a>
+    <p id="welcome"></p>
+
+    <a onclick="doLogout()" class="logout">Keluar</a>
   </div>
+
+  <script>
+    // Tampilkan data user di dashboard
+    (function () {
+      const user = window.__AX_USER;
+      if (!user) return;
+
+      const el = document.getElementById("welcome");
+      el.textContent = `Anda login sebagai ${user.name} (${user.phone}).`;
+    })();
+  </script>
+
 </body>
 </html>
