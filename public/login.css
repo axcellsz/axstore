@@ -1,0 +1,187 @@
+/* Reset dasar */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Halaman full screen, tanpa scroll */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;          /* cegah scroll */
+}
+
+body {
+  position: relative;
+  background: #f3f4f6;       /* abu-abu muda bersih */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Judul di atas */
+#title {
+  width: 100%;
+  text-align: center;
+  padding-top: 16px;
+  padding-bottom: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Kalau nanti kamu pakai subtitle, bisa aktifkan ini
+#subtitle {
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+*/
+
+/* ALERT di pojok kanan atas */
+#alert {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  max-width: 260px;
+  padding: 8px 10px;
+  font-size: 13px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  display: none;             /* default disembunyikan, JS yg munculin */
+  z-index: 1000;
+}
+
+/* Wrapper tiap screen (login / register / reset) sebagai bottom sheet */
+.screen {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  margin: 0 auto;
+  width: 100%;
+  max-width: 480px;
+
+  background-color: #ffffff;
+  padding: 18px 18px 20px;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
+
+  display: none;             /* nanti yg aktif diatur lewat JS */
+}
+
+/* Default tampilan awal: login terlihat */
+#screen-login {
+  display: block;
+}
+
+/* Form di dalam bottom sheet */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Label */
+label {
+  font-size: 13px;
+  color: #374151;
+}
+
+/* Input hanya garis bawah tipis */
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #d1d5db;
+  border-radius: 0;
+  padding: 8px 0;
+  font-size: 14px;
+  background-color: transparent;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  border-bottom-color: #111827;
+}
+
+/* Input disabled (untuk nomor WA yang dikunci) */
+input[disabled] {
+  color: #6b7280;
+  border-bottom-style: dashed;
+}
+
+/* Tombol sepanjang input */
+button[type="submit"] {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 999px;
+  background-color: #111827;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+button[type="submit"]:hover {
+  opacity: 0.9;
+}
+
+button[type="submit"]:active {
+  transform: scale(0.98);
+}
+
+/* Link-link kecil di bawah form */
+.links {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.links .click {
+  color: #111827;
+  cursor: pointer;
+  margin: 0 4px;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px dotted transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.links .click:hover {
+  color: #000000;
+  border-bottom-color: #000000;
+}
+
+/* Responsif kecil: padding agak diperkecil di hp */
+@media (max-width: 480px) {
+  #title {
+    font-size: 18px;
+    padding-top: 10px;
+  }
+
+  .screen {
+    padding: 14px 14px 16px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  button[type="submit"] {
+    font-size: 13px;
+  }
+}
