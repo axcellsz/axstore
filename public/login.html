@@ -12,9 +12,7 @@
 
   <!-- ALERT -->
   <div id="alert"></div>
-
-  <h2 id="title">Masuk</h2>
-
+  
   <!-- LOGIN -->
   <div id="screen-login" class="screen">
     <form action="/do-login" method="POST">
@@ -121,25 +119,6 @@
     function switchScreen(screen) {
       hideAllScreens();
       document.getElementById("screen-" + screen).style.display = "block";
-
-      const title = document.getElementById("title");
-      const subtitle = document.getElementById("subtitle");
-
-      if (screen === "login") {
-        title.textContent = "Masuk";
-      } else if (screen === "register") {
-        title.textContent = "Daftar";
-      } else if (screen === "reset-step1") {
-        title.textContent = "Perbarui kata sandi";
-        subtitle.textContent = "Masukan nomor WhatsApp";
-      } else if (screen === "reset-step2") {
-        title.textContent = "Perbarui kata sandi";
-        subtitle.textContent = "Masukan kode.";
-      } else if (screen === "reset-step3") {
-        title.textContent = "Perbarui kata sandi";
-        subtitle.textContent = "Buat kata sandi baru.";
-      }
-    }
 
     function showAlert(message) {
       const alertBox = document.getElementById("alert");
