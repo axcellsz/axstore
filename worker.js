@@ -242,11 +242,11 @@ export default {
         }
 
         // Di sini kamu bisa kirim WA manual, dll.
-        // Lanjut ke step kode
+        // Lanjut ke step kode + kasih flag wa=1 supaya front-end tahu boleh buka WA
         return redirect(
           `${url.origin}/login?screen=reset&step=code&phone=${encodeURIComponent(
             phone
-          )}`
+          )}&wa=1`
         );
       }
 
