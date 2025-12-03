@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Panel</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    padding: 20px;
+  }
+
+  h2 { text-align: center; margin-bottom: 20px; }
+
+  .container {
+    max-width: 600px;
+    margin: auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
+
+  button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .del-btn {
+    background: #ef4444; 
+    color: #fff;
+  }
+
+  .code-btn {
+    background: #1f2937; 
+    color: #fff;
+  }
+
+  #result {
+    margin-top: 15px;
+    padding: 10px;
+    background: #d1fae5;
+    border: 1px solid #10b981;
+    color: #065f46;
+    display: none;
+  }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+  <h2>Admin Panel</h2>
+
+  <div id="result"></div>
+
+  <table id="usersTable">
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>No WA</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+
+<script>
+async function loadUsers() {
+  const res = await fetch("/admin/users");
+  const data = await res.json();
+
+  if (!data.ok) return;
+  
+  const tbody = document.querySelector("#usersTable tbody");
+  tbody.innerHTML = "";
+
+  data.users.forEach(u => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${u.name}</td>
+      <td>${u.phone}</td>
+      <td>
+        <button class="code-btn" onclick="genCode('${u.phone}')">Kode</button>
+        <button class="del-btn" onclick="deleteUser('${u.phone}')">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function deleteUser(phone) {
+  if (!confirm("Hapus user " + phone + "?")) return;
+
+  await fetch("/admin/delete-user", {
+    method: "POST",
+    body: JSON.stringify({ phone }),
+    headers: { "Content-Type": "application/json" }
+  });
+
+  show("User dihapus");
+  loadUsers();
+}
+
+async function genCode(phone) {
+  const res = await fetch("/admin/generate-reset-code", {
+    method: "POST",
+    body: JSON.stringify({ phone }),
+    headers: { "Content-Type": "application/json" }
+  });
+
+  const data = await res.json();
+  show("Kode reset untuk " + phone + ": " + data.code);
+}
+
+function show(msg) {
+  const el = document.getElementById("result");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+loadUsers();
+</script>
+
+</body>
+</html>
