@@ -111,7 +111,6 @@
   </div>
 
 <script>
-
 /* -----------------------------------------
    L O G I N  (fetch API relative URL)
 --------------------------------------------*/
@@ -163,18 +162,6 @@ function showAlert(message) {
   alertBox.style.display = "block";
 }
 
-// WA otomatis pada reset step1
-(function attachResetWAHandler() {
-  const form = document.getElementById("reset-step1-form");
-  if (!form) return;
-  form.addEventListener("submit", function () {
-    window.open(
-      "https://wa.me/6281646805770?text=buatkan%20kode%20reset%20password!",
-      "_blank"
-    );
-  });
-})();
-
 // INIT dari URL
 (function init() {
   const params = new URLSearchParams(window.location.search);
@@ -183,6 +170,7 @@ function showAlert(message) {
   const error = params.get("error");
   const status = params.get("status");
   const phone = params.get("phone") || "";
+  const waFlag = params.get("wa") || "";   // <--- flag dari worker
 
   let screen = "login";
 
@@ -205,6 +193,18 @@ function showAlert(message) {
 
   switchScreen(screen);
 
+  // Kalau masuk ke step2 & ada wa=1 & TIDAK ada error -> buka WA sekali
+  if (!error && screen === "reset-step2" && waFlag === "1") {
+    try {
+      window.open(
+        "https://wa.me/6281646805770?text=buatkan%20kode%20reset%20password!",
+        "_blank"
+      );
+    } catch (e) {
+      // kalau popup diblok, ya sudah abaikan saja
+    }
+  }
+
   // alert error/status
   if (error) {
     let msg = "";
@@ -226,7 +226,6 @@ function showAlert(message) {
     if (msg) showAlert(msg);
   }
 })();
-
 </script>
 
 </body>
