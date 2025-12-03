@@ -46,6 +46,17 @@ function redirect(url, extraHeaders = {}) {
   });
 }
 
+// Helper JSON dengan CORS
+function json(obj, status = 200) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}
+
 // ---------------------
 // MAIN WORKER
 // ---------------------
@@ -55,41 +66,26 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
 
-      // ============= HALAMAN INDEX & LOGIN (TANPA PROTEK SIAPAPUN BISA AKSES) =============
-      if (path === "/" || path === "/index" || path === "/index.html") {
-        if (env.ASSETS) {
-          const indexRequest = new Request(`${url.origin}/index.html`, request);
-          return env.ASSETS.fetch(indexRequest);
-        }
-      }
-
-      if (path === "/login" || path === "/login.html") {
-        if (env.ASSETS) {
-          const loginRequest = new Request(`${url.origin}/login.html`, request);
-          return env.ASSETS.fetch(loginRequest);
-        }
-      }
-
-      // ============= AUTH HANDLERS (TANPA COOKIE / SESSION) =============
-
-      // LOGIN
-      if (path === "/do-login" && request.method === "POST") {
+      // =================== API LOGIN JSON (untuk fetch di login.html) ===================
+      if (path === "/api/auth/login" && request.method === "POST") {
         const form = await request.formData();
         const phoneInput = form.get("phone");
         const passwordInput = form.get("password") || "";
 
         const phone = normalizePhone(phoneInput);
         if (!phone) {
-          return redirect(
-            `${url.origin}/login?screen=login&error=invalid_phone`
+          return json(
+            { status: false, message: "Masukan No WhatsApp dengan benar" },
+            400
           );
         }
 
         const userKey = "user:" + phone;
         const userJSON = await env.axstore_data.get(userKey);
         if (!userJSON) {
-          return redirect(
-            `${url.origin}/login?screen=login&error=not_registered`
+          return json(
+            { status: false, message: "No WhatsApp belum terdaftar" },
+            404
           );
         }
 
@@ -97,14 +93,24 @@ export default {
         const pwdHash = await hashPassword(passwordInput);
 
         if (pwdHash !== user.passwordHash) {
-          return redirect(
-            `${url.origin}/login?screen=login&error=wrong_password`
+          return json(
+            { status: false, message: "Kata sandi salah" },
+            401
           );
         }
 
-        // Login sukses: TIDAK set cookie, hanya redirect ke index
-        return redirect(`${url.origin}/index.html`);
+        // Sukses login – kirim data user (tanpa hash)
+        return json({
+          status: true,
+          message: "Login berhasil",
+          data: {
+            name: user.name,
+            phone: user.phone,
+          },
+        });
       }
+
+      // =================== FORM HANDLERS (REGISTER & RESET) ===================
 
       // REGISTER
       if (path === "/do-register" && request.method === "POST") {
@@ -172,8 +178,8 @@ export default {
           );
         }
 
-        // Di sini kamu bisa kirim kode via WA / API lain.
-        // Setelah itu, user lanjut ke step 2
+        // di sini seharusnya generate & kirim kode via WA, lalu simpan di KV (optional)
+        // sekarang langsung lanjut ke step kode
         return redirect(
           `${url.origin}/login?screen=reset&step=code&phone=${encodeURIComponent(
             phone
@@ -264,12 +270,12 @@ export default {
         );
       }
 
-      // LOGOUT (sekarang cuma redirect, tanpa hapus cookie apa pun)
+      // LOGOUT – sekarang cuma redirect, sesi ada di localStorage (front-end)
       if (path === "/logout") {
         return redirect(`${url.origin}/login?screen=login`);
       }
 
-      // ============= STATIC ASSETS LAIN (CSS, JS, Gambar, dll) =============
+      // =================== HALAMAN HTML (index, login, dll) ===================
       if (env.ASSETS) {
         return env.ASSETS.fetch(request);
       }
