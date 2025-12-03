@@ -15,6 +15,7 @@ function normalizePhone(phoneRaw) {
   } else if (phone.startsWith("628")) {
     // sudah benar
   } else if (phone.startsWith("08")) {
+    // BUANG 0 JADI 62 + sisa
     phone = "62" + phone.slice(1);
   } else {
     return null;
@@ -66,7 +67,7 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
 
-      // =================== API LOGIN JSON (untuk fetch di login.html) ===================
+      // =================== API LOGIN JSON (dipakai login.html via fetch) ===================
       if (path === "/api/auth/login" && request.method === "POST") {
         const form = await request.formData();
         const phoneInput = form.get("phone");
@@ -108,6 +109,68 @@ export default {
             phone: user.phone,
           },
         });
+      }
+
+      // =================== ADMIN API ===================
+
+      // LIST USER
+      if (path === "/admin/users" && request.method === "GET") {
+        const { keys } = await env.axstore_data.list({ prefix: "user:" });
+        const users = [];
+
+        for (const k of keys) {
+          const raw = await env.axstore_data.get(k.name);
+          if (raw) {
+            try {
+              users.push(JSON.parse(raw));
+            } catch (e) {
+              // skip kalau JSON rusak
+            }
+          }
+        }
+
+        return json({ ok: true, users });
+      }
+
+      // DELETE USER
+      if (path === "/admin/delete-user" && request.method === "POST") {
+        const body = await request.json();
+        const phoneRaw = body.phone;
+        if (!phoneRaw) {
+          return json({ ok: false, message: "phone required" }, 400);
+        }
+
+        // di KV kita pakai format sudah normal, jadi langsung pakai apa yang dikirim admin
+        await env.axstore_data.delete("user:" + phoneRaw);
+        await env.axstore_data.delete("reset:" + phoneRaw);
+
+        return json({ ok: true, message: "User deleted" });
+      }
+
+      // GENERATE RESET CODE
+      if (
+        path === "/admin/generate-reset-code" &&
+        request.method === "POST"
+      ) {
+        const body = await request.json();
+        const phoneRaw = body.phone;
+
+        if (!phoneRaw) {
+          return json({ ok: false, message: "phone required" }, 400);
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const payload = {
+          phone: phoneRaw,
+          code,
+          createdAt: Date.now(),
+          valid: true,
+        };
+
+        await env.axstore_data.put("reset:" + phoneRaw, JSON.stringify(payload));
+
+        return json({ ok: true, code });
       }
 
       // =================== FORM HANDLERS (REGISTER & RESET) ===================
@@ -178,8 +241,8 @@ export default {
           );
         }
 
-        // di sini seharusnya generate & kirim kode via WA, lalu simpan di KV (optional)
-        // sekarang langsung lanjut ke step kode
+        // Di sini kamu bisa kirim WA manual, dll.
+        // Lanjut ke step kode
         return redirect(
           `${url.origin}/login?screen=reset&step=code&phone=${encodeURIComponent(
             phone
@@ -270,12 +333,12 @@ export default {
         );
       }
 
-      // LOGOUT – sekarang cuma redirect, sesi ada di localStorage (front-end)
+      // LOGOUT – hanya redirect, sesi ada di localStorage
       if (path === "/logout") {
         return redirect(`${url.origin}/login?screen=login`);
       }
 
-      // =================== HALAMAN HTML (index, login, dll) ===================
+      // =================== STATIC ASSETS (HTML, CSS, JS, dll) ===================
       if (env.ASSETS) {
         return env.ASSETS.fetch(request);
       }
@@ -292,69 +355,3 @@ export default {
     }
   },
 };
-
-
-// ===================== ADMIN: LIST USER =====================
-if (path === "/admin/users") {
-  const { keys } = await env.axstore_data.list({ prefix: "user:" });
-
-  const users = [];
-  for (const k of keys) {
-    const raw = await env.axstore_data.get(k.name);
-    if (raw) users.push(JSON.parse(raw));
-  }
-
-  return new Response(JSON.stringify({ ok: true, users }), {
-    headers: { "Content-Type": "application/json" }
-  });
-}
-
-
-// ===================== ADMIN: DELETE USER =====================
-if (path === "/admin/delete-user" && request.method === "POST") {
-  const body = await request.json();
-  const phone = body.phone;
-
-  if (!phone) {
-    return new Response(JSON.stringify({ ok: false, message: "phone required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  await env.axstore_data.delete("user:" + phone);
-  await env.axstore_data.delete("reset:" + phone);
-
-  return new Response(JSON.stringify({ ok: true, message: "User deleted" }), {
-    headers: { "Content-Type": "application/json" }
-  });
-}
-
-
-// ===================== ADMIN: GENERATE RESET CODE =====================
-if (path === "/admin/generate-reset-code" && request.method === "POST") {
-  const body = await request.json();
-  const phone = body.phone;
-
-  if (!phone) {
-    return new Response(JSON.stringify({ ok: false, message: "phone required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-  const payload = JSON.stringify({
-    phone,
-    code,
-    createdAt: Date.now(),
-    valid: true
-  });
-
-  await env.axstore_data.put("reset:" + phone, payload);
-
-  return new Response(JSON.stringify({ ok: true, code }), {
-    headers: { "Content-Type": "application/json" }
-  });
-    }
