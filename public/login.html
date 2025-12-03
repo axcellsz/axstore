@@ -26,8 +26,8 @@
     </form>
 
     <div class="links">
-      <span class="click" onclick="switchScreen('register')">Daftar</span>
-      <span class="click" onclick="switchScreen('reset-step1')">Lupa kata sandi?</span>
+      <span class="click" onclick="switchScreen('register')">Daftar </span>
+      <span class="click" onclick="switchScreen('reset-step1')">Lupa kata sandi? </span>
     </div>
   </div>
 
@@ -111,8 +111,9 @@
   </div>
 
 <script>
+
 /* -----------------------------------------
-   LOGIN  (fetch API relative URL)
+   L O G I N  (fetch API relative URL)
 --------------------------------------------*/
 document.getElementById("form-login").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -128,7 +129,7 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (data.status !== true) {
-      showAlert(data.message || "Gagal login", "error");
+      showAlert(data.message || "Gagal login");
       return;
     }
 
@@ -139,90 +140,30 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
     window.location.href = "/index.html";
 
   } catch (err) {
-    showAlert("Terjadi kesalahan saat login", "error");
+    showAlert("Terjadi kesalahan saat login");
   }
 });
 
 /* -----------------------------------------
-   ALERT ANIMASI SLIDE + AUTO HIDE
+   FUNCTION UMUM
 --------------------------------------------*/
-let alertTimeout = null;
 
-function showAlert(message, type = "error") {
-  const alertBox = document.getElementById("alert");
-
-  // reset timeout sebelumnya
-  if (alertTimeout) {
-    clearTimeout(alertTimeout);
-    alertTimeout = null;
-  }
-
-  // reset class
-  alertBox.classList.remove("error", "success", "active");
-
-  // set tipe
-  alertBox.classList.add(type === "success" ? "success" : "error");
-
-  alertBox.textContent = message;
-
-  // tampil (slide-in)
-  requestAnimationFrame(() => {
-    alertBox.classList.add("active");
-  });
-
-  // auto-hide 3 detik
-  alertTimeout = setTimeout(() => {
-    alertBox.classList.remove("active");
-  }, 3000);
+function hideAllScreens() {
+  document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
 }
-
-/* -----------------------------------------
-   ANIMASI SLIDE SCREEN
---------------------------------------------*/
-let currentScreen = null;
 
 function switchScreen(screen) {
-  const next = document.getElementById("screen-" + screen);
-  if (!next) return;
-
-  // pertama kali
-  if (!currentScreen) {
-    next.style.display = "block";
-    requestAnimationFrame(() => {
-      next.classList.add("active");
-    });
-    currentScreen = next;
-    return;
-  }
-
-  const prev = currentScreen;
-
-  // siapkan screen baru di kiri
-  next.style.display = "block";
-  next.classList.remove("active", "exiting");
-  next.style.transform = "translateX(-40px)";
-
-  // screen lama keluar ke kanan
-  prev.classList.remove("active");
-  prev.classList.add("exiting");
-
-  // screen baru masuk dari kiri
-  requestAnimationFrame(() => {
-    next.classList.add("active");
-  });
-
-  // setelah animasi selesai, sembunyikan yang lama
-  setTimeout(() => {
-    prev.style.display = "none";
-    prev.classList.remove("exiting");
-  }, 350);
-
-  currentScreen = next;
+  hideAllScreens();
+  document.getElementById("screen-" + screen).style.display = "block";
 }
 
-/* -----------------------------------------
-   WA otomatis pada reset step1
---------------------------------------------*/
+function showAlert(message) {
+  const alertBox = document.getElementById("alert");
+  alertBox.textContent = message;
+  alertBox.style.display = "block";
+}
+
+// WA otomatis pada reset step1
 (function attachResetWAHandler() {
   const form = document.getElementById("reset-step1-form");
   if (!form) return;
@@ -234,9 +175,7 @@ function switchScreen(screen) {
   });
 })();
 
-/* -----------------------------------------
-   INIT dari URL
---------------------------------------------*/
+// INIT dari URL
 (function init() {
   const params = new URLSearchParams(window.location.search);
   const screenParam = params.get("screen") || "login";
@@ -264,10 +203,9 @@ function switchScreen(screen) {
     document.getElementById("reset-newpass-phone-display").value = phone;
   }
 
-  // tampilkan screen awal (dengan animasi)
   switchScreen(screen);
 
-  // alert error/status dari query
+  // alert error/status
   if (error) {
     let msg = "";
     if (error === "invalid_phone") msg = "Masukan No WhatsApp dengan benar";
@@ -278,16 +216,17 @@ function switchScreen(screen) {
     else if (error === "code_invalid") msg = "Kode tidak sesuai";
     else msg = "Terjadi kesalahan";
 
-    showAlert(msg, "error");
+    showAlert(msg);
   }
 
   if (status && !error) {
     let msg = "";
     if (status === "registered") msg = "Pendaftaran sukses";
     else if (status === "reset_ok") msg = "Kata sandi berhasil diperbarui";
-    if (msg) showAlert(msg, "success");
+    if (msg) showAlert(msg);
   }
 })();
+
 </script>
 
 </body>
