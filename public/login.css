@@ -76,6 +76,11 @@ body {
   border-radius: 16px 16px 0 0;
   box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
 
+  /* >>>> tambahan penting biar nggak “ancur” <<<< */
+  max-height: calc(100vh - 40px);  /* jangan lebih tinggi dari layar */
+  overflow-y: auto;                /* kalau kepanjangan, card-nya bisa scroll */
+  -webkit-overflow-scrolling: touch; /* smooth scroll di HP */
+
   /* animasi */
   opacity: 0;
   transform: translateX(-40px);
