@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auth</title>
 
-  <!-- File CSS -->
   <link rel="stylesheet" href="/login.css">
 </head>
 <body>
 
-  <!-- ALERT -->
   <div id="alert"></div>
 
   <!-- LOGIN -->
   <div id="screen-login" class="screen">
-    <!-- LOGIN SEKARANG PAKAI JS, BUKAN /do-login LANGSUNG -->
     <form id="login-form">
       <label>No. WhatsApp</label>
       <input type="text" name="phone" required>
@@ -111,7 +108,6 @@
     </div>
   </div>
 
-  <!-- SCRIPT -->
   <script>
     function hideAllScreens() {
       document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
@@ -170,7 +166,6 @@
 
       switchScreen(screen);
 
-      // error message dari query
       if (error) {
         let msg = "";
         if (error === "invalid_phone") msg = "Masukan No WhatsApp dengan benar";
@@ -180,7 +175,6 @@
         else if (error === "pass_mismatch") msg = "Buat ulang kata sandi dengan benar";
         else if (error === "code_invalid") msg = "Kode tidak sesuai";
         else msg = "Terjadi kesalahan";
-
         showAlert(msg);
       }
 
@@ -192,17 +186,19 @@
       }
     })();
 
-    // ================== LOGIN HANDLER (LOCALSTORAGE SESSION) ==================
+    // ================== LOGIN HANDLER (localStorage session) ==================
     (function attachLoginHandler() {
       const form = document.getElementById("login-form");
       if (!form) return;
+
+      const API_BASE = "https://axstore.aconk6390.workers.dev"; // <=== ganti kalau nama worker beda
 
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
         const formData = new FormData(form);
 
         try {
-          const res = await fetch("/api/auth/login", {
+          const res = await fetch(API_BASE + "/api/auth/login", {
             method: "POST",
             body: formData,
           });
@@ -214,10 +210,7 @@
             return;
           }
 
-          // simpan user ke localStorage
           localStorage.setItem("axstore_user", JSON.stringify(data.data));
-
-          // pindah ke dashboard
           window.location.href = "/index.html";
         } catch (err) {
           showAlert("Terjadi kesalahan saat login");
