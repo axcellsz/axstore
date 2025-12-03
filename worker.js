@@ -35,15 +35,7 @@ async function hashPassword(pwd) {
     .join("");
 }
 
-const SESSION_COOKIE = "session_user";
-
-// Ambil nilai session_user dari header Cookie
-function getSessionFromRequest(request) {
-  const cookie = request.headers.get("Cookie") || "";
-  const match = cookie.match(/(?:^|;\s*)session_user=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
+// Helper redirect
 function redirect(url, extraHeaders = {}) {
   return new Response(null, {
     status: 302,
@@ -63,32 +55,22 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
 
-      const sessionPhone = getSessionFromRequest(request);
-
-      // ============= PROTECT INDEX =============
+      // ============= HALAMAN INDEX & LOGIN (TANPA PROTEK SIAPAPUN BISA AKSES) =============
       if (path === "/" || path === "/index" || path === "/index.html") {
-        if (!sessionPhone) {
-          // belum login -> tendang ke login
-          return redirect(`${url.origin}/login?screen=login`);
+        if (env.ASSETS) {
+          const indexRequest = new Request(`${url.origin}/index.html`, request);
+          return env.ASSETS.fetch(indexRequest);
         }
-
-        // sudah login -> tampilkan index.html dari assets
-        const indexRequest = new Request(`${url.origin}/index.html`, request);
-        return env.ASSETS.fetch(indexRequest);
       }
 
-      // ============= LOGIN PAGE =============
       if (path === "/login" || path === "/login.html") {
-        // kalau sudah login dan masih buka halaman login, arahkan ke index
-        if (sessionPhone) {
-          return redirect(`${url.origin}/index.html`);
+        if (env.ASSETS) {
+          const loginRequest = new Request(`${url.origin}/login.html`, request);
+          return env.ASSETS.fetch(loginRequest);
         }
-
-        const loginRequest = new Request(`${url.origin}/login.html`, request);
-        return env.ASSETS.fetch(loginRequest);
       }
 
-      // ============= AUTH HANDLERS =============
+      // ============= AUTH HANDLERS (TANPA COOKIE / SESSION) =============
 
       // LOGIN
       if (path === "/do-login" && request.method === "POST") {
@@ -120,15 +102,8 @@ export default {
           );
         }
 
-        // Login sukses: set cookie & redirect ke index
-        const cookieValue = encodeURIComponent(phone);
-        return new Response(null, {
-          status: 302,
-          headers: {
-            "Set-Cookie": `${SESSION_COOKIE}=${cookieValue}; Path=/; Secure; SameSite=Lax`,
-            Location: `${url.origin}/index.html`,
-          },
-        });
+        // Login sukses: TIDAK set cookie, hanya redirect ke index
+        return redirect(`${url.origin}/index.html`);
       }
 
       // REGISTER
@@ -289,15 +264,9 @@ export default {
         );
       }
 
-      // LOGOUT
+      // LOGOUT (sekarang cuma redirect, tanpa hapus cookie apa pun)
       if (path === "/logout") {
-        return new Response(null, {
-          status: 302,
-          headers: {
-            "Set-Cookie": `${SESSION_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`,
-            Location: `${url.origin}/login?screen=login`,
-          },
-        });
+        return redirect(`${url.origin}/login?screen=login`);
       }
 
       // ============= STATIC ASSETS LAIN (CSS, JS, Gambar, dll) =============
@@ -307,10 +276,13 @@ export default {
 
       return new Response("Not found", { status: 404 });
     } catch (err) {
-      return new Response("Worker error: " + (err && err.message ? err.message : String(err)), {
-        status: 500,
-        headers: { "content-type": "text/plain; charset=utf-8" },
-      });
+      return new Response(
+        "Worker error: " + (err && err.message ? err.message : String(err)),
+        {
+          status: 500,
+          headers: { "content-type": "text/plain; charset=utf-8" },
+        }
+      );
     }
   },
 };
