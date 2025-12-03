@@ -140,6 +140,7 @@ export default {
           return json({ ok: false, message: "phone required" }, 400);
         }
 
+        // di KV kita pakai format sudah normal, jadi langsung pakai apa yang dikirim admin
         await env.axstore_data.delete("user:" + phoneRaw);
         await env.axstore_data.delete("reset:" + phoneRaw);
 
@@ -240,6 +241,8 @@ export default {
           );
         }
 
+        // Di sini kamu bisa kirim WA manual, dll.
+        // Lanjut ke step kode
         return redirect(
           `${url.origin}/login?screen=reset&step=code&phone=${encodeURIComponent(
             phone
