@@ -292,3 +292,69 @@ export default {
     }
   },
 };
+
+
+// ===================== ADMIN: LIST USER =====================
+if (path === "/admin/users") {
+  const { keys } = await env.axstore_data.list({ prefix: "user:" });
+
+  const users = [];
+  for (const k of keys) {
+    const raw = await env.axstore_data.get(k.name);
+    if (raw) users.push(JSON.parse(raw));
+  }
+
+  return new Response(JSON.stringify({ ok: true, users }), {
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+
+// ===================== ADMIN: DELETE USER =====================
+if (path === "/admin/delete-user" && request.method === "POST") {
+  const body = await request.json();
+  const phone = body.phone;
+
+  if (!phone) {
+    return new Response(JSON.stringify({ ok: false, message: "phone required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  await env.axstore_data.delete("user:" + phone);
+  await env.axstore_data.delete("reset:" + phone);
+
+  return new Response(JSON.stringify({ ok: true, message: "User deleted" }), {
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+
+// ===================== ADMIN: GENERATE RESET CODE =====================
+if (path === "/admin/generate-reset-code" && request.method === "POST") {
+  const body = await request.json();
+  const phone = body.phone;
+
+  if (!phone) {
+    return new Response(JSON.stringify({ ok: false, message: "phone required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+  const payload = JSON.stringify({
+    phone,
+    code,
+    createdAt: Date.now(),
+    valid: true
+  });
+
+  await env.axstore_data.put("reset:" + phone, payload);
+
+  return new Response(JSON.stringify({ ok: true, code }), {
+    headers: { "Content-Type": "application/json" }
+  });
+    }
