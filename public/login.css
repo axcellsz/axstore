@@ -11,57 +11,56 @@ html,
 body {
   width: 100%;
   height: 100%;
-  overflow: hidden;          /* cegah scroll */
+  overflow: hidden;
 }
 
 body {
   position: relative;
-  background: #f3f4f6;       /* abu-abu muda bersih */
+  background: #f3f4f6;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
 }
 
-/* Judul di atas */
-#title {
-  width: 100%;
-  text-align: center;
-  padding-top: 16px;
-  padding-bottom: 8px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #111827;
-}
-
-/* Kalau nanti kamu pakai subtitle, bisa aktifkan ini
-#subtitle {
-  width: 100%;
-  text-align: center;
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 8px;
-}
-*/
-
-/* ALERT di pojok kanan atas */
+/* ALERT SLIDE (kanan → kiri, auto-hide) */
 #alert {
   position: fixed;
   top: 12px;
-  right: 12px;
+  right: -260px;              /* awal di luar layar */
   max-width: 260px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   font-size: 13px;
-  background-color: #fee2e2;
-  color: #991b1b;
-  border-left: 4px solid #ef4444;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  display: none;             /* default disembunyikan, JS yg munculin */
-  z-index: 1000;
+
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+
+  opacity: 0;
+  transition: right 0.35s ease-out, opacity 0.35s ease-out;
+  z-index: 2000;
 }
 
-/* Wrapper tiap screen (login / register / reset) sebagai bottom sheet */
+/* masuk */
+#alert.active {
+  right: 12px;
+  opacity: 1;
+}
+
+/* error = merah */
+#alert.error {
+  background-color: #fee2e2;
+  color: #7f1d1d;
+  border-left: 4px solid #dc2626;
+}
+
+/* success = hijau */
+#alert.success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border-left: 4px solid #10b981;
+}
+
+/* Wrapper tiap screen (bottom sheet) + animasi slide kiri/kanan */
 .screen {
   position: fixed;
   left: 0;
@@ -77,11 +76,27 @@ body {
   border-radius: 16px 16px 0 0;
   box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
 
-  display: none;             /* nanti yg aktif diatur lewat JS */
+  /* animasi */
+  opacity: 0;
+  transform: translateX(-40px);
+  pointer-events: none;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  display: none;
 }
 
-/* Default tampilan awal: login terlihat */
-#screen-login {
+/* screen aktif → slide-in dari kiri */
+.screen.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  display: block;
+}
+
+/* screen keluar → slide ke kanan */
+.screen.exiting {
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
   display: block;
 }
 
@@ -169,29 +184,10 @@ button[type="submit"]:active {
   border-bottom-color: #000000;
 }
 
-/* Responsif kecil: padding agak diperkecil di hp */
+/* Responsif kecil */
 @media (max-width: 480px) {
-  #title {
-    font-size: 18px;
-    padding-top: 10px;
+  .screen {
+    padding: 16px 14px 18px;
+    border-radius: 14px 14px 0 0;
   }
-
-.screen {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  margin: 0 auto;
-  width: 100%;
-  max-width: 480px;
-
-  background-color: transparent !important;   /* transparan total */
-  backdrop-filter: none !important;           /* pastikan tidak ada blur */
-  padding: 18px 18px 20px;
-
-  border-radius: 0;                            /* hapus radius */
-  box-shadow: none !important;                 /* hapus shadow */
-
-  display: none;
 }
