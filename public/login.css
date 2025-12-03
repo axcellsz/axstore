@@ -176,12 +176,22 @@ button[type="submit"]:active {
     padding-top: 10px;
   }
 
-  .screen {
-    padding: 14px 14px 16px;
-    border-radius: 14px 14px 0 0;
-  }
+.screen {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
 
-  button[type="submit"] {
-    font-size: 13px;
-  }
+  margin: 0 auto;
+  width: 100%;
+  max-width: 480px;
+
+  background-color: transparent !important;   /* transparan total */
+  backdrop-filter: none !important;           /* pastikan tidak ada blur */
+  padding: 18px 18px 20px;
+
+  border-radius: 0;                            /* hapus radius */
+  box-shadow: none !important;                 /* hapus shadow */
+
+  display: none;
 }
