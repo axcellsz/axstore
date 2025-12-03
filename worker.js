@@ -1,23 +1,31 @@
 // ---------------------
 // HELPERS
 // ---------------------
+
+// Normalisasi nomor WhatsApp ke 628xxxxxxxxxx
 function normalizePhone(phoneRaw) {
   if (!phoneRaw) return null;
+
   let phone = phoneRaw.replace(/[\s\-.()]/g, "").trim();
+
   if (!/^\+?\d+$/.test(phone)) return null;
 
   if (phone.startsWith("+628")) {
     phone = "628" + phone.slice(4);
   } else if (phone.startsWith("628")) {
+    // sudah benar
   } else if (phone.startsWith("08")) {
     phone = "628" + phone.slice(1);
   } else {
     return null;
   }
+
   if (phone.length < 10 || phone.length > 15) return null;
+
   return phone;
 }
 
+// Hash password SHA-256
 async function hashPassword(pwd) {
   const encoder = new TextEncoder();
   const data = encoder.encode(pwd);
@@ -29,134 +37,280 @@ async function hashPassword(pwd) {
 
 const SESSION_COOKIE = "session_user";
 
-function parseCookie(req) {
-  const cookie = req.headers.get("Cookie") || "";
-  const match = cookie.match(/session_user=([^;]+)/);
-  return match ? match[1] : null;
+// Ambil nilai session_user dari header Cookie
+function getSessionFromRequest(request) {
+  const cookie = request.headers.get("Cookie") || "";
+  const match = cookie.match(/(?:^|;\s*)session_user=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function redirect(url, extraHeaders = {}) {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: url,
+      ...extraHeaders,
+    },
+  });
 }
 
 // ---------------------
 // MAIN WORKER
 // ---------------------
 export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const path = url.pathname;
+  async fetch(request, env, ctx) {
+    try {
+      const url = new URL(request.url);
+      const path = url.pathname;
 
-    // ===== PROTECT INDEX PAGE =====
-    if (path === "/" || path === "/index" || path === "/index.html") {
-      const session = parseCookie(request);
+      const sessionPhone = getSessionFromRequest(request);
 
-      if (!session) {
-        return Response.redirect(`${url.origin}/login?screen=login`, 302);
+      // ============= PROTECT INDEX =============
+      if (path === "/" || path === "/index" || path === "/index.html") {
+        if (!sessionPhone) {
+          // belum login -> tendang ke login
+          return redirect(`${url.origin}/login?screen=login`);
+        }
+
+        // sudah login -> tampilkan index.html dari assets
+        const indexRequest = new Request(`${url.origin}/index.html`, request);
+        return env.ASSETS.fetch(indexRequest);
       }
 
-      // Serve HTML Index from R2 correctly
-      return env.ASSETS.fetch(
-        new Request(`${url.origin}/index.html`, request)
-      );
-    }
+      // ============= LOGIN PAGE =============
+      if (path === "/login" || path === "/login.html") {
+        // kalau sudah login dan masih buka halaman login, arahkan ke index
+        if (sessionPhone) {
+          return redirect(`${url.origin}/index.html`);
+        }
 
-    // ===== SERVE LOGIN HTML (UNPROTECTED) =====
-    if (path === "/login" || path === "/login.html") {
-      return env.ASSETS.fetch(
-        new Request(`${url.origin}/login.html`, request)
-      );
-    }
-
-    // --------------------------
-    // LOGIN
-    // --------------------------
-    if (path === "/do-login" && request.method === "POST") {
-      const form = await request.formData();
-      const phoneInput = form.get("phone");
-      const passwordInput = form.get("password") || "";
-
-      const phone = normalizePhone(phoneInput);
-      if (!phone) {
-        return Response.redirect(`${url.origin}/login?screen=login&error=invalid_phone`, 302);
+        const loginRequest = new Request(`${url.origin}/login.html`, request);
+        return env.ASSETS.fetch(loginRequest);
       }
 
-      const userKey = "user:" + phone;
-      const userData = await env.axstore_data.get(userKey);
+      // ============= AUTH HANDLERS =============
 
-      if (!userData) {
-        return Response.redirect(`${url.origin}/login?screen=login&error=not_registered`, 302);
+      // LOGIN
+      if (path === "/do-login" && request.method === "POST") {
+        const form = await request.formData();
+        const phoneInput = form.get("phone");
+        const passwordInput = form.get("password") || "";
+
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return redirect(
+            `${url.origin}/login?screen=login&error=invalid_phone`
+          );
+        }
+
+        const userKey = "user:" + phone;
+        const userJSON = await env.axstore_data.get(userKey);
+        if (!userJSON) {
+          return redirect(
+            `${url.origin}/login?screen=login&error=not_registered`
+          );
+        }
+
+        const user = JSON.parse(userJSON);
+        const pwdHash = await hashPassword(passwordInput);
+
+        if (pwdHash !== user.passwordHash) {
+          return redirect(
+            `${url.origin}/login?screen=login&error=wrong_password`
+          );
+        }
+
+        // Login sukses: set cookie & redirect ke index
+        const cookieValue = encodeURIComponent(phone);
+        return new Response(null, {
+          status: 302,
+          headers: {
+            "Set-Cookie": `${SESSION_COOKIE}=${cookieValue}; Path=/; Secure; SameSite=Lax`,
+            Location: `${url.origin}/index.html`,
+          },
+        });
       }
 
-      const user = JSON.parse(userData);
-      const pwdHash = await hashPassword(passwordInput);
+      // REGISTER
+      if (path === "/do-register" && request.method === "POST") {
+        const form = await request.formData();
+        const name = (form.get("name") || "").trim();
+        const phoneInput = form.get("phone");
+        const pwd = form.get("password") || "";
+        const pwd2 = form.get("confirm_password") || "";
 
-      if (pwdHash !== user.passwordHash) {
-        return Response.redirect(`${url.origin}/login?screen=login&error=wrong_password`, 302);
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return redirect(
+            `${url.origin}/login?screen=register&error=invalid_phone`
+          );
+        }
+
+        const userKey = "user:" + phone;
+        const exist = await env.axstore_data.get(userKey);
+        if (exist) {
+          return redirect(
+            `${url.origin}/login?screen=register&error=exists`
+          );
+        }
+
+        if (!pwd || !pwd2 || pwd !== pwd2) {
+          return redirect(
+            `${url.origin}/login?screen=register&error=pass_mismatch`
+          );
+        }
+
+        const pwdHash = await hashPassword(pwd);
+
+        const data = {
+          name,
+          phone,
+          passwordHash: pwdHash,
+          createdAt: new Date().toISOString(),
+        };
+
+        await env.axstore_data.put(userKey, JSON.stringify(data));
+
+        return redirect(
+          `${url.origin}/login?screen=login&status=registered`
+        );
       }
 
-      // SUCCESS LOGIN
-      return new Response("", {
-        status: 302,
-        headers: {
-          "Set-Cookie": `${SESSION_COOKIE}=${phone}; Path=/; HttpOnly; Secure; SameSite=Lax`,
-          Location: `${url.origin}/index.html`,
-        },
+      // RESET STEP 1 - INPUT PHONE
+      if (path === "/do-reset-start" && request.method === "POST") {
+        const form = await request.formData();
+        const phoneInput = form.get("phone");
+
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return redirect(
+            `${url.origin}/login?screen=reset&error=invalid_phone`
+          );
+        }
+
+        const userKey = "user:" + phone;
+        const exist = await env.axstore_data.get(userKey);
+
+        if (!exist) {
+          return redirect(
+            `${url.origin}/login?screen=reset&error=not_registered`
+          );
+        }
+
+        // Di sini kamu bisa kirim kode via WA / API lain.
+        // Setelah itu, user lanjut ke step 2
+        return redirect(
+          `${url.origin}/login?screen=reset&step=code&phone=${encodeURIComponent(
+            phone
+          )}`
+        );
+      }
+
+      // RESET STEP 2 - VERIFY RESET CODE
+      if (path === "/do-reset-verify" && request.method === "POST") {
+        const form = await request.formData();
+        const phoneInput = form.get("phone");
+        const codeInput = (form.get("reset_code") || "").trim();
+
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return redirect(
+            `${url.origin}/login?screen=reset&error=invalid_phone`
+          );
+        }
+
+        const codeKey = "reset:" + phone;
+        const codeJSON = await env.axstore_data.get(codeKey);
+
+        if (!codeJSON) {
+          return redirect(
+            `${url.origin}/login?screen=reset&step=code&phone=${encodeURIComponent(
+              phone
+            )}&error=code_invalid`
+          );
+        }
+
+        const obj = JSON.parse(codeJSON);
+        if (!obj.code || obj.code !== codeInput) {
+          return redirect(
+            `${url.origin}/login?screen=reset&step=code&phone=${encodeURIComponent(
+              phone
+            )}&error=code_invalid`
+          );
+        }
+
+        return redirect(
+          `${url.origin}/login?screen=reset&step=newpass&phone=${encodeURIComponent(
+            phone
+          )}`
+        );
+      }
+
+      // RESET STEP 3 - NEW PASSWORD
+      if (path === "/do-reset-final" && request.method === "POST") {
+        const form = await request.formData();
+        const phoneInput = form.get("phone");
+        const pwd = form.get("new_password") || "";
+        const pwd2 = form.get("confirm_new_password") || "";
+
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return redirect(
+            `${url.origin}/login?screen=reset&error=invalid_phone`
+          );
+        }
+
+        if (!pwd || !pwd2 || pwd !== pwd2) {
+          return redirect(
+            `${url.origin}/login?screen=reset&step=newpass&phone=${encodeURIComponent(
+              phone
+            )}&error=pass_mismatch`
+          );
+        }
+
+        const userKey = "user:" + phone;
+        const userJSON = await env.axstore_data.get(userKey);
+
+        if (!userJSON) {
+          return redirect(
+            `${url.origin}/login?screen=reset&error=not_registered`
+          );
+        }
+
+        const user = JSON.parse(userJSON);
+        user.passwordHash = await hashPassword(pwd);
+        await env.axstore_data.put(userKey, JSON.stringify(user));
+
+        const codeKey = "reset:" + phone;
+        await env.axstore_data.delete(codeKey);
+
+        return redirect(
+          `${url.origin}/login?screen=login&status=reset_ok`
+        );
+      }
+
+      // LOGOUT
+      if (path === "/logout") {
+        return new Response(null, {
+          status: 302,
+          headers: {
+            "Set-Cookie": `${SESSION_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`,
+            Location: `${url.origin}/login?screen=login`,
+          },
+        });
+      }
+
+      // ============= STATIC ASSETS LAIN (CSS, JS, Gambar, dll) =============
+      if (env.ASSETS) {
+        return env.ASSETS.fetch(request);
+      }
+
+      return new Response("Not found", { status: 404 });
+    } catch (err) {
+      return new Response("Worker error: " + (err && err.message ? err.message : String(err)), {
+        status: 500,
+        headers: { "content-type": "text/plain; charset=utf-8" },
       });
     }
-
-    // --------------------------
-    // REGISTER
-    // --------------------------
-    if (path === "/do-register" && request.method === "POST") {
-      const form = await request.formData();
-      const name = (form.get("name") || "").trim();
-      const phoneInput = form.get("phone");
-      const pwd = form.get("password") || "";
-      const pwd2 = form.get("confirm_password") || "";
-
-      const phone = normalizePhone(phoneInput);
-      if (!phone) {
-        return Response.redirect(`${url.origin}/login?screen=register&error=invalid_phone`, 302);
-      }
-
-      const userKey = "user:" + phone;
-      const exist = await env.axstore_data.get(userKey);
-
-      if (exist) {
-        return Response.redirect(`${url.origin}/login?screen=register&error=exists`, 302);
-      }
-
-      if (!pwd || !pwd2 || pwd !== pwd2) {
-        return Response.redirect(`${url.origin}/login?screen=register&error=pass_mismatch`, 302);
-      }
-
-      const pwdHash = await hashPassword(pwd);
-
-      const data = {
-        name,
-        phone,
-        passwordHash: pwdHash,
-        createdAt: new Date().toISOString(),
-      };
-
-      await env.axstore_data.put(userKey, JSON.stringify(data));
-
-      return Response.redirect(`${url.origin}/login?screen=login&status=registered`, 302);
-    }
-
-    // --------------------------
-    // LOGOUT
-    // --------------------------
-    if (path === "/logout") {
-      return new Response("", {
-        status: 302,
-        headers: {
-          "Set-Cookie": `${SESSION_COOKIE}=; Path=/; Max-Age=0; Secure; SameSite=Lax`,
-          Location: `${url.origin}/login?screen=login`,
-        },
-      });
-    }
-
-    // --------------------------
-    // STATIC FILES (CSS, JS, dll)
-    // --------------------------
-    return env.ASSETS.fetch(request);
   },
 };
