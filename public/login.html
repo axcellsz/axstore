@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auth</title>
 
-  <!-- File CSS buatan Bapak -->
+  <!-- File CSS -->
   <link rel="stylesheet" href="/login.css">
 </head>
 <body>
@@ -14,23 +14,22 @@
   <div id="alert"></div>
 
   <h2 id="title">Masuk</h2>
-  <div id="subtitle">Silakan login dengan No. WhatsApp dan password.</div>
 
   <!-- LOGIN -->
   <div id="screen-login" class="screen">
     <form action="/do-login" method="POST">
       <label>No. WhatsApp</label>
-      <input type="text" name="phone" placeholder=" " required>
+      <input type="text" name="phone" required>
 
-      <label>Password</label>
+      <label>Kata sandi</label>
       <input type="password" name="password" required>
 
       <button type="submit">Masuk</button>
     </form>
 
     <div class="links">
-      <span class="click" onclick="switchScreen('register')">Daftar akun</span>
-      <span class="click" onclick="switchScreen('reset-step1')">Reset password</span>
+      <span class="click" onclick="switchScreen('register')">Daftar </span>
+      <span class="click" onclick="switchScreen('reset-step1')">Lupa kata sandi? </span>
     </div>
   </div>
 
@@ -43,17 +42,17 @@
       <label>No. WhatsApp</label>
       <input type="text" name="phone" required>
 
-      <label>Password</label>
+      <label>Kata sandi</label>
       <input type="password" name="password" required>
 
-      <label>Masukan ulang password</label>
+      <label>Ulangi kata sandi</label>
       <input type="password" name="confirm_password" required>
 
       <button type="submit">Daftar</button>
     </form>
 
     <div class="links">
-      <span class="click" onclick="switchScreen('login')">Sudah punya akun? Masuk</span>
+      <span class="click" onclick="switchScreen('login')">Masuk</span>
     </div>
   </div>
 
@@ -63,7 +62,7 @@
       <label>No. WhatsApp</label>
       <input type="text" name="phone" required>
 
-      <button type="submit">Reset</button>
+      <button type="submit">Perbarui</button>
     </form>
 
     <div class="links">
@@ -79,7 +78,7 @@
       <label>No. WhatsApp</label>
       <input type="text" id="reset-code-phone-display" disabled>
 
-      <label>Reset code</label>
+      <label>Masukan kode</label>
       <input type="text" name="reset_code" required>
 
       <button type="submit">Verifikasi</button>
@@ -99,10 +98,10 @@
       <label>No. WhatsApp</label>
       <input type="text" id="reset-newpass-phone-display" disabled>
 
-      <label>Password baru</label>
+      <label>Kata sandi baru</label>
       <input type="password" name="new_password" required>
 
-      <label>Ulangi password baru</label>
+      <label>Ulangi kata sandi</label>
       <input type="password" name="confirm_new_password" required>
 
       <button type="submit">Simpan</button>
@@ -128,19 +127,17 @@
 
       if (screen === "login") {
         title.textContent = "Masuk";
-        subtitle.textContent = "Silakan login dengan No. WhatsApp dan password.";
       } else if (screen === "register") {
         title.textContent = "Daftar";
-        subtitle.textContent = "Buat akun baru.";
       } else if (screen === "reset-step1") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Masukan nomor WhatsApp yang terdaftar.";
+        title.textContent = "Perbarui kata sandi";
+        subtitle.textContent = "Masukan nomor WhatsApp";
       } else if (screen === "reset-step2") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Masukan reset code.";
+        title.textContent = "Perbarui kata sandi";
+        subtitle.textContent = "Masukan kode.";
       } else if (screen === "reset-step3") {
-        title.textContent = "Reset Password";
-        subtitle.textContent = "Buat password baru.";
+        title.textContent = "Perbarui kata sandi";
+        subtitle.textContent = "Buat kata sandi baru.";
       }
     }
 
@@ -197,10 +194,10 @@
         let msg = "";
         if (error === "invalid_phone") msg = "Masukan No WhatsApp dengan benar";
         else if (error === "not_registered") msg = "No WhatsApp belum terdaftar";
-        else if (error === "wrong_password") msg = "Password salah";
+        else if (error === "wrong_password") msg = "Kata sandi salah";
         else if (error === "exists") msg = "Nomor sudah terdaftar";
-        else if (error === "pass_mismatch") msg = "Buat ulang password dengan benar";
-        else if (error === "code_invalid") msg = "Kode reset tidak sesuai";
+        else if (error === "pass_mismatch") msg = "Buat ulang kata sandi dengan benar";
+        else if (error === "code_invalid") msg = "Kode tidak sesuai";
         else msg = "Terjadi kesalahan";
 
         showAlert(msg);
@@ -208,8 +205,8 @@
 
       if (status && !error) {
         let msg = "";
-        if (status === "registered") msg = "Registrasi sukses";
-        else if (status === "reset_ok") msg = "Password berhasil direset";
+        if (status === "registered") msg = "Pendaftaran sukses";
+        else if (status === "reset_ok") msg = "Kata sandi berhasil diperbarui";
         if (msg) showAlert(msg);
       }
     })();
