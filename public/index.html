@@ -16,7 +16,7 @@
 </head>
 <body>
 
-  <!-- ALERT GLOBAL (optional, pakai CSS sendiri) -->
+  <!-- ALERT GLOBAL -->
   <div id="alert" class="alert" style="display:none;"></div>
 
   <!-- CARD DASHBOARD UTAMA -->
@@ -27,13 +27,23 @@
     <!-- Contoh area info profil singkat -->
     <div id="profile-summary"></div>
 
+    <!-- Tombol untuk membuka screen lengkapi profil -->
+    <button
+      type="button"
+      class="btn-secondary"
+      id="btn-open-complete-profile"
+    >
+      Lengkapi / edit data diri
+    </button>
+
     <a onclick="doLogout()" class="logout">Keluar</a>
   </div>
 
-  <!-- CARD LENGKAPI PROFIL (ditampilkan kalau profileCompleted = false) -->
+  <!-- CARD LENGKAPI PROFIL (dibuka dari dashboard) -->
   <div class="card" id="card-complete-profile" style="display:none;">
     <h1>Lengkapi data diri</h1>
-    <p id="profile-hint">Masukan informasi dengan benar
+    <p id="profile-hint">
+      Masukan informasi dengan benar
     </p>
 
     <form id="form-complete-profile">
@@ -88,17 +98,28 @@
         class="input"
       />
 
+      <!-- RT & RW sejajar -->
       <div class="row-2col">
-  <div class="col">
-    <label>RT</label>
-    <input type="number" name="rt" id="rt" class="input" />
-  </div>
+        <div class="col">
+          <label>RT</label>
+          <input
+            type="number"
+            name="rt"
+            id="rt"
+            class="input"
+          />
+        </div>
 
-  <div class="col">
-    <label>RW</label>
-    <input type="number" name="rw" id="rw" class="input" />
-  </div>
-</div>
+        <div class="col">
+          <label>RW</label>
+          <input
+            type="number"
+            name="rw"
+            id="rw"
+            class="input"
+          />
+        </div>
+      </div>
 
       <label>Desa</label>
       <input
@@ -144,6 +165,16 @@
 
       <button type="submit" class="btn-primary" style="margin-top:12px;">
         Simpan
+      </button>
+
+      <!-- Tombol batal: kembali ke dashboard -->
+      <button
+        type="button"
+        class="btn-secondary"
+        style="margin-top:8px;"
+        onclick="backToDashboard()"
+      >
+        Batal
       </button>
     </form>
   </div>
