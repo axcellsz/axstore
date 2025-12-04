@@ -1,113 +1,120 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auth</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
 
-  <link rel="stylesheet" href="/login.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #f3f4f6;
+      padding: 16px;
+    }
+
+    .card {
+      padding: 24px 20px;
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 8px;
+      color: #111827;
+    }
+
+    p {
+      font-size: 14px;
+      color: #4b5563;
+      margin-bottom: 20px;
+    }
+
+    a.logout {
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background-color: #111827;
+      text-decoration: none;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    a.logout:hover {
+      opacity: 0.9;
+    }
+  </style>
+
+  <script>
+    (function () {
+      const LOGIN_URL = "/login?screen=login";
+
+      // Ambil sesi dari localStorage
+      const sessionRaw = localStorage.getItem("axstore_user");
+
+      if (!sessionRaw) {
+        // Tidak ada sesi, paksa ke login
+        window.location.href = LOGIN_URL;
+        return;
+      }
+
+      let user = null;
+      try {
+        user = JSON.parse(sessionRaw);
+      } catch (err) {
+        // Data rusak → hapus dan paksa login ulang
+        localStorage.removeItem("axstore_user");
+        window.location.href = LOGIN_URL;
+        return;
+      }
+
+      // Simpan user ke global agar bisa dipakai di bawah
+      window.__AX_USER = user;
+
+      window.doLogout = function () {
+        localStorage.removeItem("axstore_user");
+        window.location.href = LOGIN_URL;
+      };
+    })();
+  </script>
 </head>
 <body>
 
-  <div id="alert"></div>
+  <div class="card">
+    <h1>Halo, selamat datang!</h1>
+    <p id="welcome"></p>
 
-  <!-- LOGIN -->
-  <div id="screen-login" class="screen">
-    <form id="form-login">
-      <label>No. WhatsApp</label>
-      <input type="text" name="phone" required>
-
-      <label>Kata sandi</label>
-      <input type="password" name="password" required>
-
-      <button type="submit">Masuk</button>
-    </form>
-
-    <div class="links">
-      <span class="click" onclick="switchScreen('register')">Daftar </span>
-      <span class="click" onclick="switchScreen('reset-step1')">Lupa kata sandi? </span>
-    </div>
+    <a onclick="doLogout()" class="logout">Keluar</a>
   </div>
 
-  <!-- REGISTER -->
-  <div id="screen-register" class="screen">
-    <form action="/do-register" method="POST">
-      <label>Nama</label>
-      <input type="text" name="name" required>
+  <script>
+    // Tampilkan data user di dashboard
+    (function () {
+      const user = window.__AX_USER;
+      if (!user) return;
 
-      <label>No. WhatsApp</label>
-      <input type="text" name="phone" required>
+      const el = document.getElementById("welcome");
+      el.textContent = `Anda login sebagai ${user.name} (${user.phone}).`;
+    })();
+  </script>
 
-      <label>Kata sandi</label>
-      <input type="password" name="password" required>
-
-      <label>Ulangi kata sandi</label>
-      <input type="password" name="confirm_password" required>
-
-      <button type="submit">Daftar</button>
-    </form>
-
-    <div class="links">
-      <span class="click" onclick="switchScreen('login')">Masuk</span>
-    </div>
-  </div>
-
-  <!-- RESET STEP 1 -->
-  <div id="screen-reset-step1" class="screen">
-    <form id="reset-step1-form" action="/do-reset-start" method="POST">
-      <label>No. WhatsApp</label>
-      <input type="text" name="phone" required>
-
-      <button type="submit">Perbarui</button>
-    </form>
-
-    <div class="links">
-      <span class="click" onclick="switchScreen('login')">Masuk</span>
-    </div>
-  </div>
-
-  <!-- RESET STEP 2 -->
-  <div id="screen-reset-step2" class="screen">
-    <form action="/do-reset-verify" method="POST">
-      <input type="hidden" name="phone" id="reset-code-phone-hidden">
-
-      <label>No. WhatsApp</label>
-      <input type="text" id="reset-code-phone-display" disabled>
-
-      <label>Masukan kode</label>
-      <input type="text" name="reset_code" required>
-
-      <button type="submit">Verifikasi</button>
-    </form>
-
-    <div class="links">
-      <span class="click" onclick="switchScreen('reset-step1')">Ulangi</span>
-      <span class="click" onclick="switchScreen('login')">Masuk</span>
-    </div>
-  </div>
-
-  <!-- RESET STEP 3 -->
-  <div id="screen-reset-step3" class="screen">
-    <form action="/do-reset-final" method="POST">
-      <input type="hidden" name="phone" id="reset-newpass-phone-hidden">
-
-      <label>No. WhatsApp</label>
-      <input type="text" id="reset-newpass-phone-display" disabled>
-
-      <label>Kata sandi baru</label>
-      <input type="password" name="new_password" required>
-
-      <label>Ulangi kata sandi</label>
-      <input type="password" name="confirm_new_password" required>
-
-      <button type="submit">Simpan</button>
-    </form>
-
-    <div class="links">
-      <span class="click" onclick="switchScreen('login')">Masuk</span>
-    </div>
-  </div>
-
-  <script src="/login.js"></script>
 </body>
 </html>
