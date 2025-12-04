@@ -60,6 +60,25 @@ body {
   display: none;             /* default disembunyikan, JS yg munculin */
   z-index: 1200;
 }
+/* ALERT SUCCESS (Hijau) */
+.alert-success {
+  background-color: #dcfce7;
+  border-left: 4px solid #16a34a;
+  color: #166534;
+}
+
+/* ALERT ERROR (Merah muda / merah lembut) */
+.alert-error {
+  background-color: #fee2e2;
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+}
+
+/* Transition untuk fade */
+#alert {
+  transition: opacity 0.3s ease;
+}
+
 
 /* Wrapper tiap screen (login / register / reset) sebagai bottom sheet */
 .screen {
