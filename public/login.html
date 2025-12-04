@@ -7,6 +7,27 @@
   <link rel="stylesheet" href="/login.css" />
 </head>
 <body>
+
+  <!-- TOMBOL MENU (3 GARIS) -->
+  <button id="menu-toggle" class="menu-btn" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- BACKDROP GELAP SAAT MENU BUKA -->
+  <div id="menu-backdrop" class="menu-backdrop" onclick="toggleMenu()"></div>
+
+  <!-- SIDE MENU -->
+  <nav id="side-menu" class="side-menu">
+    <div class="menu-title">Menu</div>
+    <a href="#vpn" class="menu-item">Server VPN</a>
+    <a href="#contact" class="menu-item">Hubungi kami</a>
+    <a href="#group" class="menu-item">Grup</a>
+  </nav>
+
+  <div id="alert"></div>
+  <!-- lanjut struktur lama kamu di bawah sini -->
   
   <!-- Alert -->
   <div id="alert"></div>
