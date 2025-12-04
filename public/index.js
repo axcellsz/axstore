@@ -1,7 +1,11 @@
+// =======================
+// KONSTAN & HELPER UMUM
+// =======================
+
 // URL login default
 const LOGIN_URL = "/login?screen=login";
 
-/* ========= Helper kecil buat escape HTML (biar aman) ========= */
+/* Escape HTML biar aman */
 function escapeHTML(str) {
   if (!str) return "";
   return String(str)
@@ -12,7 +16,7 @@ function escapeHTML(str) {
     .replace(/'/g, "&#039;");
 }
 
-/* ========= Alert sederhana (pakai #alert yang sudah ada) ========= */
+/* ALERT sederhana pakai #alert */
 let alertTimeout = null;
 
 function showAlert(message, type = "info") {
@@ -21,7 +25,6 @@ function showAlert(message, type = "info") {
 
   box.textContent = message || "";
 
-  // styling simple, kalau mau bisa disamakan dengan login.css nanti
   box.style.display = "block";
   box.style.position = "fixed";
   box.style.top = "12px";
@@ -30,6 +33,7 @@ function showAlert(message, type = "info") {
   box.style.fontSize = "13px";
   box.style.borderRadius = "8px";
   box.style.boxShadow = "0 4px 10px rgba(0,0,0,0.15)";
+
   box.style.backgroundColor =
     type === "error" ? "#fee2e2" : type === "success" ? "#dcfce7" : "#e5e7eb";
   box.style.color =
@@ -41,7 +45,45 @@ function showAlert(message, type = "info") {
   }, 4000);
 }
 
-/* ========= Cek sesi & siapkan data global ========= */
+// ====================================
+// INIT SESI & RENDER UI DARI SESSION
+// ====================================
+
+function renderSessionUI() {
+  const session = window.__AX_USER;
+  if (!session) return;
+
+  // Teks welcome singkat di dashboard utama
+  const welcome = document.getElementById("welcome");
+  if (welcome) {
+    const uname = session.username || session.name || "(tanpa nama)";
+    const phone = session.phone || "-";
+    welcome.textContent = `Anda login sebagai ${uname} (${phone}).`;
+  }
+
+  // Isi panel profil di samping kanan
+  const info = document.getElementById("profile-info");
+  if (info) {
+    const uname = escapeHTML(session.username || session.name || "-");
+    const phone = escapeHTML(session.phone || "-");
+    const statusText = session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
+
+    info.innerHTML = `
+      <p>Username <strong>${uname}</strong></p>
+      <p>No. WhatsApp <strong>${phone}</strong></p>
+      <p>Status profil <strong>${statusText}</strong></p>
+    `;
+  }
+
+  // Inisial di tombol bulat (pojok kanan atas)
+  const avatarInitial = document.getElementById("profile-avatar-initial");
+  if (avatarInitial) {
+    const src = session.username || session.phone || "";
+    avatarInitial.textContent = src ? src.charAt(0).toUpperCase() : "P";
+  }
+}
+
+/* Cek sesi di localStorage */
 (function initSession() {
   const raw = localStorage.getItem("axstore_user");
   if (!raw) {
@@ -61,53 +103,43 @@ function showAlert(message, type = "info") {
   // simpan global
   window.__AX_USER = session;
 
-  // isi teks welcome
-  const welcome = document.getElementById("welcome");
-  if (welcome) {
-    const uname = session.username || session.name || "(tanpa nama)";
-    const phone = session.phone || "-";
-    welcome.textContent = `Anda login sebagai ${uname} (${phone}).`;
-  }
-
-  // isi ringkasan simple di dashboard
-  const summary = document.getElementById("profile-summary");
-  if (summary) {
-    const uname = escapeHTML(session.username || session.name || "-");
-    const phone = escapeHTML(session.phone || "-");
-    const statusText = session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
-
-    summary.innerHTML = `
-      <div class="profile-row">
-        <span>Username</span>
-        <strong>${uname}</strong>
-      </div>
-      <div class="profile-row">
-        <span>No. WhatsApp</span>
-        <strong>${phone}</strong>
-      </div>
-      <div class="profile-row">
-        <span>Status profil</span>
-        <strong>${statusText}</strong>
-      </div>
-    `;
-  }
-
-  // pasang event untuk tombol "Lengkapi / edit profil"
-  const btnOpen = document.getElementById("btn-open-complete-profile");
-  if (btnOpen) {
-    btnOpen.addEventListener("click", openCompleteProfile);
-  }
-
-  // (opsional) nanti di sini bisa kita panggil API untuk prefill form profil
+  // render UI berdasarkan session
+  renderSessionUI();
 })();
 
-/* ========= Fungsi untuk logout (dipakai di onclick) ========= */
+// ======================
+// LOGOUT GLOBAL
+// ======================
 window.doLogout = function () {
   localStorage.removeItem("axstore_user");
   window.location.href = LOGIN_URL;
 };
 
-/* ========= Buka / tutup screen Lengkapi Profil ========= */
+// ======================
+// PANEL PROFIL (SLIDE)
+// ======================
+
+function openProfilePanel() {
+  const panel = document.getElementById("profile-panel");
+  const backdrop = document.getElementById("profile-panel-backdrop");
+  if (!panel || !backdrop) return;
+
+  panel.classList.add("open");
+  backdrop.classList.add("show");
+}
+
+function closeProfilePanel() {
+  const panel = document.getElementById("profile-panel");
+  const backdrop = document.getElementById("profile-panel-backdrop");
+  if (!panel || !backdrop) return;
+
+  panel.classList.remove("open");
+  backdrop.classList.remove("show");
+}
+
+// ==============================
+// CARD LENGKAPI PROFIL (SCREEN)
+// ==============================
 
 function openCompleteProfile() {
   const cardDash = document.getElementById("card-dashboard");
@@ -117,7 +149,8 @@ function openCompleteProfile() {
   cardDash.style.display = "none";
   cardProfile.style.display = "block";
 
-  // (opsional) nanti di sini kita bisa isi form dari server
+  // kalau dibuka dari panel profil, panel ditutup
+  closeProfilePanel();
 }
 
 function backToDashboard() {
@@ -129,43 +162,68 @@ function backToDashboard() {
   cardDash.style.display = "block";
 }
 
-// supaya bisa dipanggil dari HTML (onclick)
+// supaya bisa dipanggil dari HTML (onclick pada tombol Batal)
 window.backToDashboard = backToDashboard;
 
-/* ========= Submit form Lengkapi Profil ========= */
+// ===============================
+// EVENT LISTENER ELEMENT2 UI
+// ===============================
+document.addEventListener("DOMContentLoaded", function () {
+  const btnProfile = document.getElementById("btn-profile");
+  const btnCloseProfile = document.getElementById("btn-close-profile");
+  const backdrop = document.getElementById("profile-panel-backdrop");
+  const btnOpenComplete = document.getElementById("btn-open-complete-profile");
 
-/* 
-  Untuk sementara, contoh ini hanya:
-  - mencegah submit default
-  - menampilkan alert "berhasil"
-  - (opsional) mengupdate flag profileCompleted di localStorage,
-    tapi TIDAK kirim ke server dulu.
+  if (btnProfile) {
+    btnProfile.addEventListener("click", openProfilePanel);
+  }
+  if (btnCloseProfile) {
+    btnCloseProfile.addEventListener("click", closeProfilePanel);
+  }
+  if (backdrop) {
+    backdrop.addEventListener("click", closeProfilePanel);
+  }
+  if (btnOpenComplete) {
+    btnOpenComplete.addEventListener("click", openCompleteProfile);
+  }
+});
 
-  Nanti kalau kamu sudah siap buat endpoint di worker (misal /api/profile/save)
-  kita tinggal ganti bagian fetch-nya.
-*/
+// ===============================
+// SUBMIT FORM LENGKAPI PROFIL
+// ===============================
+
 const formProfile = document.getElementById("form-complete-profile");
 if (formProfile) {
   formProfile.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const formData = new FormData(formProfile);
-
-    // TODO: kirim ke server pakai fetch kalau endpoint sudah ada
-    // sementara: hanya simpan flag profileCompleted di localStorage
+    // Saat ini belum kirim ke server, hanya contoh.
+    // Nanti tinggal tambahkan fetch("/api/profile/save", { method:"POST", body: formData })
 
     try {
       const raw = localStorage.getItem("axstore_user");
       if (raw) {
         const sess = JSON.parse(raw);
+
+        // tandai profil sudah lengkap (dummy)
         sess.profileCompleted = true;
+
+        // (opsional) simpan sebagian data ke session lokal
+        sess.fullName = formData.get("fullName") || sess.fullName;
+        sess.email = formData.get("email") || sess.email;
+
         localStorage.setItem("axstore_user", JSON.stringify(sess));
+        window.__AX_USER = sess;
       }
     } catch (err) {
-      // kalau gagal parse, abaikan saja
+      console.error(err);
     }
 
-    showAlert("Profil tersimpan (dummy, belum kirim ke server)", "success");
+    // update tampilan panel profil
+    renderSessionUI();
+
+    showAlert("Profil tersimpan (belum dikirim ke server)", "success");
 
     // kembali ke dashboard
     backToDashboard();
