@@ -221,3 +221,118 @@ body {
     font-size: 18px;
   }
 }
+/* ========== FLOATING PROFILE BUTTON (POJOK KANAN ATAS) ========== */
+.profile-fab {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 1100;
+
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: none;
+  background: #111827;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-fab-initial {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* ========== PANEL PROFIL SLIDE DARI KANAN ========== */
+.profile-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1200;
+
+  width: 80vw;
+  max-width: 320px;
+  height: 100vh;
+
+  background: #ffffff;
+  box-shadow: -6px 0 18px rgba(15, 23, 42, 0.18);
+  padding: 18px 16px 20px;
+  box-sizing: border-box;
+
+  transform: translateX(100%);
+  transition: transform 0.22s ease-out;
+}
+
+.profile-panel.open {
+  transform: translateX(0);
+}
+
+.profile-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.profile-panel-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.profile-panel-close {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.profile-info {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.profile-info p {
+  margin-bottom: 4px;
+}
+
+/* BACKDROP di belakang panel profil */
+.profile-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 1150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+}
+
+.profile-panel-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Tombol sekunder (outline) */
+.btn-secondary {
+  width: 100%;
+  padding: 10px 0;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+}
+.btn-secondary:active {
+  transform: scale(0.98);
+   }
