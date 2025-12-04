@@ -4,7 +4,21 @@
 document.getElementById("form-login").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const form = new FormData(e.target);
+  const formEl = e.target;
+  const form = new FormData(formEl);
+
+  const phone = (form.get("phone") || "").trim();
+  const password = (form.get("password") || "").trim();
+
+  // Validasi ringan di front-end
+  if (!phone) {
+    showAlert("Masukan No WhatsApp terlebih dahulu", "error");
+    return;
+  }
+  if (!password) {
+    showAlert("Masukan kata sandi terlebih dahulu", "error");
+    return;
+  }
 
   try {
     const res = await fetch("/api/auth/login", {
@@ -15,18 +29,21 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (data.status !== true) {
-      showAlert(data.message || "Gagal login");
+      showAlert(data.message || "Gagal login", "error");
       return;
     }
 
     // Simpan sesi ke localStorage
     localStorage.setItem("axstore_user", JSON.stringify(data.data));
 
+    // (Opsional) tampilkan notifikasi sukses sebentar
+    showAlert("Login berhasil", "success");
+
     // Ke dashboard
     window.location.href = "/index.html";
 
   } catch (err) {
-    showAlert("Terjadi kesalahan saat login");
+    showAlert("Terjadi kesalahan saat login", "error");
   }
 });
 
