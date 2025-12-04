@@ -1,3 +1,100 @@
+/* =============== HAMBURGER BUTTON (3 GARIS) =============== */
+.menu-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1100;
+
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 23, 42, 0.85); /* hitam soft */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menu-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 999px;
+  margin: 2px 0;
+}
+
+/* =============== SIDE MENU SLIDE DARI KIRI =============== */
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1200;
+
+  width: 70vw;
+  max-width: 260px;
+  height: 100vh;
+  background: #0f172a;
+  color: #e5e7eb;
+
+  padding: 18px 16px;
+  box-sizing: border-box;
+
+  transform: translateX(-100%);
+  transition: transform 0.22s ease-out;
+}
+
+/* Saat menu terbuka */
+.side-menu.open {
+  transform: translateX(0);
+}
+
+/* Title di menu */
+.side-menu .menu-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Link menu */
+.menu-item {
+  display: block;
+  padding: 10px 4px;
+  margin-bottom: 4px;
+
+  font-size: 14px;
+  color: #e5e7eb;
+  text-decoration: none;
+
+  border-radius: 8px;
+}
+
+.menu-item:active {
+  background: rgba(148, 163, 184, 0.28);
+}
+
+/* =============== BACKDROP GELAP DI BELAKANG MENU =============== */
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 1150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+}
+
+/* Saat menu terbuka, backdrop ikut aktif */
+.menu-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
 /* Reset dasar */
 * {
   box-sizing: border-box;
