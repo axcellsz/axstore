@@ -39,11 +39,14 @@
     <form id="form-login">
       <label for="login-phone">No. WhatsApp</label>
       <input
-        id="login-phone"
-        type="text"
-        name="phone"
-        autocomplete="tel"
-      />
+  id="login-phone"
+  type="tel"
+  name="phone"
+  inputmode="numeric"
+  pattern="[0-9]*"
+  autocomplete="tel"
+  placeholder=""
+/>
 
       <label for="login-password">Kata sandi</label>
       <input
@@ -70,7 +73,7 @@
       <input id="reg-name" type="text" name="name" required />
 
       <label for="reg-phone">No. WhatsApp</label>
-      <input id="reg-phone" type="text" name="phone" required />
+      <input id="reg-phone" type="number" name="phone" required />
 
       <label for="reg-pass">Kata sandi</label>
       <input id="reg-pass" type="password" name="password" required />
@@ -92,7 +95,7 @@
   <div id="screen-reset-step1" class="screen">
     <form action="/do-reset-start" method="POST">
       <label for="reset-phone">No. WhatsApp</label>
-      <input id="reset-phone" type="text" name="phone" required />
+      <input id="reset-phone" type="number" name="phone" required />
 
       <button type="submit">Lanjut</button>
 
@@ -117,7 +120,7 @@
       <label for="reset-code-input">Kode reset</label>
       <input
         id="reset-code-input"
-        type="text"
+        type="number"
         name="reset_code"
         required
       />
