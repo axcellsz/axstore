@@ -1,31 +1,35 @@
 /* =============== HAMBURGER BUTTON (3 GARIS KOTAK) =============== */
 .menu-btn {
+/* AREA TOMBOL */
+.menu-btn {
   position: fixed;
-  top: 12px;
-  left: 12px;
+  top: 14px;
+  left: 14px;
   z-index: 1100;
 
-  background: transparent;    /* hilangkan kotak */
-  border: none;               /* hilangkan border */
-  box-shadow: none;           /* hilangkan shadow */
-  padding: 8px;               /* sedikit ruang biar mudah diklik */
+  width: 32px;
+  height: 32px;
+
+  background: transparent;
+  border: none;
+  padding: 0;
 
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;   /* garis mulai dari kiri */
   justify-content: center;
-
   cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
 }
-  
-/* garis-garis di dalam kotak */
+
+/* GARIS-GARIS */
 .menu-btn span {
-  display: block;
-  width: 26px;
-  height: 4px;
-  background: #000000;                /* putih kebiruan */
-  border-radius: 999px;
-  margin: 3px 0;
+  width: 20px;     /* sedikit lebih pendek */
+  height: 2.6px;   /* tipis seperti Cloudflare */
+  background: #000;
+  border-radius: 4px;
+  margin: 3.5px 0; /* spasi antar garis */
 }
 
 /* =============== SIDE MENU SLIDE DARI KIRI =============== */
