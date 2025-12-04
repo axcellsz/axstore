@@ -5,22 +5,19 @@
   left: 16px;
   z-index: 1100;
 
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;                 /* sudut membulat seperti contoh */
-  border: 2px solid #0ea5e9;           /* garis pinggir biru tosca */
-  background: #020617;                 /* dark navy */
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+  background: transparent;    /* hilangkan kotak */
+  border: none;               /* hilangkan border */
+  box-shadow: none;           /* hilangkan shadow */
+  padding: 8px;               /* sedikit ruang biar mudah diklik */
 
   display: flex;
-  flex-direction: column;              /* <--- INI YANG PENTING */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
 
+  cursor: pointer;
+}
+  
 /* garis-garis di dalam kotak */
 .menu-btn span {
   display: block;
