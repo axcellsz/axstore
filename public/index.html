@@ -5,96 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: #f3f4f6;
-      padding: 16px;
-    }
-
-    .card {
-      padding: 24px 20px;
-      border-radius: 16px;
-      background: #ffffff;
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
-      max-width: 420px;
-      width: 100%;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 22px;
-      margin-bottom: 8px;
-      color: #111827;
-    }
-
-    p {
-      font-size: 14px;
-      color: #4b5563;
-      margin-bottom: 20px;
-    }
-
-    a.logout {
-      display: inline-block;
-      padding: 10px 18px;
-      border-radius: 999px;
-      background-color: #111827;
-      text-decoration: none;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    a.logout:hover {
-      opacity: 0.9;
-    }
-  </style>
-
-  <script>
-    (function () {
-      const LOGIN_URL = "/login?screen=login";
-
-      // Ambil sesi dari localStorage
-      const sessionRaw = localStorage.getItem("axstore_user");
-
-      if (!sessionRaw) {
-        // Tidak ada sesi, paksa ke login
-        window.location.href = LOGIN_URL;
-        return;
-      }
-
-      let user = null;
-      try {
-        user = JSON.parse(sessionRaw);
-      } catch (err) {
-        // Data rusak → hapus dan paksa login ulang
-        localStorage.removeItem("axstore_user");
-        window.location.href = LOGIN_URL;
-        return;
-      }
-
-      // Simpan user ke global agar bisa dipakai di bawah
-      window.__AX_USER = user;
-
-      window.doLogout = function () {
-        localStorage.removeItem("axstore_user");
-        window.location.href = LOGIN_URL;
-      };
-    })();
-  </script>
+  <!-- CSS terpisah -->
+  <link rel="stylesheet" href="/index.css" />
+  
+  <!-- JS terpisah -->
+  <script src="/index.js" defer></script>
 </head>
 <body>
 
@@ -104,17 +19,6 @@
 
     <a onclick="doLogout()" class="logout">Keluar</a>
   </div>
-
-  <script>
-    // Tampilkan data user di dashboard
-    (function () {
-      const user = window.__AX_USER;
-      if (!user) return;
-
-      const el = document.getElementById("welcome");
-      el.textContent = `Anda login sebagai ${user.name} (${user.phone}).`;
-    })();
-  </script>
 
 </body>
 </html>
