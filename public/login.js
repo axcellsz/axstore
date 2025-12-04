@@ -143,3 +143,22 @@ function showAlert(message, type = "error") {
     if (msg) showAlert(msg, "success");
   }
 })();
+
+function toggleMenu() {
+  const menu = document.getElementById("side-menu");
+  const backdrop = document.getElementById("menu-backdrop");
+
+  const isOpen = menu.classList.contains("open");
+
+  if (isOpen) {
+    menu.classList.remove("open");
+    backdrop.classList.remove("show");
+  } else {
+    menu.classList.add("open");
+    backdrop.classList.add("show");
+  }
+}
+
+// Biar bisa dipanggil dari HTML onclick
+window.toggleMenu = toggleMenu;
+
