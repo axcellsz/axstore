@@ -12,19 +12,35 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
       body: form,
     });
 
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      showAlert("Respon server tidak valid", "error");
+      return;
+    }
 
     if (data.status !== true) {
       showAlert(data.message || "Gagal login", "error");
       return;
     }
 
+    const userData = data.data || {};
+
+    // di sini kita pakai username, bukan name lagi
+    const sessionPayload = {
+      username: userData.username || userData.name || "",
+      phone: userData.phone || "",
+      profileCompleted: !!userData.profileCompleted,
+    };
+
     // Simpan sesi ke localStorage
-    localStorage.setItem("axstore_user", JSON.stringify(data.data));
+    localStorage.setItem("axstore_user", JSON.stringify(sessionPayload));
 
     // Ke dashboard
     window.location.href = "/index.html";
   } catch (err) {
+    console.error(err);
     showAlert("Terjadi kesalahan saat login", "error");
   }
 });
@@ -34,7 +50,9 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
 --------------------------------------------*/
 
 function hideAllScreens() {
-  document.querySelectorAll(".screen").forEach((s) => (s.style.display = "none"));
+  document
+    .querySelectorAll(".screen")
+    .forEach((s) => (s.style.display = "none"));
 }
 
 function switchScreen(screen) {
@@ -98,13 +116,17 @@ function showAlert(message, type = "error") {
   }
 
   if (screen === "reset-step2") {
-    document.getElementById("reset-code-phone-hidden").value = phone;
-    document.getElementById("reset-code-phone-display").value = phone;
+    const hidden = document.getElementById("reset-code-phone-hidden");
+    const display = document.getElementById("reset-code-phone-display");
+    if (hidden) hidden.value = phone;
+    if (display) display.value = phone;
   }
 
   if (screen === "reset-step3") {
-    document.getElementById("reset-newpass-phone-hidden").value = phone;
-    document.getElementById("reset-newpass-phone-display").value = phone;
+    const hidden2 = document.getElementById("reset-newpass-phone-hidden");
+    const display2 = document.getElementById("reset-newpass-phone-display");
+    if (hidden2) hidden2.value = phone;
+    if (display2) display2.value = phone;
   }
 
   switchScreen(screen);
@@ -124,14 +146,24 @@ function showAlert(message, type = "error") {
   // alert error/status
   if (error) {
     let msg = "";
-    if (error === "invalid_phone") msg = "Masukan No WhatsApp dengan benar";
-    else if (error === "not_registered") msg = "No WhatsApp belum terdaftar";
-    else if (error === "wrong_password") msg = "Kata sandi salah";
-    else if (error === "exists") msg = "Nomor sudah terdaftar";
-    else if (error === "pass_mismatch")
+    if (error === "invalid_phone") {
+      msg = "Masukan No WhatsApp dengan benar";
+    } else if (error === "not_registered") {
+      msg = "No WhatsApp belum terdaftar";
+    } else if (error === "wrong_password") {
+      msg = "Kata sandi salah";
+    } else if (error === "exists") {
+      msg = "Nomor sudah terdaftar";
+    } else if (error === "pass_mismatch") {
       msg = "Buat ulang kata sandi dengan benar";
-    else if (error === "code_invalid") msg = "Kode tidak sesuai";
-    else msg = "Terjadi kesalahan";
+    } else if (error === "code_invalid") {
+      msg = "Kode tidak sesuai";
+    } else if (error === "invalid_username") {
+      // dari /do-register kalau username tidak valid
+      msg = "Username tidak valid (minimal 4 karakter, tanpa spasi)";
+    } else {
+      msg = "Terjadi kesalahan";
+    }
 
     showAlert(msg, "error");
   }
@@ -144,9 +176,14 @@ function showAlert(message, type = "error") {
   }
 })();
 
+/* -----------------------------------------
+   SIDE MENU (kalau dipakai)
+--------------------------------------------*/
 function toggleMenu() {
   const menu = document.getElementById("side-menu");
   const backdrop = document.getElementById("menu-backdrop");
+
+  if (!menu || !backdrop) return;
 
   const isOpen = menu.classList.contains("open");
 
@@ -161,4 +198,3 @@ function toggleMenu() {
 
 // Biar bisa dipanggil dari HTML onclick
 window.toggleMenu = toggleMenu;
-
