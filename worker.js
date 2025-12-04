@@ -105,9 +105,143 @@ export default {
           status: true,
           message: "Login berhasil",
           data: {
-            name: user.name,
+            // username baru, fallback ke name untuk user lama
+            username: user.username || user.name || "",
             phone: user.phone,
+            profileCompleted: !!user.profileCompleted,
           },
+        });
+      }
+
+      // =================== API PROFIL (BARU) ===================
+
+      // GET /api/profile?phone=...
+      if (path === "/api/profile" && request.method === "GET") {
+        const phoneInput = url.searchParams.get("phone");
+        if (!phoneInput) {
+          return json(
+            { status: false, message: "phone query param required" },
+            400
+          );
+        }
+
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return json(
+            { status: false, message: "Format No WhatsApp tidak valid" },
+            400
+          );
+        }
+
+        const userKey = "user:" + phone;
+        const userJSON = await env.axstore_data.get(userKey);
+        if (!userJSON) {
+          return json(
+            { status: false, message: "User tidak ditemukan" },
+            404
+          );
+        }
+
+        const user = JSON.parse(userJSON);
+        delete user.passwordHash;
+
+        return json({ status: true, data: user });
+      }
+
+      // POST /api/profile/update
+      if (path === "/api/profile/update" && request.method === "POST") {
+        const body = await request.json().catch(() => null);
+        if (!body) {
+          return json(
+            { status: false, message: "Invalid JSON body" },
+            400
+          );
+        }
+
+        const phoneInput = body.phone;
+        if (!phoneInput) {
+          return json(
+            { status: false, message: "phone required" },
+            400
+          );
+        }
+
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return json(
+            { status: false, message: "Format No WhatsApp tidak valid" },
+            400
+          );
+        }
+
+        const userKey = "user:" + phone;
+        const userJSON = await env.axstore_data.get(userKey);
+        if (!userJSON) {
+          return json(
+            { status: false, message: "User tidak ditemukan" },
+            404
+          );
+        }
+
+        const user = JSON.parse(userJSON);
+
+        // Ambil field profil dari body
+        const fullName = (body.fullName || "").toString().trim();
+        const email    = (body.email || "").toString().trim();
+        const nomorXL  = (body.nomorXL || "").toString().trim();
+        const jenisKuotaRaw = (body.jenisKuota || "").toString().trim().toLowerCase();
+        const alamatRaw     = (body.alamat || "").toString().trim();
+
+        const rt        = (body.rt || "").toString().trim();
+        const rw        = (body.rw || "").toString().trim();
+        const desa      = (body.desa || "").toString().trim();
+        const kecamatan = (body.kecamatan || "").toString().trim();
+        const kabupaten = (body.kabupaten || "").toString().trim();
+        const provinsi  = (body.provinsi || "").toString().trim();
+
+        const photoUrl  = (body.photoUrl || "").toString().trim();
+
+        // Validasi jenisKuota
+        const allowedJenis = ["vpn", "akrab", "reguler"];
+        let jenisKuota = "";
+        if (allowedJenis.includes(jenisKuotaRaw)) {
+          jenisKuota = jenisKuotaRaw;
+        }
+
+        // Gabungkan alamat
+        const parts = [];
+        if (alamatRaw) parts.push(alamatRaw);
+
+        const rtRw = [];
+        if (rt) rtRw.push(`RT ${rt}`);
+        if (rw) rtRw.push(`RW ${rw}`);
+        if (rtRw.length) parts.push(rtRw.join(" / "));
+
+        if (desa)      parts.push(`Desa ${desa}`);
+        if (kecamatan) parts.push(`Kec. ${kecamatan}`);
+        if (kabupaten) parts.push(`Kab. ${kabupaten}`);
+        if (provinsi)  parts.push(provinsi);
+
+        const alamatGabungan = parts.join(", ");
+
+        // Set ke objek user
+        if (fullName) user.fullName = fullName;
+        if (email)    user.email    = email;
+        if (nomorXL)  user.nomorXL  = nomorXL;
+        if (jenisKuota) user.jenisKuota = jenisKuota;
+        if (alamatGabungan) user.alamat = alamatGabungan;
+        if (photoUrl) user.photoUrl = photoUrl;
+
+        user.profileCompleted = true;
+        user.updatedAt = new Date().toISOString();
+
+        await env.axstore_data.put(userKey, JSON.stringify(user));
+
+        delete user.passwordHash;
+        return json({
+          status: true,
+          message: "Profil berhasil diperbarui",
+          data: user,
         });
       }
 
@@ -140,7 +274,6 @@ export default {
           return json({ ok: false, message: "phone required" }, 400);
         }
 
-        // di KV kita pakai format sudah normal, jadi langsung pakai apa yang dikirim admin
         await env.axstore_data.delete("user:" + phoneRaw);
         await env.axstore_data.delete("reset:" + phoneRaw);
 
@@ -148,10 +281,7 @@ export default {
       }
 
       // GENERATE RESET CODE
-      if (
-        path === "/admin/generate-reset-code" &&
-        request.method === "POST"
-      ) {
+      if (path === "/admin/generate-reset-code" && request.method === "POST") {
         const body = await request.json();
         const phoneRaw = body.phone;
 
@@ -178,10 +308,24 @@ export default {
       // REGISTER
       if (path === "/do-register" && request.method === "POST") {
         const form = await request.formData();
-        const name = (form.get("name") || "").trim();
+
+        // field "name" di form sekarang = username
+        const usernameRaw = (form.get("name") || "").trim();
         const phoneInput = form.get("phone");
         const pwd = form.get("password") || "";
         const pwd2 = form.get("confirm_password") || "";
+
+        // VALIDASI USERNAME (tanpa spasi, minimal 4 char)
+        if (!usernameRaw) {
+          return redirect(
+            `${url.origin}/login?screen=register&error=invalid_username`
+          );
+        }
+        if (!/^[a-zA-Z0-9_.-]{4,}$/.test(usernameRaw)) {
+          return redirect(
+            `${url.origin}/login?screen=register&error=invalid_username`
+          );
+        }
 
         const phone = normalizePhone(phoneInput);
         if (!phone) {
@@ -207,10 +351,24 @@ export default {
         const pwdHash = await hashPassword(pwd);
 
         const data = {
-          name,
+          // akun dasar
+          username: usernameRaw,
+          // untuk backward compatibility, boleh juga simpan "name"
+          name: usernameRaw,
+
           phone,
           passwordHash: pwdHash,
           createdAt: new Date().toISOString(),
+
+          // profil (belum lengkap)
+          profileCompleted: false,
+
+          fullName: "",
+          email: "",
+          nomorXL: "",
+          jenisKuota: "",
+          alamat: "",
+          photoUrl: "",
         };
 
         await env.axstore_data.put(userKey, JSON.stringify(data));
@@ -241,8 +399,6 @@ export default {
           );
         }
 
-        // Di sini kamu bisa kirim WA manual, dll.
-        // Lanjut ke step kode + kasih flag wa=1 supaya front-end tahu boleh buka WA
         return redirect(
           `${url.origin}/login?screen=reset&step=code&phone=${encodeURIComponent(
             phone
