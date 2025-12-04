@@ -200,7 +200,7 @@ label {
 }
 
 /* Input hanya garis bawah tipis */
-input[type="text"],
+input[type="tel"],
 input[type="password"] {
   width: 100%;
   border: none;
