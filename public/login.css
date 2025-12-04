@@ -201,6 +201,8 @@ label {
 
 /* Input hanya garis bawah tipis */
 input[type="tel"],
+input[type="text"],
+input[type="number"],
 input[type="password"] {
   width: 100%;
   border: none;
@@ -213,7 +215,9 @@ input[type="password"] {
   transition: border-color 0.2s ease;
 }
 
+input[type="tel"]:focus,
 input[type="text"]:focus,
+input[type="number"]:focus,
 input[type="password"]:focus {
   border-bottom-color: #111827;
 }
