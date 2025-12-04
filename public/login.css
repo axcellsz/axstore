@@ -198,3 +198,18 @@ button[type="submit"]:active {
     display: none;
   }
 }
+/* LOGO WRAPPER */
+#logo-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;   /* JARAK dari atas */
+  margin-bottom: 10px; /* jarak ke judul */
+}
+
+/* LOGO IMAGE */
+#logo {
+  width: 80px;       /* bisa kamu ubah sesuai ukuran logo */
+  height: auto;
+  object-fit: contain;
+}
