@@ -1,3 +1,7 @@
+/* -----------------------------------------
+   L O G I N  (Perbaikan & peningkatan)
+------------------------------------------*/
+
 /* Reset dasar */
 * {
   box-sizing: border-box;
@@ -6,12 +10,17 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Halaman full screen, tanpa scroll */
+/* Halaman full screen
+   Catatan: izinkan scroll jika konten melebihi tinggi layar,
+   supaya form tetap bisa diakses di layar kecil. */
 html,
 body {
   width: 100%;
   height: 100%;
-  overflow: hidden;          /* cegah scroll */
+  overflow: auto;            /* izinkan scroll bila perlu */
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -21,6 +30,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  min-height: 100vh;
 }
 
 /* Judul di atas */
@@ -34,31 +44,21 @@ body {
   color: #111827;
 }
 
-/* Kalau nanti kamu pakai subtitle, bisa aktifkan ini
-#subtitle {
-  width: 100%;
-  text-align: center;
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 8px;
-}
-*/
-
 /* ALERT di pojok kanan atas */
 #alert {
   position: fixed;
   top: 12px;
   right: 12px;
-  max-width: 260px;
-  padding: 8px 10px;
+  max-width: 320px;
+  padding: 10px 12px;
   font-size: 13px;
   background-color: #fee2e2;
   color: #991b1b;
   border-left: 4px solid #ef4444;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
   display: none;             /* default disembunyikan, JS yg munculin */
-  z-index: 1000;
+  z-index: 1200;
 }
 
 /* Wrapper tiap screen (login / register / reset) sebagai bottom sheet */
@@ -78,6 +78,12 @@ body {
   box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
 
   display: none;             /* nanti yg aktif diatur lewat JS */
+
+  /* Batasi tinggi supaya tidak menutupi seluruh layar di ponsel.
+     Jika konten lebih panjang, tampilkan scrollbar di dalam sheet. */
+  max-height: calc(100vh - 72px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Default tampilan awal: login terlihat */
@@ -100,7 +106,9 @@ label {
 
 /* Input hanya garis bawah tipis */
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+input[type="tel"],
+input[type="email"] {
   width: 100%;
   border: none;
   border-bottom: 1px solid #d1d5db;
@@ -109,18 +117,24 @@ input[type="password"] {
   font-size: 14px;
   background-color: transparent;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.12s ease;
 }
 
+/* fokus jelas untuk aksesibilitas */
 input[type="text"]:focus,
-input[type="password"]:focus {
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="email"]:focus {
   border-bottom-color: #111827;
+  box-shadow: 0 2px 0 0 rgba(17,24,39,0.03) inset;
 }
 
 /* Input disabled (untuk nomor WA yang dikunci) */
-input[disabled] {
+input[disabled],
+input[readonly] {
   color: #6b7280;
   border-bottom-style: dashed;
+  background-clip: padding-box;
 }
 
 /* Tombol sepanjang input */
@@ -136,14 +150,26 @@ button[type="submit"] {
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* State hover/active */
 button[type="submit"]:hover {
-  opacity: 0.9;
+  opacity: 0.94;
 }
 
 button[type="submit"]:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
+}
+
+/* Tombol disabled */
+button[disabled],
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Link-link kecil di bawah form */
@@ -169,6 +195,10 @@ button[type="submit"]:active {
   border-bottom-color: #000000;
 }
 
+/* Small helper classes */
+.hidden { display: none !important; }
+.center { text-align: center; }
+
 /* Responsif kecil: padding agak diperkecil di hp */
 @media (max-width: 480px) {
   #title {
@@ -176,22 +206,30 @@ button[type="submit"]:active {
     padding-top: 10px;
   }
 
-.screen {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  .screen {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
 
-  margin: 0 auto;
-  width: 100%;
-  max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 480px;
 
-  background-color: transparent !important;   /* transparan total */
-  backdrop-filter: none !important;           /* pastikan tidak ada blur */
-  padding: 18px 18px 20px;
+    /* tampilan bottom sheet lebih 'native' di hp: transparan sedikit
+       dan pertahankan padding agar tidak menempel ke tepi layar */
+    background-color: #ffffff;
+    padding: 14px 14px 18px;
 
-  border-radius: 0;                            /* hapus radius */
-  box-shadow: none !important;                 /* hapus shadow */
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
 
-  display: none;
+    display: none;
+  }
+}
+
+/* kecil: pastikan elemen fokus terlihat saat navigasi keyboard */
+:focus {
+  outline: 3px solid rgba(17,24,39,0.06);
+  outline-offset: 2px;
 }
