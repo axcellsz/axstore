@@ -116,6 +116,19 @@ body {
   color: #374151;
 }
 
+/* ====== RT & RW sejajar  ====== */
+.row-2col {
+  display: flex;
+  gap: 14px;      /* jarak antar kolom */
+  width: 100%;
+}
+
+.row-2col .col {
+  flex: 1;        /* biar RT dan RW sama lebar */
+  display: flex;
+  flex-direction: column;
+}
+
 /* Input & select gaya garis bawah seperti login */
 .input {
   width: 100%;
