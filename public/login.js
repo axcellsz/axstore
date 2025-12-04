@@ -110,6 +110,7 @@ function showAlert(message) {
   }
 
   // alert error/status
+  // alert error/status
   if (error) {
     let msg = "";
     if (error === "invalid_phone") msg = "Masukan No WhatsApp dengan benar";
@@ -120,13 +121,13 @@ function showAlert(message) {
     else if (error === "code_invalid") msg = "Kode tidak sesuai";
     else msg = "Terjadi kesalahan";
 
-    showAlert(msg);
+    showAlert(msg, "error");
   }
 
   if (status && !error) {
     let msg = "";
     if (status === "registered") msg = "Pendaftaran sukses";
     else if (status === "reset_ok") msg = "Kata sandi berhasil diperbarui";
-    if (msg) showAlert(msg);
+    if (msg) showAlert(msg, "success");
   }
 })();
