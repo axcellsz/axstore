@@ -4,26 +4,12 @@
 document.getElementById("form-login").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const formEl = e.target;
-  const form = new FormData(formEl);
-
-  const phone = (form.get("phone") || "").trim();
-  const password = (form.get("password") || "").trim();
-
-  // Validasi ringan di front-end
-  if (!phone) {
-    showAlert("Masukan No WhatsApp terlebih dahulu", "error");
-    return;
-  }
-  if (!password) {
-    showAlert("Masukan kata sandi terlebih dahulu", "error");
-    return;
-  }
+  const form = new FormData(e.target);
 
   try {
     const res = await fetch("/api/auth/login", {
       method: "POST",
-      body: form
+      body: form,
     });
 
     const data = await res.json();
@@ -36,12 +22,8 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
     // Simpan sesi ke localStorage
     localStorage.setItem("axstore_user", JSON.stringify(data.data));
 
-    // (Opsional) tampilkan notifikasi sukses sebentar
-    showAlert("Login berhasil", "success");
-
     // Ke dashboard
     window.location.href = "/index.html";
-
   } catch (err) {
     showAlert("Terjadi kesalahan saat login", "error");
   }
@@ -52,18 +34,48 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
 --------------------------------------------*/
 
 function hideAllScreens() {
-  document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
+  document.querySelectorAll(".screen").forEach((s) => (s.style.display = "none"));
 }
 
 function switchScreen(screen) {
   hideAllScreens();
-  document.getElementById("screen-" + screen).style.display = "block";
+  const el = document.getElementById("screen-" + screen);
+  if (el) el.style.display = "block";
 }
 
-function showAlert(message) {
+/* ALERT dengan auto-hide & warna success/error */
+let alertTimeout = null;
+
+function showAlert(message, type = "error") {
   const alertBox = document.getElementById("alert");
+  if (!alertBox) return;
+
+  // bersihkan class lama
+  alertBox.classList.remove("alert-success", "alert-error");
+
+  // pilih warna
+  if (type === "success") {
+    alertBox.classList.add("alert-success");
+  } else {
+    alertBox.classList.add("alert-error");
+  }
+
   alertBox.textContent = message;
   alertBox.style.display = "block";
+  alertBox.style.opacity = "1";
+
+  // reset timer sebelumnya
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+  }
+
+  // auto hilang setelah 5 detik
+  alertTimeout = setTimeout(() => {
+    alertBox.style.opacity = "0";
+    setTimeout(() => {
+      alertBox.style.display = "none";
+    }, 300); // waktu fade-out
+  }, 5000);
 }
 
 // INIT dari URL
@@ -74,7 +86,7 @@ function showAlert(message) {
   const error = params.get("error");
   const status = params.get("status");
   const phone = params.get("phone") || "";
-  const waFlag = params.get("wa") || "";   // <--- flag dari worker
+  const waFlag = params.get("wa") || ""; // <--- flag dari worker
 
   let screen = "login";
 
@@ -110,14 +122,14 @@ function showAlert(message) {
   }
 
   // alert error/status
-  // alert error/status
   if (error) {
     let msg = "";
     if (error === "invalid_phone") msg = "Masukan No WhatsApp dengan benar";
     else if (error === "not_registered") msg = "No WhatsApp belum terdaftar";
     else if (error === "wrong_password") msg = "Kata sandi salah";
     else if (error === "exists") msg = "Nomor sudah terdaftar";
-    else if (error === "pass_mismatch") msg = "Buat ulang kata sandi dengan benar";
+    else if (error === "pass_mismatch")
+      msg = "Buat ulang kata sandi dengan benar";
     else if (error === "code_invalid") msg = "Kode tidak sesuai";
     else msg = "Terjadi kesalahan";
 
