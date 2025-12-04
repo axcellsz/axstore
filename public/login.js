@@ -9,13 +9,13 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
   try {
     const res = await fetch("/api/auth/login", {
       method: "POST",
-      body: form,
+      body: form
     });
 
     const data = await res.json();
 
     if (data.status !== true) {
-      showAlert(data.message || "Gagal login", "error");
+      showAlert(data.message || "Gagal login");
       return;
     }
 
@@ -24,8 +24,9 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
 
     // Ke dashboard
     window.location.href = "/index.html";
+
   } catch (err) {
-    showAlert("Terjadi kesalahan saat login", "error");
+    showAlert("Terjadi kesalahan saat login");
   }
 });
 
@@ -34,48 +35,18 @@ document.getElementById("form-login").addEventListener("submit", async (e) => {
 --------------------------------------------*/
 
 function hideAllScreens() {
-  document.querySelectorAll(".screen").forEach((s) => (s.style.display = "none"));
+  document.querySelectorAll(".screen").forEach(s => s.style.display = "none");
 }
 
 function switchScreen(screen) {
   hideAllScreens();
-  const el = document.getElementById("screen-" + screen);
-  if (el) el.style.display = "block";
+  document.getElementById("screen-" + screen).style.display = "block";
 }
 
-/* ALERT dengan auto-hide & warna success/error */
-let alertTimeout = null;
-
-function showAlert(message, type = "error") {
+function showAlert(message) {
   const alertBox = document.getElementById("alert");
-  if (!alertBox) return;
-
-  // bersihkan class lama
-  alertBox.classList.remove("alert-success", "alert-error");
-
-  // pilih warna
-  if (type === "success") {
-    alertBox.classList.add("alert-success");
-  } else {
-    alertBox.classList.add("alert-error");
-  }
-
   alertBox.textContent = message;
   alertBox.style.display = "block";
-  alertBox.style.opacity = "1";
-
-  // reset timer sebelumnya
-  if (alertTimeout) {
-    clearTimeout(alertTimeout);
-  }
-
-  // auto hilang setelah 5 detik
-  alertTimeout = setTimeout(() => {
-    alertBox.style.opacity = "0";
-    setTimeout(() => {
-      alertBox.style.display = "none";
-    }, 300); // waktu fade-out
-  }, 5000);
 }
 
 // INIT dari URL
@@ -86,7 +57,7 @@ function showAlert(message, type = "error") {
   const error = params.get("error");
   const status = params.get("status");
   const phone = params.get("phone") || "";
-  const waFlag = params.get("wa") || ""; // <--- flag dari worker
+  const waFlag = params.get("wa") || "";   // <--- flag dari worker
 
   let screen = "login";
 
@@ -128,18 +99,17 @@ function showAlert(message, type = "error") {
     else if (error === "not_registered") msg = "No WhatsApp belum terdaftar";
     else if (error === "wrong_password") msg = "Kata sandi salah";
     else if (error === "exists") msg = "Nomor sudah terdaftar";
-    else if (error === "pass_mismatch")
-      msg = "Buat ulang kata sandi dengan benar";
+    else if (error === "pass_mismatch") msg = "Buat ulang kata sandi dengan benar";
     else if (error === "code_invalid") msg = "Kode tidak sesuai";
     else msg = "Terjadi kesalahan";
 
-    showAlert(msg, "error");
+    showAlert(msg);
   }
 
   if (status && !error) {
     let msg = "";
     if (status === "registered") msg = "Pendaftaran sukses";
     else if (status === "reset_ok") msg = "Kata sandi berhasil diperbarui";
-    if (msg) showAlert(msg, "success");
+    if (msg) showAlert(msg);
   }
 })();
