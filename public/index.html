@@ -32,9 +32,8 @@
 
   <!-- CARD LENGKAPI PROFIL (ditampilkan kalau profileCompleted = false) -->
   <div class="card" id="card-complete-profile" style="display:none;">
-    <h1>Lengkapi profil</h1>
-    <p id="profile-hint">
-      Untuk menggunakan layanan, silakan lengkapi data profil terlebih dahulu.
+    <h1>Lengkapi data diri</h1>
+    <p id="profile-hint">Masukan informasi dengan benar
     </p>
 
     <form id="form-complete-profile">
@@ -60,7 +59,7 @@
       <!-- Nomor XL -->
       <label>Nomor XL (kartu data/kuota)</label>
       <input
-        type="text"
+        type="number"
         name="nomorXL"
         id="nomorXL"
         class="input"
@@ -92,12 +91,12 @@
       <div class="row-2col">
   <div class="col">
     <label>RT</label>
-    <input type="text" name="rt" id="rt" class="input" />
+    <input type="number" name="rt" id="rt" class="input" />
   </div>
 
   <div class="col">
     <label>RW</label>
-    <input type="text" name="rw" id="rw" class="input" />
+    <input type="number" name="rw" id="rw" class="input" />
   </div>
 </div>
 
@@ -144,7 +143,7 @@
       />
 
       <button type="submit" class="btn-primary" style="margin-top:12px;">
-        Simpan profil
+        Simpan
       </button>
     </form>
   </div>
