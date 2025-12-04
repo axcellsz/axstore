@@ -229,23 +229,3 @@ if (formProfile) {
     backToDashboard();
   });
 }
-.profile-btn {
-  position: fixed;
-  top: 14px;
-  right: 14px;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: #0f172a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  z-index: 1200;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-}
-
-.profile-btn:active {
-  transform: scale(0.96);
-}
