@@ -2,22 +2,155 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
   <title>Dashboard</title>
 
   <!-- CSS terpisah -->
   <link rel="stylesheet" href="/index.css" />
-  
+
   <!-- JS terpisah -->
   <script src="/index.js" defer></script>
 </head>
 <body>
 
-  <div class="card">
+  <!-- ALERT GLOBAL (optional, pakai CSS sendiri) -->
+  <div id="alert" class="alert" style="display:none;"></div>
+
+  <!-- CARD DASHBOARD UTAMA -->
+  <div class="card" id="card-dashboard">
     <h1>Halo, selamat datang!</h1>
     <p id="welcome"></p>
 
+    <!-- Contoh area info profil singkat -->
+    <div id="profile-summary"></div>
+
     <a onclick="doLogout()" class="logout">Keluar</a>
+  </div>
+
+  <!-- CARD LENGKAPI PROFIL (ditampilkan kalau profileCompleted = false) -->
+  <div class="card" id="card-complete-profile" style="display:none;">
+    <h1>Lengkapi profil</h1>
+    <p id="profile-hint">
+      Untuk menggunakan layanan, silakan lengkapi data profil terlebih dahulu.
+    </p>
+
+    <form id="form-complete-profile">
+      <!-- Nama lengkap -->
+      <label>Nama lengkap</label>
+      <input
+        type="text"
+        name="fullName"
+        id="fullName"
+        class="input"
+        required
+      />
+
+      <!-- Email -->
+      <label>Email</label>
+      <input
+        type="email"
+        name="email"
+        id="email"
+        class="input"
+      />
+
+      <!-- Nomor XL -->
+      <label>Nomor XL (kartu data/kuota)</label>
+      <input
+        type="text"
+        name="nomorXL"
+        id="nomorXL"
+        class="input"
+      />
+
+      <!-- Jenis kuota -->
+      <label>Jenis kuota</label>
+      <select
+        name="jenisKuota"
+        id="jenisKuota"
+        class="input"
+        required
+      >
+        <option value="">-- Pilih jenis kuota --</option>
+        <option value="vpn">VPN</option>
+        <option value="akrab">Akrab</option>
+        <option value="reguler">Reguler</option>
+      </select>
+
+      <!-- Alamat detail -->
+      <label>Alamat (jalan / blok / no rumah)</label>
+      <input
+        type="text"
+        name="alamat"
+        id="alamat"
+        class="input"
+      />
+
+      <label>RT</label>
+      <input
+        type="text"
+        name="rt"
+        id="rt"
+        class="input"
+      />
+
+      <label>RW</label>
+      <input
+        type="text"
+        name="rw"
+        id="rw"
+        class="input"
+      />
+
+      <label>Desa</label>
+      <input
+        type="text"
+        name="desa"
+        id="desa"
+        class="input"
+      />
+
+      <label>Kecamatan</label>
+      <input
+        type="text"
+        name="kecamatan"
+        id="kecamatan"
+        class="input"
+      />
+
+      <label>Kabupaten</label>
+      <input
+        type="text"
+        name="kabupaten"
+        id="kabupaten"
+        class="input"
+      />
+
+      <label>Provinsi</label>
+      <input
+        type="text"
+        name="provinsi"
+        id="provinsi"
+        class="input"
+      />
+
+      <!-- Photo URL sederhana (nanti bisa diganti upload beneran) -->
+      <label>Link foto profil (opsional)</label>
+      <input
+        type="url"
+        name="photoUrl"
+        id="photoUrl"
+        class="input"
+        placeholder="https://..."
+      />
+
+      <button type="submit" class="btn-primary" style="margin-top:12px;">
+        Simpan profil
+      </button>
+    </form>
   </div>
 
 </body>
