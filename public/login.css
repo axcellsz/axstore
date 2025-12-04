@@ -1,8 +1,8 @@
 /* =============== HAMBURGER BUTTON (3 GARIS KOTAK) =============== */
 .menu-btn {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 12px;
+  left: 12px;
   z-index: 1100;
 
   background: transparent;    /* hilangkan kotak */
@@ -23,7 +23,7 @@
   display: block;
   width: 26px;
   height: 4px;
-  background: #e0faff;                /* putih kebiruan */
+  background: #000000;                /* putih kebiruan */
   border-radius: 999px;
   margin: 3px 0;
 }
