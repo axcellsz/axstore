@@ -203,13 +203,13 @@ button[type="submit"]:active {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 30px;   /* JARAK dari atas */
-  margin-bottom: 10px; /* jarak ke judul */
+  margin-top: 70px;      /* TURUNKAN POSISI LOGO */
+  margin-bottom: 20px;   /* Jarak ke card registrasi/login */
 }
 
 /* LOGO IMAGE */
 #logo {
-  width: 80px;       /* bisa kamu ubah sesuai ukuran logo */
+  width: 140px;          /* PERBESAR LOGO */
   height: auto;
   object-fit: contain;
 }
