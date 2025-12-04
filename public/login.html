@@ -73,7 +73,7 @@
       <input id="reg-name" type="text" name="name" required />
 
       <label for="reg-phone">No. WhatsApp</label>
-      <input id="reg-phone" type="number" name="phone" required />
+      <input id="reg-phone" type="tel" name="phone" required />
 
       <label for="reg-pass">Kata sandi</label>
       <input id="reg-pass" type="password" name="password" required />
@@ -95,7 +95,7 @@
   <div id="screen-reset-step1" class="screen">
     <form action="/do-reset-start" method="POST">
       <label for="reset-phone">No. WhatsApp</label>
-      <input id="reset-phone" type="number" name="phone" required />
+      <input id="reset-phone" type="tel" name="phone" required />
 
       <button type="submit">Lanjut</button>
 
@@ -115,7 +115,7 @@
 
       <!-- tampilan phone yang tidak bisa diedit -->
       <label for="reset-code-phone-display">No. WhatsApp</label>
-      <input id="reset-code-phone-display" type="text" disabled />
+      <input id="reset-code-phone-display" type="number" disabled />
 
       <label for="reset-code-input">Kode reset</label>
       <input
