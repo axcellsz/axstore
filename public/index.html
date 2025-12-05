@@ -44,7 +44,7 @@
       <button id="btn-close-profile" class="profile-panel-close" type="button">×</button>
     </div>
 
-    <!-- HEADER PROFIL DALAM CARD -->
+    <!-- HEADER DALAM CARD (AVATAR + NAMA + WA) -->
     <div class="profile-header-card">
       <div class="profile-header-row">
 
@@ -87,28 +87,64 @@
       Lengkapi / edit data diri
     </button>
 
-    <!-- AREA PROFIL LENGKAP (SISA KUOTA + LINK DETAIL) -->
+    <!-- AREA PROFIL LENGKAP (MUNCUL JIKA profileCompleted = true) -->
     <div id="profile-extra" class="profile-extra">
 
       <!-- CARD SISA KUOTA -->
       <div id="profile-quota-card" class="profile-quota-card" style="display:none;">
         <div class="quota-title">Sisa kuota</div>
         <div class="quota-value">
-          <span id="quota-amount" class="quota-amount">-</span>
-          <span id="quota-exp" class="quota-exp"></span>
+          <div id="quota-amount" class="quota-amount">-</div>
+          <div id="quota-exp" class="quota-exp"></div>
         </div>
       </div>
 
-      <!-- LIST DETAIL PROFIL (HANYA TEKS "Detail profil") -->
+      <!-- DETAIL PROFIL (VIEW ONLY + TOGGLE) -->
       <div id="profile-detail-list" class="profile-detail-list" style="display:none;">
+
+        <!-- Baris judul + link -->
         <div class="detail-row">
           <div class="detail-label">Detail profil</div>
-          <div class="detail-value" id="detail-profil-text">Lihat detail lengkap</div>
+          <button
+            type="button"
+            id="detail-profil-text"
+            class="detail-link"
+          >
+            Lihat detail lengkap
+          </button>
+        </div>
+
+        <!-- Konten detail (disembunyikan dulu, toggle via JS) -->
+        <div id="profile-detail-content" style="display:none;">
+          <div class="detail-row">
+            <div class="detail-label">Nama lengkap</div>
+            <div class="detail-value" id="detail-fullName">-</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Email</div>
+            <div class="detail-value" id="detail-email">-</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Nomor XL</div>
+            <div class="detail-value" id="detail-nomorXL">-</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Jenis kuota</div>
+            <div class="detail-value" id="detail-jenisKuota">-</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Alamat</div>
+            <div class="detail-value" id="detail-alamat">-</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Status profil</div>
+            <div class="detail-value" id="info-status">-</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- TOMBOL KELUAR DI PALING BAWAH PANEL -->
+    <!-- TOMBOL KELUAR DI PALING BAWAH -->
     <button
       type="button"
       class="btn-secondary"
