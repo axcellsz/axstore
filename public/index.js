@@ -11,6 +11,22 @@ function escapeHTML(str) {
     .replace(/'/g, "&#039;");
 }
 
+/* ========= Helper format tanggal Indonesia ========= */
+function formatTanggalIndonesia(isoString) {
+  if (!isoString) return "";
+  try {
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
 /* ========= ALERT ========= */
 let alertTimeout = null;
 
@@ -161,7 +177,7 @@ window.backToDashboard = function () {
   // Load foto profil dari server
   loadProfilePhoto();
 
-  // Load detail profil lengkap dari KV
+  // Load detail profil lengkap dari KV (dan kuota)
   loadProfileDetail();
 })();
 
@@ -216,9 +232,17 @@ async function loadProfileDetail() {
     const quotaCard = document.getElementById("profile-quota-card");
     const detailList = document.getElementById("profile-detail-list");
 
-    if (u.profileCompleted) {
+    const hasProfile =
+      u.profileCompleted && u.nomorXL && u.jenisKuota;
+
+    if (hasProfile) {
       if (quotaCard) quotaCard.style.display = "block";
       if (detailList) detailList.style.display = "block";
+
+      // load kuota dari API baru
+      loadQuota().catch((err) => {
+        console.error("loadQuota error:", err);
+      });
     } else {
       if (quotaCard) quotaCard.style.display = "none";
       if (detailList) detailList.style.display = "none";
@@ -237,6 +261,61 @@ async function loadProfileDetail() {
     setValue("alamat", u.alamat);
   } catch (err) {
     console.error("loadProfileDetail error:", err);
+  }
+}
+
+/* ========= LOAD KUOTA DARI /api/kuota ========= */
+
+async function loadQuota() {
+  const user = window.__AX_USER;
+  if (!user || !user.phone) return;
+
+  const quotaCard = document.getElementById("profile-quota-card");
+  const quotaValueEl = document.getElementById("quota-value");
+  if (!quotaCard || !quotaValueEl) return;
+
+  // siapkan elemen untuk "Berlaku hingga"
+  let expEl = document.getElementById("quota-exp");
+  if (!expEl) {
+    expEl = document.createElement("div");
+    expEl.id = "quota-exp";
+    expEl.className = "quota-exp"; // boleh di-style di CSS nanti
+    quotaCard.appendChild(expEl);
+  }
+
+  // state loading
+  quotaValueEl.textContent = "Memuat...";
+  expEl.textContent = "";
+
+  try {
+    const res = await fetch(
+      "/api/kuota?phone=" + encodeURIComponent(user.phone)
+    );
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.status !== true || !data.data) {
+      throw new Error(data.message || "Gagal cek kuota");
+    }
+
+    const d = data.data;
+    const label = d.sisaKuotaLabel || "-";
+    const expIso = d.berlakuSampai || "";
+
+    quotaValueEl.textContent = label;
+
+    if (expIso) {
+      const nice = formatTanggalIndonesia(expIso);
+      expEl.textContent = nice
+        ? "Berlaku hingga: " + nice
+        : "";
+    } else {
+      expEl.textContent = "";
+    }
+  } catch (err) {
+    console.error("loadQuota error:", err);
+    quotaValueEl.textContent = "-";
+    expEl.textContent = "";
   }
 }
 
