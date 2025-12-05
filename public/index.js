@@ -81,7 +81,7 @@ window.openProfilePanel = function () {
   panel.classList.add("open");
   backdrop.classList.add("show");
 
-  // setiap kali panel dibuka, coba refresh kuota (pakai cache di worker)
+  // setiap kali panel dibuka, refresh kuota dari backend (pakai cache di worker)
   loadQuota();
 };
 
@@ -158,7 +158,7 @@ window.backToDashboard = function () {
   if (infoPhone) infoPhone.textContent = phoneSafe;
   if (infoStatus) infoStatus.textContent = statusText;
 
-  // header di samping avatar (kalau pakai id ini)
+  // header di samping avatar
   const headerUsername = document.getElementById("profile-username-top");
   const headerWa = document.getElementById("profile-whatsapp-top");
   if (headerUsername) headerUsername.textContent = unameSafe;
@@ -187,6 +187,14 @@ window.backToDashboard = function () {
   const btnOpenComplete = document.getElementById("btn-open-complete-profile");
   if (btnOpenComplete) {
     btnOpenComplete.addEventListener("click", () => {
+      if (window.openCompleteProfile) window.openCompleteProfile();
+    });
+  }
+
+  // Link "Lihat detail lengkap" di dalam panel profil
+  const detailLink = document.getElementById("detail-profil-text");
+  if (detailLink) {
+    detailLink.addEventListener("click", () => {
       if (window.openCompleteProfile) window.openCompleteProfile();
     });
   }
@@ -239,13 +247,6 @@ async function loadProfileDetail() {
       infoStatus.textContent = u.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
     }
 
-    // isi detail di panel
-    const setText = (id, value) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = value || "-";
-    };
-
-    
     // tampilkan / sembunyikan card kuota & detail list
     const quotaCard = document.getElementById("profile-quota-card");
     const detailList = document.getElementById("profile-detail-list");
