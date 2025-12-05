@@ -271,7 +271,7 @@ body {
 
   background: #ffffff;
   box-shadow: -6px 0 18px rgba(15, 23, 42, 0.18);
-  padding: 18px 16px 100px;  /* padding bawah besar untuk ruang tombol */
+  padding: 18px 16px 100px;
 
   box-sizing: border-box;
 
@@ -386,6 +386,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-top: -10px;   /* geser teks sedikit ke atas */
 }
 
 .profile-header-username {
