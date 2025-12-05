@@ -5,8 +5,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 html,
@@ -57,7 +56,7 @@ body {
 }
 
 /* ==========================
-   CARD DASHBOARD & LENGKAPI PROFIL
+   CARD DASHBOARD & FORM PROFIL
 ========================== */
 
 .card {
@@ -87,15 +86,7 @@ body {
   margin-bottom: 8px;
 }
 
-#profile-summary {
-  font-size: 13px;
-  color: #374151;
-  margin: 10px 0 16px;
-}
-
-/* ==========================
-   FORM LENGKAPI PROFIL
-========================== */
+/* ===== FORM ===== */
 
 #form-complete-profile {
   margin-top: 6px;
@@ -191,29 +182,6 @@ body {
   transform: scale(0.98);
 }
 
-/* Tombol logout versi lama (kalau masih dipakai di tempat lain) */
-.logout {
-  display: inline-block;
-  margin-top: 14px;
-  padding: 9px 18px;
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  background-color: transparent;
-  color: #111827;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.logout:hover {
-  background-color: #111827;
-  color: #ffffff;
-  border-color: #111827;
-}
-
 /* ==========================
    RESPONSIVE
 ========================== */
@@ -247,7 +215,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   cursor: pointer;
   z-index: 2000;
 
@@ -266,19 +234,19 @@ body {
 
 .profile-btn:active {
   transform: scale(0.93);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   opacity: 0.9;
 }
 
 /* ==========================
-   PANEL PROFIL SLIDE DARI KANAN
+   PANEL PROFIL SLIDE
 ========================== */
 
 .profile-panel {
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 1300;              /* LEBIH TINGGI DARI BACKDROP */
+  z-index: 1200;
 
   width: 80vw;
   max-width: 320px;
@@ -327,7 +295,7 @@ body {
 }
 
 /* ==========================
-   AVATAR + USERNAME + WHATSAPP
+   HEADER PROFIL (CARD)
 ========================== */
 
 .profile-header-card {
@@ -343,7 +311,6 @@ body {
   gap: 16px;
 }
 
-/* avatar + tombol menjadi satu kolom */
 .profile-avatar-block {
   display: flex;
   flex-direction: column;
@@ -385,7 +352,6 @@ body {
   display: none;
 }
 
-/* Tombol ubah foto kecil tepat di bawah avatar */
 #btn-change-photo {
   padding: 6px 14px;
   border-radius: 999px;
@@ -393,15 +359,12 @@ body {
   border: 1px solid #d1d5db;
   font-size: 13px;
   color: #374151;
-  width: auto;
-  min-width: 0;
 }
 
 #btn-change-photo:active {
   transform: scale(0.97);
 }
 
-/* Teks di samping avatar */
 .profile-header-text {
   flex: 1;
   display: flex;
@@ -423,7 +386,7 @@ body {
 }
 
 /* ==========================
-   EXTRA PROFIL (SISA KUOTA + DETAIL)
+   EXTRA PROFIL
 ========================== */
 
 .profile-extra {
@@ -450,7 +413,6 @@ body {
   flex-direction: column;
 }
 
-/* Angka kuota besar, hijau, bold */
 .quota-amount {
   font-size: 26px;
   font-weight: 700;
@@ -463,45 +425,45 @@ body {
   color: #6b7280;
 }
 
-/* List detail profil (garis-garis) */
+/* Detail profil baris tunggal */
 .profile-detail-list {
   border-top: 1px solid #e5e7eb;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .detail-row {
   padding: 10px 0;
   border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .detail-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #6b7280;
 }
 
-.detail-value {
-  margin-top: 2px;
+.detail-link {
   font-size: 14px;
-  font-weight: 500;
-  color: #9ca3af;
-}
-
-#detail-profil-text {
-  color: #0d6efd;
   font-weight: 600;
+  color: #0d6efd;
+  background: none;
+  border: none;
+  padding: 0;
   text-decoration: underline;
   cursor: pointer;
 }
 
 /* ==========================
-   BACKDROP DI BELAKANG PANEL PROFIL
+   BACKDROP
 ========================== */
 
 .profile-panel-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.35);
-  z-index: 1200;   /* DI BAWAH .profile-panel (1300) */
+  z-index: 1150;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease-out;
