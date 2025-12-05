@@ -46,27 +46,29 @@
 
     <!-- HEADER: FOTO + USERNAME + WHATSAPP -->
     <div class="profile-header-row">
-  <!-- BLOK AVATAR + TOMBOL -->
-  <div class="profile-avatar-block">
-    <div id="profile-avatar" class="profile-avatar">
-      <img id="profile-avatar-img" alt="Foto profil" />
-      <span id="profile-avatar-initial"></span>
+      <!-- BLOK AVATAR + TOMBOL -->
+      <div class="profile-avatar-block">
+        <div id="profile-avatar" class="profile-avatar">
+          <img id="profile-avatar-img" alt="Foto profil" />
+          <span id="profile-avatar-initial"></span>
+        </div>
+
+        <button
+          id="btn-change-photo"
+          type="button"
+        >
+          Ubah foto
+        </button>
+      </div>
+
+      <!-- TEKS DI SAMPING AVATAR -->
+      <div class="profile-header-text">
+        <div class="profile-header-username" id="info-username"></div>
+        <div class="profile-header-whatsapp">
+          WhatsApp <span id="info-phone"></span>
+        </div>
+      </div>
     </div>
-
-    <button
-      id="btn-change-photo"
-      type="button"
-    >
-      Ubah foto
-    </button>
-  </div>
-
-  <!-- TEKS DI SAMPING AVATAR -->
-  <div class="profile-header-text">
-    <div class="profile-header-username" id="profile-username-top"></div>
-    <div class="profile-header-whatsapp" id="profile-whatsapp-top"></div>
-  </div>
-</div>
 
     <!-- INPUT FILE (DISSEMBUNYIKAN, DIPICU OLEH TOMBOL DI ATAS) -->
     <input
@@ -91,7 +93,6 @@
 
       <!-- CARD SISA KUOTA (KOSONG DULU, DIISI NANTI) -->
       <div id="profile-quota-card" class="profile-quota-card" style="display:none;">
-        <!-- Contoh placeholder -->
         <div class="quota-title">Sisa kuota</div>
         <div class="quota-value" id="quota-value">-</div>
       </div>
