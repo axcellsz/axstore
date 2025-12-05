@@ -63,14 +63,12 @@
 
       <!-- TEKS DI SAMPING AVATAR -->
       <div class="profile-header-text">
-        <div class="profile-header-username" id="info-username"></div>
-        <div class="profile-header-whatsapp">
-          WhatsApp <span id="info-phone"></span>
-        </div>
+        <div class="profile-header-username" id="profile-username-top"></div>
+        <div class="profile-header-whatsapp" id="profile-whatsapp-top"></div>
       </div>
     </div>
 
-    <!-- INPUT FILE (DISSEMBUNYIKAN, DIPICU OLEH TOMBOL DI ATAS) -->
+    <!-- INPUT FILE (DISEMBUNYIKAN, DIPICU OLEH TOMBOL DI ATAS) -->
     <input
       type="file"
       accept="image/*"
@@ -91,10 +89,12 @@
     <!-- AREA PROFIL LENGKAP (MUNCUL JIKA profileCompleted = true) -->
     <div id="profile-extra" class="profile-extra">
 
-      <!-- CARD SISA KUOTA (KOSONG DULU, DIISI NANTI) -->
+      <!-- CARD SISA KUOTA -->
       <div id="profile-quota-card" class="profile-quota-card" style="display:none;">
         <div class="quota-title">Sisa kuota</div>
         <div class="quota-value" id="quota-value">-</div>
+        <!-- tambahan: masa berlaku kuota -->
+        <div class="quota-exp" id="quota-exp"></div>
       </div>
 
       <!-- LIST DETAIL PROFIL -->
@@ -121,7 +121,7 @@
         </div>
         <div class="detail-row">
           <div class="detail-label">Status profil</div>
-          <!-- pakai id lama info-status supaya JS lama tetap bisa -->
+          <!-- pakai id lama info-status supaya JS tetap bisa -->
           <div class="detail-value" id="info-status">-</div>
         </div>
       </div>
