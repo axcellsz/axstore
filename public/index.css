@@ -317,7 +317,7 @@ body {
 
 .profile-header-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   margin-bottom: 12px;
 }
@@ -385,8 +385,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  margin-top: -10px;   /* geser teks sedikit ke atas */
+  justify-content: flex-start;
+  margin-top: 18px;   /* geser teks sedikit ke atas */
 }
 
 .profile-header-username {
