@@ -392,8 +392,6 @@ body {
 }
 
 /* Tombol "Ubah foto" kecil di bawah header */
-.profile-change-photo-wrapper {
-/* Tombol ubah foto tepat di bawah avatar */
 .profile-photo-btn-wrapper {
   width: 100%;
   display: flex;
