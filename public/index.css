@@ -236,19 +236,20 @@ body {
 
 .profile-btn {
   position: fixed;
-  top: 14px;
-  right: 14px;
-  width: 46px;
-  height: 46px;
+  bottom: 24px;     /* dari bawah */
+  right: 24px;      /* dari kanan */
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  background: #0f172a;
+  background-color: #111827;
+  color: white;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   cursor: pointer;
-  z-index: 1200;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  z-index: 2000;    /* tetap di depan */
 }
 
 .profile-btn:active {
