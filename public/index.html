@@ -8,7 +8,10 @@
   />
   <title>Dashboard</title>
 
+  <!-- CSS -->
   <link rel="stylesheet" href="/index.css" />
+
+  <!-- JS -->
   <script src="/index.js" defer></script>
 </head>
 <body>
@@ -20,9 +23,10 @@
   <button
     id="profile-fab"
     class="profile-btn"
-    onclick="openProfilePanel()"
     type="button"
+    onclick="openProfilePanel()"
   >
+    <!-- Icon profil (bisa diganti inisial lewat CSS/JS kalau mau) -->
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
          stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M20 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -31,7 +35,7 @@
     </svg>
   </button>
 
-  <!-- DASHBOARD UTAMA (sederhana, tanpa detail profil) -->
+  <!-- DASHBOARD UTAMA (kosong dulu, hanya sambutan) -->
   <div class="card" id="card-dashboard">
     <h1>Halo, selamat datang!</h1>
     <p id="welcome"></p>
@@ -41,10 +45,17 @@
   <div id="profile-panel" class="profile-panel">
     <div class="profile-panel-header">
       <h2>Profil</h2>
-      <button id="btn-close-profile" class="profile-panel-close" type="button">×</button>
+      <button
+        id="btn-close-profile"
+        class="profile-panel-close"
+        type="button"
+        onclick="closeProfilePanel()"
+      >
+        ×
+      </button>
     </div>
 
-    <!-- AVATAR PROFIL -->
+    <!-- AVATAR PROFIL (foto / inisial) -->
     <div id="profile-avatar" class="profile-avatar">
       <img id="profile-avatar-img" alt="Foto profil" />
       <span id="profile-avatar-initial"></span>
@@ -68,7 +79,7 @@
       style="display:none;"
     />
 
-    <!-- INFO PROFIL (TEKS) -->
+    <!-- INFO PROFIL (TEKS SINGKAT) -->
     <div id="profile-info" class="profile-info">
       <p>Username <strong id="info-username"></strong></p>
       <p>No. WhatsApp <strong id="info-phone"></strong></p>
@@ -81,6 +92,7 @@
       class="btn-primary"
       id="btn-open-complete-profile"
       style="margin-top:16px;"
+      onclick="openCompleteProfile()"
     >
       Lengkapi / edit data diri
     </button>
@@ -97,7 +109,11 @@
   </div>
 
   <!-- BACKDROP GELAP DI BELAKANG PANEL PROFIL -->
-  <div id="profile-panel-backdrop" class="profile-panel-backdrop"></div>
+  <div
+    id="profile-panel-backdrop"
+    class="profile-panel-backdrop"
+    onclick="closeProfilePanel()"
+  ></div>
 
   <!-- CARD LENGKAPI PROFIL -->
   <div class="card" id="card-complete-profile" style="display:none;">
@@ -106,16 +122,37 @@
 
     <form id="form-complete-profile">
       <label>Nama lengkap</label>
-      <input type="text" name="fullName" id="fullName" class="input" required />
+      <input
+        type="text"
+        name="fullName"
+        id="fullName"
+        class="input"
+        required
+      />
 
       <label>Email</label>
-      <input type="email" name="email" id="email" class="input" />
+      <input
+        type="email"
+        name="email"
+        id="email"
+        class="input"
+      />
 
       <label>Nomor XL (kartu data/kuota)</label>
-      <input type="number" name="nomorXL" id="nomorXL" class="input" />
+      <input
+        type="number"
+        name="nomorXL"
+        id="nomorXL"
+        class="input"
+      />
 
       <label>Jenis kuota</label>
-      <select name="jenisKuota" id="jenisKuota" class="input" required>
+      <select
+        name="jenisKuota"
+        id="jenisKuota"
+        class="input"
+        required
+      >
         <option value="">-- Pilih jenis kuota --</option>
         <option value="vpn">VPN</option>
         <option value="akrab">Akrab</option>
@@ -123,32 +160,71 @@
       </select>
 
       <label>Alamat</label>
-      <input type="text" name="alamat" id="alamat" class="input" />
+      <input
+        type="text"
+        name="alamat"
+        id="alamat"
+        class="input"
+      />
 
       <div class="row-2col">
         <div class="col">
           <label>RT</label>
-          <input type="number" name="rt" id="rt" class="input" />
+          <input
+            type="number"
+            name="rt"
+            id="rt"
+            class="input"
+          />
         </div>
         <div class="col">
           <label>RW</label>
-          <input type="number" name="rw" id="rw" class="input" />
+          <input
+            type="number"
+            name="rw"
+            id="rw"
+            class="input"
+          />
         </div>
       </div>
 
       <label>Desa</label>
-      <input type="text" name="desa" id="desa" class="input" />
+      <input
+        type="text"
+        name="desa"
+        id="desa"
+        class="input"
+      />
 
       <label>Kecamatan</label>
-      <input type="text" name="kecamatan" id="kecamatan" class="input" />
+      <input
+        type="text"
+        name="kecamatan"
+        id="kecamatan"
+        class="input"
+      />
 
       <label>Kabupaten</label>
-      <input type="text" name="kabupaten" id="kabupaten" class="input" />
+      <input
+        type="text"
+        name="kabupaten"
+        id="kabupaten"
+        class="input"
+      />
 
       <label>Provinsi</label>
-      <input type="text" name="provinsi" id="provinsi" class="input" />
+      <input
+        type="text"
+        name="provinsi"
+        id="provinsi"
+        class="input"
+      />
 
-      <button type="submit" class="btn-primary" style="margin-top:12px;">
+      <button
+        type="submit"
+        class="btn-primary"
+        style="margin-top:12px;"
+      >
         Simpan
       </button>
 
