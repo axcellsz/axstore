@@ -17,19 +17,19 @@
   <div id="alert" class="alert" style="display:none;"></div>
 
   <!-- TOMBOL PROFILE (POJOK KANAN ATAS) -->
-  <!-- TOMBOL PROFILE (POJOK KANAN ATAS) -->
-<button
-  id="profile-fab"
-  class="profile-btn"
-  onclick="openProfilePanel()"
->
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-       stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-3-3.87"></path>
-    <path d="M4 21v-2a4 4 0 0 1 3-3.87"></path>
-    <circle cx="12" cy="7" r="4"></circle>
-  </svg>
-</button>
+  <button
+    id="profile-fab"
+    class="profile-btn"
+    onclick="openProfilePanel()"
+    type="button"
+  >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+         stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M4 21v-2a4 4 0 0 1 3-3.87"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+  </button>
 
   <!-- DASHBOARD UTAMA (sederhana, tanpa detail profil) -->
   <div class="card" id="card-dashboard">
@@ -44,10 +44,38 @@
       <button id="btn-close-profile" class="profile-panel-close" type="button">×</button>
     </div>
 
-    <div id="profile-info" class="profile-info">
-      <!-- Diisi via JS -->
+    <!-- AVATAR PROFIL -->
+    <div id="profile-avatar" class="profile-avatar">
+      <img id="profile-avatar-img" alt="Foto profil" />
+      <span id="profile-avatar-initial"></span>
     </div>
 
+    <!-- TOMBOL UBAH FOTO -->
+    <button
+      id="btn-change-photo"
+      class="btn-secondary"
+      type="button"
+      style="margin-bottom:12px;"
+    >
+      Ubah foto
+    </button>
+
+    <!-- INPUT FILE (DISSEMBUNYIKAN, DIPICU OLEH TOMBOL DI ATAS) -->
+    <input
+      type="file"
+      accept="image/*"
+      id="profile-photo-input"
+      style="display:none;"
+    />
+
+    <!-- INFO PROFIL (TEKS) -->
+    <div id="profile-info" class="profile-info">
+      <p>Username <strong id="info-username"></strong></p>
+      <p>No. WhatsApp <strong id="info-phone"></strong></p>
+      <p>Status profil <strong id="info-status"></strong></p>
+    </div>
+
+    <!-- TOMBOL KE FORM LENGKAPI PROFIL -->
     <button
       type="button"
       class="btn-primary"
@@ -57,6 +85,7 @@
       Lengkapi / edit data diri
     </button>
 
+    <!-- TOMBOL KELUAR -->
     <button
       type="button"
       class="btn-secondary"
@@ -70,7 +99,7 @@
   <!-- BACKDROP GELAP DI BELAKANG PANEL PROFIL -->
   <div id="profile-panel-backdrop" class="profile-panel-backdrop"></div>
 
-  <!-- CARD LENGKAPI PROFIL (tetap) -->
+  <!-- CARD LENGKAPI PROFIL -->
   <div class="card" id="card-complete-profile" style="display:none;">
     <h1>Lengkapi data diri</h1>
     <p id="profile-hint">Masukan informasi dengan benar</p>
