@@ -282,12 +282,18 @@ body {
 
   background: #ffffff;
   box-shadow: -6px 0 18px rgba(15, 23, 42, 0.18);
-  padding: 18px 16px 20px;
+  padding: 18px 16px 40px;  /* padding bawah diperbesar */
+
   box-sizing: border-box;
+
+  /* AGAR BISA DISCROLL SAMPAI BAWAH */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 
   transform: translateX(100%);
   transition: transform 0.22s ease-out;
 
+  /* tetap flex untuk layout */
   display: flex;
   flex-direction: column;
 }
