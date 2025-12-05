@@ -21,11 +21,9 @@ function showAlert(message, type = "info") {
   box.textContent = message || "";
 
   box.classList.remove("alert-success", "alert-error");
-  if (type === "success") {
-    box.classList.add("alert-success");
-  } else if (type === "error") {
-    box.classList.add("alert-error");
-  }
+
+  if (type === "success") box.classList.add("alert-success");
+  if (type === "error") box.classList.add("alert-error");
 
   box.style.display = "block";
   box.style.opacity = "1";
@@ -33,70 +31,49 @@ function showAlert(message, type = "info") {
   if (alertTimeout) clearTimeout(alertTimeout);
   alertTimeout = setTimeout(() => {
     box.style.opacity = "0";
-    setTimeout(() => {
-      box.style.display = "none";
-    }, 300);
+    setTimeout(() => { box.style.display = "none"; }, 300);
   }, 4000);
 }
 
 /* ========= INIT SESSION ========= */
 (function initSession() {
   const raw = localStorage.getItem("axstore_user");
-  if (!raw) {
-    window.location.href = LOGIN_URL;
-    return;
-  }
+  if (!raw) return (window.location.href = LOGIN_URL);
 
   let session;
   try {
     session = JSON.parse(raw);
-  } catch (e) {
+  } catch (err) {
     localStorage.removeItem("axstore_user");
-    window.location.href = LOGIN_URL;
-    return;
+    return (window.location.href = LOGIN_URL);
   }
 
   window.__AX_USER = session;
 
+  // welcome text
   const welcome = document.getElementById("welcome");
   if (welcome) {
-    const uname = session.username || session.name || "(tanpa nama)";
-    const phone = session.phone || "-";
-    welcome.textContent = `Anda login sebagai ${uname} (${phone}).`;
+    welcome.textContent = `Anda login sebagai ${session.username} (${session.phone}).`;
   }
 
-  // isi panel profil (teks)
-  const uname = escapeHTML(session.username || session.name || "-");
-  const phone = escapeHTML(session.phone || "-");
-  const statusText = session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
-
-  const infoUsername = document.getElementById("info-username");
-  const infoPhone = document.getElementById("info-phone");
-  const infoStatus = document.getElementById("info-status");
-
-  if (infoUsername) infoUsername.textContent = uname;
-  if (infoPhone) infoPhone.textContent = phone;
-  if (infoStatus) infoStatus.textContent = statusText;
+  // isi panel profil
+  document.getElementById("info-username").textContent = escapeHTML(session.username);
+  document.getElementById("info-phone").textContent    = escapeHTML(session.phone);
+  document.getElementById("info-status").textContent   =
+    session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
 
   // set inisial avatar
-  const initial =
-    (session.username || session.name || "?").trim().charAt(0).toUpperCase() || "?";
+  const initial = session.username?.trim()?.charAt(0)?.toUpperCase() || "?";
+  document.getElementById("profile-avatar-initial").textContent = initial;
 
-  const avatarInitial = document.getElementById("profile-avatar-initial");
-  if (avatarInitial) avatarInitial.textContent = initial;
-
-  // pasang handler ubah foto
+  // tombol & input foto profil
   const fileInput = document.getElementById("profile-photo-input");
   const btnChange = document.getElementById("btn-change-photo");
 
-  if (fileInput) {
-    fileInput.addEventListener("change", handlePhotoChange);
-  }
-  if (btnChange && fileInput) {
-    btnChange.addEventListener("click", () => fileInput.click());
-  }
+  if (btnChange) btnChange.onclick = () => fileInput.click();
+  if (fileInput) fileInput.onchange = handlePhotoChange;
 
-  // load foto profil dari server
+  // load foto dari KV
   loadProfilePhoto();
 })();
 
@@ -106,213 +83,177 @@ window.doLogout = function () {
   window.location.href = LOGIN_URL;
 };
 
-/* ========= PANEL PROFIL (SLIDE) ========= */
+/* ========= PANEL PROFIL SLIDE ========= */
 window.openProfilePanel = function () {
-  const panel = document.getElementById("profile-panel");
-  const backdrop = document.getElementById("profile-panel-backdrop");
-  if (!panel || !backdrop) return;
-
-  panel.classList.add("open");
-  backdrop.classList.add("show");
+  document.getElementById("profile-panel").classList.add("open");
+  document.getElementById("profile-panel-backdrop").classList.add("show");
 };
 
 window.closeProfilePanel = function () {
-  const panel = document.getElementById("profile-panel");
-  const backdrop = document.getElementById("profile-panel-backdrop");
-  if (!panel || !backdrop) return;
-
-  panel.classList.remove("open");
-  backdrop.classList.remove("show");
+  document.getElementById("profile-panel").classList.remove("open");
+  document.getElementById("profile-panel-backdrop").classList.remove("show");
 };
 
-/* ========= LENGKAPI PROFIL: buka/tutup card ========= */
-
+/* ========= FORM LENGKAPI PROFIL ========= */
 window.openCompleteProfile = function () {
-  const cardDash = document.getElementById("card-dashboard");
-  const cardProfile = document.getElementById("card-complete-profile");
-  if (!cardDash || !cardProfile) return;
-
-  cardDash.style.display = "none";
-  cardProfile.style.display = "block";
-
-  // panel profil ditutup supaya fokus ke form
-  window.closeProfilePanel();
+  closeProfilePanel();
+  document.getElementById("card-dashboard").style.display = "none";
+  document.getElementById("card-complete-profile").style.display = "block";
 };
 
 window.backToDashboard = function () {
-  const cardDash = document.getElementById("card-dashboard");
-  const cardProfile = document.getElementById("card-complete-profile");
-  if (!cardDash || !cardProfile) return;
-
-  cardProfile.style.display = "none";
-  cardDash.style.display = "block";
+  document.getElementById("card-complete-profile").style.display = "none";
+  document.getElementById("card-dashboard").style.display = "block";
 };
 
-/* ========= SUBMIT FORM LENGKAPI PROFIL (MASIH DUMMY) ========= */
+document.getElementById("btn-close-profile").onclick = closeProfilePanel;
 
+/* ========= SUBMIT PROFIL → /api/profile/update ========= */
 const formProfile = document.getElementById("form-complete-profile");
 if (formProfile) {
   formProfile.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // sementara: hanya set flag profileCompleted di localStorage
-    try {
-      const raw = localStorage.getItem("axstore_user");
-      if (raw) {
-        const sess = JSON.parse(raw);
-        sess.profileCompleted = true;
-        localStorage.setItem("axstore_user", JSON.stringify(sess));
-      }
-    } catch (err) {
-      // abaikan
-    }
+    const user = window.__AX_USER;
+    if (!user) return showAlert("Sesi tidak valid", "error");
 
-    showAlert("Profil tersimpan (belum dikirim ke server)", "success");
-    backToDashboard();
+    const body = {
+      phone: user.phone,
+      fullName: fullName.value.trim(),
+      email: email.value.trim(),
+      nomorXL: nomorXL.value.trim(),
+      jenisKuota: jenisKuota.value.trim(),
+      alamat: alamat.value.trim(),
+      rt: rt.value.trim(),
+      rw: rw.value.trim(),
+      desa: desa.value.trim(),
+      kecamatan: kecamatan.value.trim(),
+      kabupaten: kabupaten.value.trim(),
+      provinsi: provinsi.value.trim(),
+    };
+
+    try {
+      const res = await fetch("/api/profile/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!data.status) {
+        return showAlert(data.message || "Gagal memperbarui profil", "error");
+      }
+
+      showAlert("Profil berhasil disimpan", "success");
+
+      // update local session
+      user.profileCompleted = true;
+      localStorage.setItem("axstore_user", JSON.stringify(user));
+
+      backToDashboard();
+    } catch (err) {
+      console.error(err);
+      showAlert("Gagal terhubung ke server", "error");
+    }
   });
 }
 
 /* ========= FOTO PROFIL ========= */
 
-// load foto dari KV lewat worker
+// load foto dari KV
 async function loadProfilePhoto() {
   const user = window.__AX_USER;
-  if (!user || !user.phone) return;
+  if (!user) return;
 
   const img = document.getElementById("profile-avatar-img");
   const avatar = document.getElementById("profile-avatar");
-  if (!img || !avatar) return;
 
   avatar.classList.remove("has-photo");
 
-  img.onload = () => {
-    avatar.classList.add("has-photo");
-  };
-  img.onerror = () => {
-    avatar.classList.remove("has-photo");
-  };
+  img.onload = () => avatar.classList.add("has-photo");
+  img.onerror = () => avatar.classList.remove("has-photo");
 
-  img.src =
-    "/api/profile/photo?phone=" +
-    encodeURIComponent(user.phone) +
-    "&t=" +
-    Date.now();
+  img.src = "/api/profile/photo?phone=" + encodeURIComponent(user.phone) + "&t=" + Date.now();
 }
 
-/**
- * Kompres + resize gambar di browser
- * @param {File} file - file asli dari input
- * @param {number} maxSize - lebar/tinggi maksimal (px)
- * @returns {Promise<Blob>} - blob JPEG terkompres
- */
+/* ========= Kompres Gambar ========= */
 function compressImage(file, maxSize = 256) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
     const reader = new FileReader();
+    const img = new Image();
 
-    reader.onload = (e) => {
-      img.src = e.target.result;
-    };
-
+    reader.onload = (e) => (img.src = e.target.result);
     reader.onerror = () => reject(new Error("Gagal membaca file"));
 
     img.onload = () => {
-      const canvas = document.createElement("canvas");
       let { width, height } = img;
 
-      // hitung rasio supaya max width/height = maxSize
-      if (width > height) {
-        if (width > maxSize) {
-          height = (height * maxSize) / width;
-          width = maxSize;
-        }
-      } else {
-        if (height > maxSize) {
-          width = (width * maxSize) / height;
-          height = maxSize;
-        }
+      if (width > height && width > maxSize) {
+        height = (height * maxSize) / width;
+        width = maxSize;
+      } else if (height > width && height > maxSize) {
+        width = (width * maxSize) / height;
+        height = maxSize;
       }
 
+      const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
 
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
 
-      // export ke JPEG kualitas 0.8 (biasanya 50–200KB untuk ukuran segini)
       canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Gagal mengompres gambar"));
-          } else {
-            resolve(blob);
-          }
-        },
+        (blob) => (blob ? resolve(blob) : reject(new Error("Gagal kompres gambar"))),
         "image/jpeg",
         0.8
       );
     };
 
-    img.onerror = () => reject(new Error("Gambar tidak valid"));
-
+    img.onerror = () => reject(new Error("File gambar tidak valid"));
     reader.readAsDataURL(file);
   });
 }
 
-// event saat user pilih file foto
+/* ========= Upload Foto Profil ========= */
 async function handlePhotoChange(e) {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
+  const file = e.target.files?.[0];
+  e.target.value = "";
 
+  if (!file) return;
   if (!file.type.startsWith("image/")) {
-    showAlert("File harus gambar (jpg/png)", "error");
-    e.target.value = "";
-    return;
+    return showAlert("File harus berupa gambar", "error");
   }
 
   const user = window.__AX_USER;
-  if (!user || !user.phone) {
-    showAlert("Sesi tidak valid", "error");
-    e.target.value = "";
-    return;
-  }
+  if (!user) return showAlert("Sesi tidak valid", "error");
 
   try {
-    // resize + kompres dulu
-    const compressedBlob = await compressImage(file, 256);
+    const compressed = await compressImage(file, 256);
 
-    if (compressedBlob.size > 300 * 1024) {
-      showAlert("Setelah kompres masih >300KB, coba gambar lain", "error");
-      e.target.value = "";
-      return;
+    if (compressed.size > 300 * 1024) {
+      return showAlert("Setelah kompres masih >300KB, pilih foto lain", "error");
     }
 
     const fd = new FormData();
     fd.append("phone", user.phone);
-    fd.append("photo", compressedBlob, "avatar.jpg");
+    fd.append("photo", compressed, "avatar.jpg");
 
     const res = await fetch("/api/profile/photo", {
       method: "POST",
       body: fd,
     });
 
-    let data = {};
-    try {
-      data = await res.json();
-    } catch (err) {
-      // abaikan parsing error
-    }
-
+    const data = await res.json().catch(() => ({}));
     if (!res.ok || data.ok === false) {
-      throw new Error(data.message || "Gagal upload foto");
+      throw new Error(data.message || "Upload error");
     }
 
     showAlert("Foto profil diperbarui", "success");
     loadProfilePhoto();
   } catch (err) {
     console.error(err);
-    showAlert("Gagal mengompres / upload foto", "error");
-  } finally {
-    e.target.value = "";
+    showAlert("Gagal mengupload foto profil", "error");
   }
 }
