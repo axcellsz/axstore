@@ -81,7 +81,7 @@ window.openProfilePanel = function () {
   panel.classList.add("open");
   backdrop.classList.add("show");
 
-  // setiap kali panel dibuka, coba refresh kuota
+  // setiap kali panel dibuka, coba refresh kuota (pakai cache di worker)
   loadQuota();
 };
 
@@ -150,7 +150,7 @@ window.backToDashboard = function () {
   const phoneSafe = escapeHTML(session.phone || "-");
   const statusText = session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
 
-  // kalau masih ada id lama, tetap diisi (tidak wajib ada di HTML)
+  // id lama (kalau masih ada di HTML)
   const infoUsername = document.getElementById("info-username");
   const infoPhone = document.getElementById("info-phone");
   const infoStatus = document.getElementById("info-status");
@@ -158,7 +158,7 @@ window.backToDashboard = function () {
   if (infoPhone) infoPhone.textContent = phoneSafe;
   if (infoStatus) infoStatus.textContent = statusText;
 
-  // header baru di samping avatar
+  // header di samping avatar (kalau pakai id ini)
   const headerUsername = document.getElementById("profile-username-top");
   const headerWa = document.getElementById("profile-whatsapp-top");
   if (headerUsername) headerUsername.textContent = unameSafe;
@@ -289,18 +289,23 @@ async function loadQuota() {
   if (!user.profileCompleted) return;
 
   const quotaCard = document.getElementById("profile-quota-card");
-  const quotaValueEl = document.getElementById("quota-value");
-  const quotaTitleEl = quotaCard
-    ? quotaCard.querySelector(".quota-title")
-    : null;
-  const quotaExpEl = document.getElementById("quota-exp"); // optional, kalau nanti mau ditambah di HTML
 
-  if (!quotaCard || !quotaValueEl) return;
+  // struktur baru:
+  const amountEl = document.getElementById("quota-amount");
+  const expEl = document.getElementById("quota-exp");
+
+  // fallback ke struktur lama (satu div quota-value)
+  const legacyEl = document.getElementById("quota-value");
+
+  if (!quotaCard || (!amountEl && !legacyEl)) return;
 
   try {
-    // tampilan loading simple
-    quotaValueEl.textContent = "...";
-    if (quotaTitleEl) quotaTitleEl.textContent = "Sisa kuota";
+    // tampilan loading
+    if (amountEl) {
+      amountEl.textContent = "...";
+    } else if (legacyEl) {
+      legacyEl.textContent = "...";
+    }
 
     const res = await fetch(
       "/api/kuota?phone=" + encodeURIComponent(user.phone)
@@ -323,24 +328,33 @@ async function loadQuota() {
     }
     const remainingStr = `${numStr} ${unit}`;
 
-    quotaValueEl.textContent = remainingStr;
-
-    // kalau kamu nanti menambah <div id="quota-exp"></div> di HTML,
-    // ini akan menulis: "Berlaku hingga: 10 Desember 2025"
-    if (quotaExpEl) {
+    // isi ke elemen baru / lama
+    if (amountEl) {
+      amountEl.textContent = remainingStr;
+    } else if (legacyEl) {
       if (q.expDate) {
         const tgl = formatDateID(q.expDate);
-        quotaExpEl.textContent = `Berlaku hingga: ${tgl}`;
+        legacyEl.textContent = `${remainingStr}\nBerlaku hingga: ${tgl}`;
       } else {
-        quotaExpEl.textContent = "";
+        legacyEl.textContent = remainingStr;
+      }
+    }
+
+    // isi teks expired kalau elemen ada
+    if (expEl) {
+      if (q.expDate) {
+        const tgl = formatDateID(q.expDate);
+        expEl.textContent = `Berlaku hingga: ${tgl}`;
+      } else {
+        expEl.textContent = "";
       }
     }
 
     quotaCard.style.display = "block";
   } catch (err) {
     console.error("loadQuota error:", err);
-    quotaValueEl.textContent = "-";
-    // jangan spam alert, cukup di console
+    if (amountEl) amountEl.textContent = "-";
+    else if (legacyEl) legacyEl.textContent = "-";
   }
 }
 
