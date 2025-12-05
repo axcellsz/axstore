@@ -1,25 +1,35 @@
-/* ========================== RESET ========================== */
+/* ==========================
+   RESET & BASE
+========================== */
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
-  background: #f3f4f6;
 }
 
+/* Background & layout mirip login */
 body {
-  padding: 16px;
+  position: relative;
+  background: #f3f4f6; /* sama seperti login */
   display: flex;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 16px;
 }
 
-/* ========================== ALERT ========================== */
+/* ==========================
+   ALERT (SAMA DENGAN LOGIN)
+========================== */
+
 #alert {
   position: fixed;
   top: 12px;
@@ -28,178 +38,438 @@ body {
   padding: 8px 10px;
   font-size: 13px;
   border-radius: 8px;
-  display: none;
-  opacity: 0;
-  transition: opacity .3s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,.15);
-  z-index: 9999;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  display: none; /* default disembunyikan, JS yg munculin */
+  z-index: 1000;
+  transition: opacity 0.3s ease;
 }
 
+/* ALERT SUCCESS (Hijau) */
 #alert.alert-success {
-  background: #dcfce7;
+  background-color: #dcfce7;
   border-left: 4px solid #16a34a;
   color: #166534;
 }
 
+/* ALERT ERROR (Merah) */
 #alert.alert-error {
-  background: #fee2e2;
+  background-color: #fee2e2;
   border-left: 4px solid #ef4444;
   color: #991b1b;
 }
 
-/* ========================== CARD ========================== */
+/* ==========================
+   CARD DASHBOARD & LENGKAPI PROFIL
+========================== */
+
 .card {
   width: 100%;
   max-width: 480px;
-  margin-top: 80px;
-  padding: 18px;
-  background: #fff;
+  background-color: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 -6px 16px rgba(0,0,0,.1);
+  padding: 18px 18px 20px;
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
+  margin-top: 80px; /* mirip posisi bottom-sheet login + logo di atas */
 }
 
+/* Biar kalau hanya card profil yang tampil, jaraknya tetap enak */
+#card-complete-profile {
+  margin-top: 80px;
+}
+
+/* Judul card */
 .card h1 {
   font-size: 20px;
   font-weight: 600;
   color: #111827;
+  margin-bottom: 6px;
 }
 
-/* ========================== INPUT ========================== */
+/* Paragraf kecil */
+.card p {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+/* Ringkasan profil di dashboard (kalau nanti mau dipakai lagi) */
+#profile-summary {
+  font-size: 13px;
+  color: #374151;
+  margin: 10px 0 16px;
+}
+
+/* ==========================
+   FORM LENGKAPI PROFIL
+========================== */
+
+#form-complete-profile {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Label sama style dengan login */
+#form-complete-profile label {
+  font-size: 13px;
+  color: #374151;
+}
+
+/* ====== RT & RW sejajar  ====== */
+.row-2col {
+  display: flex;
+  gap: 14px;      /* jarak antar kolom */
+  width: 100%;
+}
+
+.row-2col .col {
+  flex: 1;        /* biar RT dan RW sama lebar */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Input & select gaya garis bawah seperti login */
 .input {
   width: 100%;
-  padding: 8px 0;
   border: none;
   border-bottom: 1px solid #d1d5db;
-  background: transparent;
-  outline: none;
+  border-radius: 0;
+  padding: 8px 0;
   font-size: 14px;
+  background-color: transparent;
+  outline: none;
+  color: #111827;
 }
 
+/* Untuk select, hilangkan border default */
+.input:where(select) {
+  background-color: transparent;
+}
+
+/* Fokus input/select */
 .input:focus {
   border-bottom-color: #111827;
 }
 
-.row-2col {
-  width: 100%;
-  display: flex;
-  gap: 14px;
+/* Placeholder */
+.input::placeholder {
+  color: #9ca3af;
 }
 
-/* ========================== BUTTON ========================== */
+/* ==========================
+   BUTTON
+========================== */
+
+/* Tombol utama (Simpan profil / edit data) – gaya mirip login */
 .btn-primary {
+  margin-top: 12px;
   width: 100%;
   padding: 10px 0;
-  background: #111827;
-  color: #fff;
   border: none;
   border-radius: 999px;
+  background-color: #111827;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
 }
 
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Tombol sekunder (outline / putih) */
 .btn-secondary {
   width: 100%;
   padding: 10px 0;
-  background: #fff;
   border-radius: 999px;
-  border: 1px solid #ccc;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
   color: #111827;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, transform 0.1s ease;
 }
 
-/* ========================== PROFILE BUTTON ========================== */
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Tombol logout lama (kalau ada di tempat lain) */
+.logout {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background-color: transparent;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.logout:hover {
+  background-color: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
+
+@media (max-width: 480px) {
+  .card {
+    margin-top: 70px;
+    padding: 16px 16px 18px;
+    border-radius: 14px;
+  }
+
+  .card h1 {
+    font-size: 18px;
+  }
+}
+
+/* ==========================
+   FLOATING PROFILE BUTTON
+========================== */
+
 .profile-btn {
   position: fixed;
   top: 14px;
   right: 14px;
   width: 46px;
   height: 46px;
-  background: #0f172a;
-  border: none;
   border-radius: 50%;
-  color: #fff;
+  background: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  cursor: pointer;
   z-index: 1200;
-  box-shadow: 0 4px 10px rgba(0,0,0,.25);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
 }
 
-/* ========================== PROFILE PANEL ========================== */
+.profile-btn:active {
+  transform: scale(0.96);
+}
+
+/* ==========================
+   PANEL PROFIL SLIDE DARI KANAN
+========================== */
+
 .profile-panel {
   position: fixed;
   top: 0;
   right: 0;
+  z-index: 1200;
+
   width: 80vw;
   max-width: 320px;
   height: 100vh;
+
   background: #ffffff;
-  padding: 18px;
+  box-shadow: -6px 0 18px rgba(15, 23, 42, 0.18);
+  padding: 18px 16px 20px;
+  box-sizing: border-box;
+
   transform: translateX(100%);
-  transition: transform .22s ease-out;
-  z-index: 1300;
+  transition: transform 0.22s ease-out;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .profile-panel.open {
   transform: translateX(0);
 }
 
-.profile-panel-close {
-  background: transparent;
-  border: none;
-  font-size: 26px;
-  cursor: pointer;
-}
-
 .profile-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
 }
 
-/* ========================== AVATAR ========================== */
-.profile-avatar {
-  width: 86px;
-  height: 86px;
-  border-radius: 50%;
-  background: #e5e7eb;
-  margin: 14px 0;
-  position: relative;
+.profile-panel-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.profile-panel-close {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+/* ==========================
+   AVATAR + USERNAME + WHATSAPP
+========================== */
+
+.profile-header-row {
   display: flex;
-  justify-content: center;
   align-items: center;
-  overflow: hidden;
+  gap: 16px;
 }
 
+/* Lingkaran foto */
+.profile-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Foto di dalam avatar */
 .profile-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: none;
+  display: none; /* default hidden, muncul kalau ada foto */
 }
 
+/* Inisial (huruf pertama) */
+.profile-avatar span {
+  font-size: 32px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Kalau ada foto, sembunyikan inisial */
 .profile-avatar.has-photo img {
   display: block;
 }
 
-.profile-avatar-initial {
-  position: absolute;
-  font-size: 34px;
-  color: #374151;
-}
-
-.profile-avatar.has-photo .profile-avatar-initial {
+.profile-avatar.has-photo span {
   display: none;
 }
 
-/* ========================== BACKDROP ========================== */
+/* Teks di samping foto */
+.profile-header-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.profile-header-username {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.profile-header-whatsapp {
+  margin-top: 2px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Tombol "Ubah foto" kecil di bawah header */
+.profile-change-photo-wrapper {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-change-photo {
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 12px;
+  color: #111827;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-change-photo:active {
+  transform: scale(0.97);
+}
+
+/* ==========================
+   EXTRA PROFIL (QUOTA + DETAIL LIST)
+========================== */
+
+.profile-extra {
+  margin-top: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Card sisa kuota (placeholder) */
+.profile-quota-card {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.profile-quota-card .quota-title {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.profile-quota-card .quota-value {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* List detail profil (garis-garis) */
+.profile-detail-list {
+  border-top: 1px solid #e5e7eb;
+}
+
+.detail-row {
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.detail-value {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* BACKDROP di belakang panel profil */
 .profile-panel-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.35);
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 1150;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .2s ease-out;
-  z-index: 1250;
+  transition: opacity 0.2s ease-out;
 }
 
 .profile-panel-backdrop.show {
