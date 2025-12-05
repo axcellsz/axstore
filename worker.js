@@ -67,7 +67,7 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
 
-      // =================== API LOGIN JSON (dipakai login.html via fetch) ===================
+      // =================== API LOGIN JSON ===================
       if (path === "/api/auth/login" && request.method === "POST") {
         const form = await request.formData();
         const phoneInput = form.get("phone");
@@ -105,7 +105,6 @@ export default {
           status: true,
           message: "Login berhasil",
           data: {
-            // username baru, fallback ke name untuk user lama
             username: user.username || user.name || "",
             phone: user.phone,
             profileCompleted: !!user.profileCompleted,
@@ -113,7 +112,7 @@ export default {
         });
       }
 
-      // =================== API PROFIL (BARU) ===================
+      // =================== API PROFIL (DATA TEXT) ===================
 
       // GET /api/profile?phone=...
       if (path === "/api/profile" && request.method === "GET") {
@@ -230,7 +229,7 @@ export default {
         if (nomorXL)  user.nomorXL  = nomorXL;
         if (jenisKuota) user.jenisKuota = jenisKuota;
         if (alamatGabungan) user.alamat = alamatGabungan;
-        if (photoUrl) user.photoUrl = photoUrl;
+        if (photoUrl) user.photoUrl = photoUrl; // opsional, kalau nanti pakai link
 
         user.profileCompleted = true;
         user.updatedAt = new Date().toISOString();
@@ -243,6 +242,86 @@ export default {
           message: "Profil berhasil diperbarui",
           data: user,
         });
+      }
+
+      // =================== API FOTO PROFIL (BARU) ===================
+
+      // GET /api/profile/photo?phone=...
+      if (path === "/api/profile/photo" && request.method === "GET") {
+        const phoneInput = url.searchParams.get("phone");
+        if (!phoneInput) {
+          return new Response("phone query param required", { status: 400 });
+        }
+
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return new Response("Format No WhatsApp tidak valid", { status: 400 });
+        }
+
+        const photoKey = "photo:" + phone;
+        const arrayBuffer = await env.axstore_data.get(photoKey, "arrayBuffer");
+
+        if (!arrayBuffer) {
+          return new Response("Not found", { status: 404 });
+        }
+
+        return new Response(arrayBuffer, {
+          status: 200,
+          headers: {
+            "Content-Type": "image/jpeg",
+            "Cache-Control": "no-store",
+          },
+        });
+      }
+
+      // POST /api/profile/photo  (upload foto terkompres)
+      if (path === "/api/profile/photo" && request.method === "POST") {
+        const form = await request.formData();
+        const phoneInput = form.get("phone");
+        const file = form.get("photo");
+
+        if (!phoneInput || !file) {
+          return json(
+            { ok: false, message: "phone dan photo wajib diisi" },
+            400
+          );
+        }
+
+        const phone = normalizePhone(phoneInput.toString());
+        if (!phone) {
+          return json(
+            { ok: false, message: "Format No WhatsApp tidak valid" },
+            400
+          );
+        }
+
+        // file dari browser sudah dikompres (JPEG kecil)
+        // tapi tetap batasi di sisi server
+        const arrayBuffer = await file.arrayBuffer();
+        if (arrayBuffer.byteLength > 500 * 1024) {
+          return json(
+            { ok: false, message: "Ukuran foto terlalu besar (>500KB)" },
+            400
+          );
+        }
+
+        const photoKey = "photo:" + phone;
+        await env.axstore_data.put(photoKey, arrayBuffer);
+
+        // opsional: set flag hasPhoto di user
+        const userKey = "user:" + phone;
+        const userJSON = await env.axstore_data.get(userKey);
+        if (userJSON) {
+          try {
+            const user = JSON.parse(userJSON);
+            user.hasPhoto = true;
+            await env.axstore_data.put(userKey, JSON.stringify(user));
+          } catch (e) {
+            // abaikan kalau error parsing
+          }
+        }
+
+        return json({ ok: true, message: "Foto profil tersimpan" });
       }
 
       // =================== ADMIN API ===================
@@ -276,6 +355,7 @@ export default {
 
         await env.axstore_data.delete("user:" + phoneRaw);
         await env.axstore_data.delete("reset:" + phoneRaw);
+        await env.axstore_data.delete("photo:" + phoneRaw);
 
         return json({ ok: true, message: "User deleted" });
       }
@@ -351,24 +431,20 @@ export default {
         const pwdHash = await hashPassword(pwd);
 
         const data = {
-          // akun dasar
           username: usernameRaw,
-          // untuk backward compatibility, boleh juga simpan "name"
-          name: usernameRaw,
-
+          name: usernameRaw, // kompatibel lama
           phone,
           passwordHash: pwdHash,
           createdAt: new Date().toISOString(),
 
-          // profil (belum lengkap)
           profileCompleted: false,
-
           fullName: "",
           email: "",
           nomorXL: "",
           jenisKuota: "",
           alamat: "",
           photoUrl: "",
+          hasPhoto: false,
         };
 
         await env.axstore_data.put(userKey, JSON.stringify(data));
@@ -494,7 +570,7 @@ export default {
         return redirect(`${url.origin}/login?screen=login`);
       }
 
-      // =================== STATIC ASSETS (HTML, CSS, JS, dll) ===================
+      // =================== STATIC ASSETS ===================
       if (env.ASSETS) {
         return env.ASSETS.fetch(request);
       }
