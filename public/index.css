@@ -315,6 +315,14 @@ body {
    AVATAR + USERNAME + WHATSAPP
 ========================== */
 
+/* CARD UNTUK HEADER PROFIL */
+.profile-header-card {
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 16px 14px;
+  margin-bottom: 16px;
+}
+
 .profile-header-row {
   display: flex;
   align-items: flex-start;
