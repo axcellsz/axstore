@@ -27,7 +27,7 @@ body {
 }
 
 /* ==========================
-   ALERT (SAMA DENGAN LOGIN)
+   ALERT
 ========================== */
 
 #alert {
@@ -247,30 +247,26 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   z-index: 2000;
 
-  /* hilangkan highlight & outline */
   outline: none;
   -webkit-tap-highlight-color: transparent;
 
-  /* animasi halus */
   transition:
     transform 0.12s ease-out,
     box-shadow 0.12s ease-out,
     opacity 0.12s ease-out;
 }
 
-/* hilangkan outline saat focus (via keyboard) */
 .profile-btn:focus {
   outline: none;
 }
 
-/* efek saat ditekan: sedikit mengecil + shadow berkurang */
 .profile-btn:active {
   transform: scale(0.93);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   opacity: 0.9;
 }
 
@@ -282,7 +278,7 @@ body {
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 1200;
+  z-index: 1300;              /* LEBIH TINGGI DARI BACKDROP */
 
   width: 80vw;
   max-width: 320px;
@@ -334,7 +330,6 @@ body {
    AVATAR + USERNAME + WHATSAPP
 ========================== */
 
-/* CARD UNTUK HEADER PROFIL */
 .profile-header-card {
   background: #f9fafb;
   border-radius: 16px;
@@ -346,7 +341,6 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  margin-bottom: 12px;
 }
 
 /* avatar + tombol menjadi satu kolom */
@@ -413,7 +407,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  margin-top: 18px;   /* geser teks sedikit ke atas */
+  margin-top: 18px;
 }
 
 .profile-header-username {
@@ -450,16 +444,29 @@ body {
   color: #6b7280;
 }
 
-.profile-quota-card .quota-value {
+.quota-value {
   margin-top: 4px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Angka kuota besar, hijau, bold */
+.quota-amount {
+  font-size: 26px;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.quota-exp {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #6b7280;
 }
 
 /* List detail profil (garis-garis) */
 .profile-detail-list {
   border-top: 1px solid #e5e7eb;
+  margin-top: 12px;
 }
 
 .detail-row {
@@ -476,15 +483,24 @@ body {
   margin-top: 2px;
   font-size: 14px;
   font-weight: 500;
-  color: #9CA3AF;
+  color: #9ca3af;
 }
 
-/* BACKDROP di belakang panel profil */
+#detail-profil-text {
+  color: #0d6efd;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* ==========================
+   BACKDROP DI BELAKANG PANEL PROFIL
+========================== */
+
 .profile-panel-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.35);
-  z-index: 1150;
+  z-index: 1200;   /* DI BAWAH .profile-panel (1300) */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease-out;
@@ -493,28 +509,4 @@ body {
 .profile-panel-backdrop.show {
   opacity: 1;
   pointer-events: auto;
-}
-
-.quota-value {
-  display: flex;
-  flex-direction: column;
-}
-
-.quota-exp {
-  margin-top: 4px;
-  font-size: 13px;
-  color: #6b7280;
-}
-
-/* Angka kuota besar, hijau, bold */
-.quota-amount {
-  font-size: 26px;
-  font-weight: 700;
-  color: #16a34a; /* Hijau */
-  display: block;
-}
-#detail-profil-text {
-  color: #0d6efd;
-  font-weight: 600;
-  text-decoration: underline;
 }
