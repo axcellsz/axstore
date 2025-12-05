@@ -245,12 +245,7 @@ async function loadProfileDetail() {
       if (el) el.textContent = value || "-";
     };
 
-    setText("detail-fullName", u.fullName);
-    setText("detail-email", u.email);
-    setText("detail-nomorXL", u.nomorXL);
-    setText("detail-jenisKuota", u.jenisKuota);
-    setText("detail-alamat", u.alamat);
-
+    
     // tampilkan / sembunyikan card kuota & detail list
     const quotaCard = document.getElementById("profile-quota-card");
     const detailList = document.getElementById("profile-detail-list");
