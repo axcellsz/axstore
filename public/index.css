@@ -331,6 +331,13 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-bottom: 12px;
+}
+
+.profile-avatar-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* <-- ini yang bikin tombol center ke avatar */
 }
 
 /* Lingkaran foto */
@@ -345,7 +352,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 4px;
 }
+
+#btn-change-photo {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  color: #374151;
+  width: auto;           /* jangan full width */
+  min-width: 0;
+}
+
 
 /* Foto di dalam avatar */
 .profile-avatar img {
@@ -367,9 +387,6 @@ body {
   display: block;
 }
 
-.profile-avatar {
-  margin-bottom: 8px;   /* Tambahan ruang agar tombol jauh dari foto */
-}
 /* Teks di samping foto */
 .profile-header-text {
   flex: 1;
