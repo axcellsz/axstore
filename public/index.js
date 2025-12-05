@@ -39,6 +39,54 @@ function showAlert(message, type = "info") {
   }, 4000);
 }
 
+/* ========= LOGOUT ========= */
+window.doLogout = function () {
+  localStorage.removeItem("axstore_user");
+  window.location.href = LOGIN_URL;
+};
+
+/* ========= PANEL PROFIL (SLIDE) ========= */
+window.openProfilePanel = function () {
+  const panel = document.getElementById("profile-panel");
+  const backdrop = document.getElementById("profile-panel-backdrop");
+  if (!panel || !backdrop) return;
+
+  panel.classList.add("open");
+  backdrop.classList.add("show");
+};
+
+window.closeProfilePanel = function () {
+  const panel = document.getElementById("profile-panel");
+  const backdrop = document.getElementById("profile-panel-backdrop");
+  if (!panel || !backdrop) return;
+
+  panel.classList.remove("open");
+  backdrop.classList.remove("show");
+};
+
+/* ========= LENGKAPI PROFIL: buka/tutup card ========= */
+
+window.openCompleteProfile = function () {
+  const cardDash = document.getElementById("card-dashboard");
+  const cardProfile = document.getElementById("card-complete-profile");
+  if (!cardDash || !cardProfile) return;
+
+  cardDash.style.display = "none";
+  cardProfile.style.display = "block";
+
+  // panel profil ditutup supaya fokus ke form
+  window.closeProfilePanel();
+};
+
+window.backToDashboard = function () {
+  const cardDash = document.getElementById("card-dashboard");
+  const cardProfile = document.getElementById("card-complete-profile");
+  if (!cardDash || !cardProfile) return;
+
+  cardProfile.style.display = "none";
+  cardDash.style.display = "block";
+};
+
 /* ========= INIT SESSION ========= */
 (function initSession() {
   const raw = localStorage.getItem("axstore_user");
@@ -99,14 +147,16 @@ function showAlert(message, type = "info") {
   // Tombol buka form lengkapi profil
   const btnOpenComplete = document.getElementById("btn-open-complete-profile");
   if (btnOpenComplete) {
-    btnOpenComplete.addEventListener("click", openCompleteProfile);
+    btnOpenComplete.addEventListener("click", () => {
+      if (window.openCompleteProfile) window.openCompleteProfile();
+    });
   }
 
   // Tombol tutup panel profil + backdrop
   const closeBtn = document.getElementById("btn-close-profile");
   const backdrop = document.getElementById("profile-panel-backdrop");
-  if (closeBtn) closeBtn.addEventListener("click", closeProfilePanel);
-  if (backdrop) backdrop.addEventListener("click", closeProfilePanel);
+  if (closeBtn) closeBtn.addEventListener("click", () => window.closeProfilePanel());
+  if (backdrop) backdrop.addEventListener("click", () => window.closeProfilePanel());
 
   // Load foto profil dari server
   loadProfilePhoto();
@@ -114,54 +164,6 @@ function showAlert(message, type = "info") {
   // Load detail profil lengkap dari KV
   loadProfileDetail();
 })();
-
-/* ========= LOGOUT ========= */
-window.doLogout = function () {
-  localStorage.removeItem("axstore_user");
-  window.location.href = LOGIN_URL;
-};
-
-/* ========= PANEL PROFIL (SLIDE) ========= */
-window.openProfilePanel = function () {
-  const panel = document.getElementById("profile-panel");
-  const backdrop = document.getElementById("profile-panel-backdrop");
-  if (!panel || !backdrop) return;
-
-  panel.classList.add("open");
-  backdrop.classList.add("show");
-};
-
-window.closeProfilePanel = function () {
-  const panel = document.getElementById("profile-panel");
-  const backdrop = document.getElementById("profile-panel-backdrop");
-  if (!panel || !backdrop) return;
-
-  panel.classList.remove("open");
-  backdrop.classList.remove("show");
-};
-
-/* ========= LENGKAPI PROFIL: buka/tutup card ========= */
-
-window.openCompleteProfile = function () {
-  const cardDash = document.getElementById("card-dashboard");
-  const cardProfile = document.getElementById("card-complete-profile");
-  if (!cardDash || !cardProfile) return;
-
-  cardDash.style.display = "none";
-  cardProfile.style.display = "block";
-
-  // panel profil ditutup supaya fokus ke form
-  window.closeProfilePanel();
-};
-
-window.backToDashboard = function () {
-  const cardDash = document.getElementById("card-dashboard");
-  const cardProfile = document.getElementById("card-complete-profile");
-  if (!cardDash || !cardProfile) return;
-
-  cardProfile.style.display = "none";
-  cardDash.style.display = "block";
-};
 
 /* ========= LOAD DETAIL PROFIL DARI KV ========= */
 
@@ -198,7 +200,7 @@ async function loadProfileDetail() {
       infoStatus.textContent = u.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
     }
 
-    // isi detail di panel (label kecil, value besar)
+    // isi detail di panel
     const setText = (id, value) => {
       const el = document.getElementById(id);
       if (el) el.textContent = value || "-";
@@ -233,13 +235,8 @@ async function loadProfileDetail() {
     setValue("nomorXL", u.nomorXL);
     setValue("jenisKuota", u.jenisKuota);
     setValue("alamat", u.alamat);
-
-    // RT/RW/Desa/dll saat ini disimpan digabung di "alamat" saja di KV,
-    // jadi di form kita biarkan kosong dulu (user bisa isi ulang kalau mau).
-
   } catch (err) {
     console.error("loadProfileDetail error:", err);
-    // tidak perlu alert biar tidak mengganggu
   }
 }
 
@@ -296,7 +293,6 @@ if (formProfile) {
 
       showAlert("Profil berhasil disimpan", "success");
 
-      // refresh detail di panel + kembali ke dashboard
       await loadProfileDetail();
       backToDashboard();
     } catch (err) {
@@ -354,7 +350,6 @@ function compressImage(file, maxSize = 256) {
       const canvas = document.createElement("canvas");
       let { width, height } = img;
 
-      // hitung rasio supaya max width/height = maxSize
       if (width > height) {
         if (width > maxSize) {
           height = (height * maxSize) / width;
@@ -373,7 +368,6 @@ function compressImage(file, maxSize = 256) {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
 
-      // export ke JPEG kualitas 0.8 (biasanya 50–200KB untuk ukuran segini)
       canvas.toBlob(
         (blob) => {
           if (!blob) {
@@ -412,7 +406,6 @@ async function handlePhotoChange(e) {
   }
 
   try {
-    // resize + kompres dulu
     const compressedBlob = await compressImage(file, 256);
 
     if (compressedBlob.size > 300 * 1024) {
@@ -433,9 +426,7 @@ async function handlePhotoChange(e) {
     let data = {};
     try {
       data = await res.json();
-    } catch (err) {
-      // abaikan parsing error
-    }
+    } catch (err) {}
 
     if (!res.ok || data.ok === false) {
       throw new Error(data.message || "Gagal upload foto");
