@@ -18,7 +18,7 @@ body {
 /* Background & layout mirip login */
 body {
   position: relative;
-  background: #f3f4f6; /* sama seperti login */
+  background: #f3f4f6;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,19 +39,17 @@ body {
   font-size: 13px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  display: none; /* default disembunyikan, JS yg munculin */
+  display: none;
   z-index: 1000;
   transition: opacity 0.3s ease;
 }
 
-/* ALERT SUCCESS (Hijau) */
 #alert.alert-success {
   background-color: #dcfce7;
   border-left: 4px solid #16a34a;
   color: #166534;
 }
 
-/* ALERT ERROR (Merah) */
 #alert.alert-error {
   background-color: #fee2e2;
   border-left: 4px solid #ef4444;
@@ -69,15 +67,13 @@ body {
   border-radius: 16px;
   padding: 18px 18px 20px;
   box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
-  margin-top: 80px; /* mirip posisi bottom-sheet login + logo di atas */
+  margin-top: 80px;
 }
 
-/* Biar kalau hanya card profil yang tampil, jaraknya tetap enak */
 #card-complete-profile {
   margin-top: 80px;
 }
 
-/* Judul card */
 .card h1 {
   font-size: 20px;
   font-weight: 600;
@@ -85,14 +81,12 @@ body {
   margin-bottom: 6px;
 }
 
-/* Paragraf kecil */
 .card p {
   font-size: 13px;
   color: #6b7280;
   margin-bottom: 8px;
 }
 
-/* Ringkasan profil di dashboard (kalau nanti mau dipakai lagi) */
 #profile-summary {
   font-size: 13px;
   color: #374151;
@@ -110,26 +104,25 @@ body {
   gap: 10px;
 }
 
-/* Label sama style dengan login */
 #form-complete-profile label {
   font-size: 13px;
   color: #374151;
 }
 
-/* ====== RT & RW sejajar  ====== */
+/* RT & RW sejajar  */
 .row-2col {
   display: flex;
-  gap: 14px;      /* jarak antar kolom */
+  gap: 14px;
   width: 100%;
 }
 
 .row-2col .col {
-  flex: 1;        /* biar RT dan RW sama lebar */
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* Input & select gaya garis bawah seperti login */
+/* Input & select garis bawah */
 .input {
   width: 100%;
   border: none;
@@ -142,17 +135,14 @@ body {
   color: #111827;
 }
 
-/* Untuk select, hilangkan border default */
 .input:where(select) {
   background-color: transparent;
 }
 
-/* Fokus input/select */
 .input:focus {
   border-bottom-color: #111827;
 }
 
-/* Placeholder */
 .input::placeholder {
   color: #9ca3af;
 }
@@ -161,7 +151,6 @@ body {
    BUTTON
 ========================== */
 
-/* Tombol utama (Simpan profil / edit data) – gaya mirip login */
 .btn-primary {
   margin-top: 12px;
   width: 100%;
@@ -184,7 +173,6 @@ body {
   transform: scale(0.98);
 }
 
-/* Tombol sekunder (outline / putih) */
 .btn-secondary {
   width: 100%;
   padding: 10px 0;
@@ -203,7 +191,7 @@ body {
   transform: scale(0.98);
 }
 
-/* Tombol logout lama (kalau ada di tempat lain) */
+/* Tombol logout versi lama (kalau masih dipakai di tempat lain) */
 .logout {
   display: inline-block;
   margin-top: 14px;
@@ -216,7 +204,8 @@ body {
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .logout:hover {
@@ -259,7 +248,7 @@ body {
   border: none;
   cursor: pointer;
   z-index: 1200;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .profile-btn:active {
@@ -282,12 +271,11 @@ body {
 
   background: #ffffff;
   box-shadow: -6px 0 18px rgba(15, 23, 42, 0.18);
-  padding: 18px 16px 100px;  /* <- padding bawah BESAR supaya tombol tidak ketutup */
+  padding: 18px 16px 100px;  /* padding bawah besar untuk ruang tombol */
 
   box-sizing: border-box;
 
-  /* scroll vertikal penuh */
-  overflow-y: scroll;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
   transform: translateX(100%);
@@ -334,13 +322,13 @@ body {
   margin-bottom: 12px;
 }
 
+/* avatar + tombol menjadi satu kolom */
 .profile-avatar-block {
   display: flex;
   flex-direction: column;
-  align-items: center;   /* <-- ini yang bikin tombol center ke avatar */
+  align-items: center;
 }
 
-/* Lingkaran foto */
 .profile-avatar {
   width: 96px;
   height: 96px;
@@ -352,42 +340,47 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-#btn-change-photo {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid #d1d5db;
-  font-size: 13px;
-  color: #374151;
-  width: auto;           /* jangan full width */
-  min-width: 0;
-}
-
-
-/* Foto di dalam avatar */
 .profile-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: none; /* default hidden, muncul kalau ada foto */
+  display: none;
 }
 
-/* Inisial (huruf pertama) */
 .profile-avatar span {
   font-size: 32px;
   font-weight: 600;
   color: #111827;
 }
 
-/* Kalau ada foto, sembunyikan inisial */
 .profile-avatar.has-photo img {
   display: block;
 }
 
-/* Teks di samping foto */
+.profile-avatar.has-photo span {
+  display: none;
+}
+
+/* Tombol ubah foto kecil tepat di bawah avatar */
+#btn-change-photo {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  color: #374151;
+  width: auto;
+  min-width: 0;
+}
+
+#btn-change-photo:active {
+  transform: scale(0.97);
+}
+
+/* Teks di samping avatar */
 .profile-header-text {
   flex: 1;
   display: flex;
@@ -407,39 +400,16 @@ body {
   color: #6b7280;
 }
 
-/* Tombol "Ubah foto" kecil di bawah header */
-.profile-photo-btn-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  
-  margin-top: 8px;          /* Jarak ideal dari bawah foto */
-  margin-bottom: 20px;      /* Ruang ke tombol berikut */
-}
-
-#btn-change-photo {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid #d1d5db;
-  font-size: 13px;
-  color: #374151;
-}
-#btn-change-photo:active {
-  transform: scale(0.97);
-}
-
 /* ==========================
-   EXTRA PROFIL (QUOTA + DETAIL LIST)
+   EXTRA PROFIL (SISA KUOTA + DETAIL)
 ========================== */
 
 .profile-extra {
   margin-top: 20px;
   flex: 1;
-  overflow-y: auto;
 }
 
-/* Card sisa kuota (placeholder) */
+/* Card sisa kuota */
 .profile-quota-card {
   background: #f9fafb;
   border-radius: 12px;
