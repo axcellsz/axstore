@@ -39,13 +39,15 @@
 
   <!-- PANEL SLIDE PROFIL DARI KANAN -->
   <div id="profile-panel" class="profile-panel">
-    <div class="profile-panel-header">
-      <h2>Profil</h2>
-      <button id="btn-close-profile" class="profile-panel-close" type="button">×</button>
-    </div>
+  <div class="profile-panel-header">
+    <h2>Profil</h2>
+    <button id="btn-close-profile" class="profile-panel-close" type="button">×</button>
+  </div>
 
-    <!-- HEADER: FOTO + USERNAME + WHATSAPP -->
+  <!-- HEADER DALAM CARD -->
+  <div class="profile-header-card">
     <div class="profile-header-row">
+
       <!-- BLOK AVATAR + TOMBOL -->
       <div class="profile-avatar-block">
         <div id="profile-avatar" class="profile-avatar">
@@ -53,10 +55,7 @@
           <span id="profile-avatar-initial"></span>
         </div>
 
-        <button
-          id="btn-change-photo"
-          type="button"
-        >
+        <button id="btn-change-photo" type="button">
           Ubah foto
         </button>
       </div>
@@ -66,7 +65,9 @@
         <div class="profile-header-username" id="profile-username-top"></div>
         <div class="profile-header-whatsapp" id="profile-whatsapp-top"></div>
       </div>
+
     </div>
+  </div>
 
     <!-- INPUT FILE (DISEMBUNYIKAN, DIPICU OLEH TOMBOL DI ATAS) -->
     <input
