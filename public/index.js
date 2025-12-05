@@ -12,19 +12,30 @@ function escapeHTML(str) {
 }
 
 /* ========= Helper format tanggal Indonesia ========= */
-function formatTanggalIndonesia(isoString) {
+function formatDateID(isoString) {
   if (!isoString) return "";
-  try {
-    const d = new Date(isoString);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  } catch {
-    return "";
-  }
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return isoString;
+
+  const bulan = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+
+  const day = d.getDate();
+  const monthName = bulan[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day} ${monthName} ${year}`;
 }
 
 /* ========= ALERT ========= */
@@ -69,6 +80,9 @@ window.openProfilePanel = function () {
 
   panel.classList.add("open");
   backdrop.classList.add("show");
+
+  // setiap kali panel dibuka, coba refresh kuota
+  loadQuota();
 };
 
 window.closeProfilePanel = function () {
@@ -131,18 +145,27 @@ window.backToDashboard = function () {
     welcome.textContent = `Anda login sebagai ${uname} (${phone}).`;
   }
 
-  // isi teks dasar di header profil
+  // isi teks dasar (username & WA) + status
   const unameSafe = escapeHTML(session.username || session.name || "-");
   const phoneSafe = escapeHTML(session.phone || "-");
   const statusText = session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
 
+  // kalau masih ada id lama, tetap diisi (tidak wajib ada di HTML)
   const infoUsername = document.getElementById("info-username");
   const infoPhone = document.getElementById("info-phone");
   const infoStatus = document.getElementById("info-status");
-
   if (infoUsername) infoUsername.textContent = unameSafe;
   if (infoPhone) infoPhone.textContent = phoneSafe;
   if (infoStatus) infoStatus.textContent = statusText;
+
+  // header baru di samping avatar
+  const headerUsername = document.getElementById("profile-username-top");
+  const headerWa = document.getElementById("profile-whatsapp-top");
+  if (headerUsername) headerUsername.textContent = unameSafe;
+  if (headerWa) {
+    headerWa.textContent =
+      phoneSafe && phoneSafe !== "-" ? `WhatsApp ${phoneSafe}` : "";
+  }
 
   // set inisial avatar
   const initial =
@@ -177,7 +200,7 @@ window.backToDashboard = function () {
   // Load foto profil dari server
   loadProfilePhoto();
 
-  // Load detail profil lengkap dari KV (dan kuota)
+  // Load detail profil lengkap dari KV
   loadProfileDetail();
 })();
 
@@ -232,17 +255,9 @@ async function loadProfileDetail() {
     const quotaCard = document.getElementById("profile-quota-card");
     const detailList = document.getElementById("profile-detail-list");
 
-    const hasProfile =
-      u.profileCompleted && u.nomorXL && u.jenisKuota;
-
-    if (hasProfile) {
+    if (u.profileCompleted) {
       if (quotaCard) quotaCard.style.display = "block";
       if (detailList) detailList.style.display = "block";
-
-      // load kuota dari API baru
-      loadQuota().catch((err) => {
-        console.error("loadQuota error:", err);
-      });
     } else {
       if (quotaCard) quotaCard.style.display = "none";
       if (detailList) detailList.style.display = "none";
@@ -264,30 +279,29 @@ async function loadProfileDetail() {
   }
 }
 
-/* ========= LOAD KUOTA DARI /api/kuota ========= */
+/* ========= LOAD KUOTA DARI BACKEND (/api/kuota) ========= */
 
 async function loadQuota() {
   const user = window.__AX_USER;
   if (!user || !user.phone) return;
 
+  // kalau profil belum lengkap, nggak usah call API kuota
+  if (!user.profileCompleted) return;
+
   const quotaCard = document.getElementById("profile-quota-card");
   const quotaValueEl = document.getElementById("quota-value");
+  const quotaTitleEl = quotaCard
+    ? quotaCard.querySelector(".quota-title")
+    : null;
+  const quotaExpEl = document.getElementById("quota-exp"); // optional, kalau nanti mau ditambah di HTML
+
   if (!quotaCard || !quotaValueEl) return;
 
-  // siapkan elemen untuk "Berlaku hingga"
-  let expEl = document.getElementById("quota-exp");
-  if (!expEl) {
-    expEl = document.createElement("div");
-    expEl.id = "quota-exp";
-    expEl.className = "quota-exp"; // boleh di-style di CSS nanti
-    quotaCard.appendChild(expEl);
-  }
-
-  // state loading
-  quotaValueEl.textContent = "Memuat...";
-  expEl.textContent = "";
-
   try {
+    // tampilan loading simple
+    quotaValueEl.textContent = "...";
+    if (quotaTitleEl) quotaTitleEl.textContent = "Sisa kuota";
+
     const res = await fetch(
       "/api/kuota?phone=" + encodeURIComponent(user.phone)
     );
@@ -295,27 +309,38 @@ async function loadQuota() {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok || data.status !== true || !data.data) {
-      throw new Error(data.message || "Gagal cek kuota");
+      throw new Error(data.message || "Gagal mengambil kuota");
     }
 
-    const d = data.data;
-    const label = d.sisaKuotaLabel || "-";
-    const expIso = d.berlakuSampai || "";
+    const q = data.data;
+    const total = typeof q.totalRemaining === "number" ? q.totalRemaining : 0;
+    const unit = q.unit || "GB";
 
-    quotaValueEl.textContent = label;
-
-    if (expIso) {
-      const nice = formatTanggalIndonesia(expIso);
-      expEl.textContent = nice
-        ? "Berlaku hingga: " + nice
-        : "";
-    } else {
-      expEl.textContent = "";
+    // format angka: 14.32 GB, kalau .00 dibuang
+    let numStr = total.toFixed(2);
+    if (numStr.endsWith(".00")) {
+      numStr = numStr.slice(0, -3);
     }
+    const remainingStr = `${numStr} ${unit}`;
+
+    quotaValueEl.textContent = remainingStr;
+
+    // kalau kamu nanti menambah <div id="quota-exp"></div> di HTML,
+    // ini akan menulis: "Berlaku hingga: 10 Desember 2025"
+    if (quotaExpEl) {
+      if (q.expDate) {
+        const tgl = formatDateID(q.expDate);
+        quotaExpEl.textContent = `Berlaku hingga: ${tgl}`;
+      } else {
+        quotaExpEl.textContent = "";
+      }
+    }
+
+    quotaCard.style.display = "block";
   } catch (err) {
     console.error("loadQuota error:", err);
     quotaValueEl.textContent = "-";
-    expEl.textContent = "";
+    // jangan spam alert, cukup di console
   }
 }
 
@@ -373,6 +398,7 @@ if (formProfile) {
       showAlert("Profil berhasil disimpan", "success");
 
       await loadProfileDetail();
+      // setelah profil lengkap, kuota akan di-load saat panel dibuka
       backToDashboard();
     } catch (err) {
       console.error(err);
