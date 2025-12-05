@@ -513,3 +513,8 @@ body {
   color: #16a34a; /* Hijau */
   display: block;
 }
+#detail-profil-text {
+  color: #0d6efd;
+  font-weight: 600;
+  text-decoration: underline;
+}
