@@ -367,10 +367,9 @@ body {
   display: block;
 }
 
-.profile-avatar.has-photo span {
-  display: none;
+.profile-avatar {
+  margin-bottom: 8px;   /* Tambahan ruang agar tombol jauh dari foto */
 }
-
 /* Teks di samping foto */
 .profile-header-text {
   flex: 1;
@@ -395,9 +394,10 @@ body {
 .profile-photo-btn-wrapper {
   width: 100%;
   display: flex;
-  justify-content: center;   /* center horizontal */
-  margin-top: -6px;          /* naikkan sedikit supaya menempel */
-  margin-bottom: 16px;       /* jarak ke tombol berikutnya */
+  justify-content: center;
+  
+  margin-top: 8px;          /* Jarak ideal dari bawah foto */
+  margin-bottom: 20px;      /* Ruang ke tombol berikut */
 }
 
 #btn-change-photo {
