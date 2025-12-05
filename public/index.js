@@ -21,9 +21,11 @@ function showAlert(message, type = "info") {
   box.textContent = message || "";
 
   box.classList.remove("alert-success", "alert-error");
-
-  if (type === "success") box.classList.add("alert-success");
-  if (type === "error") box.classList.add("alert-error");
+  if (type === "success") {
+    box.classList.add("alert-success");
+  } else if (type === "error") {
+    box.classList.add("alert-error");
+  }
 
   box.style.display = "block";
   box.style.opacity = "1";
@@ -31,50 +33,86 @@ function showAlert(message, type = "info") {
   if (alertTimeout) clearTimeout(alertTimeout);
   alertTimeout = setTimeout(() => {
     box.style.opacity = "0";
-    setTimeout(() => { box.style.display = "none"; }, 300);
+    setTimeout(() => {
+      box.style.display = "none";
+    }, 300);
   }, 4000);
 }
 
 /* ========= INIT SESSION ========= */
 (function initSession() {
   const raw = localStorage.getItem("axstore_user");
-  if (!raw) return (window.location.href = LOGIN_URL);
+  if (!raw) {
+    window.location.href = LOGIN_URL;
+    return;
+  }
 
   let session;
   try {
     session = JSON.parse(raw);
-  } catch (err) {
+  } catch (e) {
     localStorage.removeItem("axstore_user");
-    return (window.location.href = LOGIN_URL);
+    window.location.href = LOGIN_URL;
+    return;
   }
 
+  // Simpan sesi global
   window.__AX_USER = session;
 
-  // welcome text
+  // Teks di dashboard
   const welcome = document.getElementById("welcome");
   if (welcome) {
-    welcome.textContent = `Anda login sebagai ${session.username} (${session.phone}).`;
+    const uname = session.username || session.name || "(tanpa nama)";
+    const phone = session.phone || "-";
+    welcome.textContent = `Anda login sebagai ${uname} (${phone}).`;
   }
 
-  // isi panel profil
-  document.getElementById("info-username").textContent = escapeHTML(session.username);
-  document.getElementById("info-phone").textContent    = escapeHTML(session.phone);
-  document.getElementById("info-status").textContent   =
-    session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
+  // isi teks dasar di header profil
+  const unameSafe = escapeHTML(session.username || session.name || "-");
+  const phoneSafe = escapeHTML(session.phone || "-");
+  const statusText = session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
+
+  const infoUsername = document.getElementById("info-username");
+  const infoPhone = document.getElementById("info-phone");
+  const infoStatus = document.getElementById("info-status");
+
+  if (infoUsername) infoUsername.textContent = unameSafe;
+  if (infoPhone) infoPhone.textContent = phoneSafe;
+  if (infoStatus) infoStatus.textContent = statusText;
 
   // set inisial avatar
-  const initial = session.username?.trim()?.charAt(0)?.toUpperCase() || "?";
-  document.getElementById("profile-avatar-initial").textContent = initial;
+  const initial =
+    (session.username || session.name || "?").trim().charAt(0).toUpperCase() || "?";
+  const avatarInitial = document.getElementById("profile-avatar-initial");
+  if (avatarInitial) avatarInitial.textContent = initial;
 
-  // tombol & input foto profil
+  // Pasang event ubah foto
   const fileInput = document.getElementById("profile-photo-input");
   const btnChange = document.getElementById("btn-change-photo");
+  if (fileInput) {
+    fileInput.addEventListener("change", handlePhotoChange);
+  }
+  if (btnChange && fileInput) {
+    btnChange.addEventListener("click", () => fileInput.click());
+  }
 
-  if (btnChange) btnChange.onclick = () => fileInput.click();
-  if (fileInput) fileInput.onchange = handlePhotoChange;
+  // Tombol buka form lengkapi profil
+  const btnOpenComplete = document.getElementById("btn-open-complete-profile");
+  if (btnOpenComplete) {
+    btnOpenComplete.addEventListener("click", openCompleteProfile);
+  }
 
-  // load foto dari KV
+  // Tombol tutup panel profil + backdrop
+  const closeBtn = document.getElementById("btn-close-profile");
+  const backdrop = document.getElementById("profile-panel-backdrop");
+  if (closeBtn) closeBtn.addEventListener("click", closeProfilePanel);
+  if (backdrop) backdrop.addEventListener("click", closeProfilePanel);
+
+  // Load foto profil dari server
   loadProfilePhoto();
+
+  // Load detail profil lengkap dari KV
+  loadProfileDetail();
 })();
 
 /* ========= LOGOUT ========= */
@@ -83,177 +121,332 @@ window.doLogout = function () {
   window.location.href = LOGIN_URL;
 };
 
-/* ========= PANEL PROFIL SLIDE ========= */
+/* ========= PANEL PROFIL (SLIDE) ========= */
 window.openProfilePanel = function () {
-  document.getElementById("profile-panel").classList.add("open");
-  document.getElementById("profile-panel-backdrop").classList.add("show");
+  const panel = document.getElementById("profile-panel");
+  const backdrop = document.getElementById("profile-panel-backdrop");
+  if (!panel || !backdrop) return;
+
+  panel.classList.add("open");
+  backdrop.classList.add("show");
 };
 
 window.closeProfilePanel = function () {
-  document.getElementById("profile-panel").classList.remove("open");
-  document.getElementById("profile-panel-backdrop").classList.remove("show");
+  const panel = document.getElementById("profile-panel");
+  const backdrop = document.getElementById("profile-panel-backdrop");
+  if (!panel || !backdrop) return;
+
+  panel.classList.remove("open");
+  backdrop.classList.remove("show");
 };
 
-/* ========= FORM LENGKAPI PROFIL ========= */
+/* ========= LENGKAPI PROFIL: buka/tutup card ========= */
+
 window.openCompleteProfile = function () {
-  closeProfilePanel();
-  document.getElementById("card-dashboard").style.display = "none";
-  document.getElementById("card-complete-profile").style.display = "block";
+  const cardDash = document.getElementById("card-dashboard");
+  const cardProfile = document.getElementById("card-complete-profile");
+  if (!cardDash || !cardProfile) return;
+
+  cardDash.style.display = "none";
+  cardProfile.style.display = "block";
+
+  // panel profil ditutup supaya fokus ke form
+  window.closeProfilePanel();
 };
 
 window.backToDashboard = function () {
-  document.getElementById("card-complete-profile").style.display = "none";
-  document.getElementById("card-dashboard").style.display = "block";
+  const cardDash = document.getElementById("card-dashboard");
+  const cardProfile = document.getElementById("card-complete-profile");
+  if (!cardDash || !cardProfile) return;
+
+  cardProfile.style.display = "none";
+  cardDash.style.display = "block";
 };
 
-document.getElementById("btn-close-profile").onclick = closeProfilePanel;
+/* ========= LOAD DETAIL PROFIL DARI KV ========= */
 
-/* ========= SUBMIT PROFIL → /api/profile/update ========= */
+async function loadProfileDetail() {
+  const user = window.__AX_USER;
+  if (!user || !user.phone) return;
+
+  try {
+    const res = await fetch(
+      "/api/profile?phone=" + encodeURIComponent(user.phone)
+    );
+
+    if (!res.ok) {
+      throw new Error("HTTP " + res.status);
+    }
+
+    const data = await res.json();
+    if (!data.status || !data.data) {
+      throw new Error(data.message || "Gagal mengambil profil");
+    }
+
+    const u = data.data || {};
+
+    // update flag profileCompleted di sesi + localStorage
+    if (typeof u.profileCompleted === "boolean") {
+      user.profileCompleted = u.profileCompleted;
+      window.__AX_USER = user;
+      localStorage.setItem("axstore_user", JSON.stringify(user));
+    }
+
+    // update teks status
+    const infoStatus = document.getElementById("info-status");
+    if (infoStatus) {
+      infoStatus.textContent = u.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
+    }
+
+    // isi detail di panel (label kecil, value besar)
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || "-";
+    };
+
+    setText("detail-fullName", u.fullName);
+    setText("detail-email", u.email);
+    setText("detail-nomorXL", u.nomorXL);
+    setText("detail-jenisKuota", u.jenisKuota);
+    setText("detail-alamat", u.alamat);
+
+    // tampilkan / sembunyikan card kuota & detail list
+    const quotaCard = document.getElementById("profile-quota-card");
+    const detailList = document.getElementById("profile-detail-list");
+
+    if (u.profileCompleted) {
+      if (quotaCard) quotaCard.style.display = "block";
+      if (detailList) detailList.style.display = "block";
+    } else {
+      if (quotaCard) quotaCard.style.display = "none";
+      if (detailList) detailList.style.display = "none";
+    }
+
+    // Prefill form lengkapi profil
+    const setValue = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.value = value || "";
+    };
+
+    setValue("fullName", u.fullName);
+    setValue("email", u.email);
+    setValue("nomorXL", u.nomorXL);
+    setValue("jenisKuota", u.jenisKuota);
+    setValue("alamat", u.alamat);
+
+    // RT/RW/Desa/dll saat ini disimpan digabung di "alamat" saja di KV,
+    // jadi di form kita biarkan kosong dulu (user bisa isi ulang kalau mau).
+
+  } catch (err) {
+    console.error("loadProfileDetail error:", err);
+    // tidak perlu alert biar tidak mengganggu
+  }
+}
+
+/* ========= SUBMIT FORM LENGKAPI PROFIL ========= */
+
 const formProfile = document.getElementById("form-complete-profile");
 if (formProfile) {
   formProfile.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const user = window.__AX_USER;
-    if (!user) return showAlert("Sesi tidak valid", "error");
+    if (!user || !user.phone) {
+      showAlert("Sesi tidak valid, silakan login ulang", "error");
+      return;
+    }
 
-    const body = {
+    const fd = new FormData(formProfile);
+
+    const payload = {
       phone: user.phone,
-      fullName: fullName.value.trim(),
-      email: email.value.trim(),
-      nomorXL: nomorXL.value.trim(),
-      jenisKuota: jenisKuota.value.trim(),
-      alamat: alamat.value.trim(),
-      rt: rt.value.trim(),
-      rw: rw.value.trim(),
-      desa: desa.value.trim(),
-      kecamatan: kecamatan.value.trim(),
-      kabupaten: kabupaten.value.trim(),
-      provinsi: provinsi.value.trim(),
+      fullName: fd.get("fullName") || "",
+      email: fd.get("email") || "",
+      nomorXL: fd.get("nomorXL") || "",
+      jenisKuota: fd.get("jenisKuota") || "",
+      alamat: fd.get("alamat") || "",
+      rt: fd.get("rt") || "",
+      rw: fd.get("rw") || "",
+      desa: fd.get("desa") || "",
+      kecamatan: fd.get("kecamatan") || "",
+      kabupaten: fd.get("kabupaten") || "",
+      provinsi: fd.get("provinsi") || "",
     };
 
     try {
       const res = await fetch("/api/profile/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-      if (!data.status) {
-        return showAlert(data.message || "Gagal memperbarui profil", "error");
+      if (!res.ok || data.status !== true) {
+        throw new Error(data.message || "Gagal menyimpan profil");
+      }
+
+      // update flag profileCompleted di localStorage
+      const updated = data.data || {};
+      if (typeof updated.profileCompleted === "boolean") {
+        user.profileCompleted = updated.profileCompleted;
+        window.__AX_USER = user;
+        localStorage.setItem("axstore_user", JSON.stringify(user));
       }
 
       showAlert("Profil berhasil disimpan", "success");
 
-      // update local session
-      user.profileCompleted = true;
-      localStorage.setItem("axstore_user", JSON.stringify(user));
-
+      // refresh detail di panel + kembali ke dashboard
+      await loadProfileDetail();
       backToDashboard();
     } catch (err) {
       console.error(err);
-      showAlert("Gagal terhubung ke server", "error");
+      showAlert("Terjadi kesalahan saat menyimpan profil", "error");
     }
   });
 }
 
 /* ========= FOTO PROFIL ========= */
 
-// load foto dari KV
+// load foto dari KV lewat worker
 async function loadProfilePhoto() {
   const user = window.__AX_USER;
-  if (!user) return;
+  if (!user || !user.phone) return;
 
   const img = document.getElementById("profile-avatar-img");
   const avatar = document.getElementById("profile-avatar");
+  if (!img || !avatar) return;
 
   avatar.classList.remove("has-photo");
 
-  img.onload = () => avatar.classList.add("has-photo");
-  img.onerror = () => avatar.classList.remove("has-photo");
+  img.onload = () => {
+    avatar.classList.add("has-photo");
+  };
+  img.onerror = () => {
+    avatar.classList.remove("has-photo");
+  };
 
-  img.src = "/api/profile/photo?phone=" + encodeURIComponent(user.phone) + "&t=" + Date.now();
+  img.src =
+    "/api/profile/photo?phone=" +
+    encodeURIComponent(user.phone) +
+    "&t=" +
+    Date.now();
 }
 
-/* ========= Kompres Gambar ========= */
+/**
+ * Kompres + resize gambar di browser
+ * @param {File} file - file asli dari input
+ * @param {number} maxSize - lebar/tinggi maksimal (px)
+ * @returns {Promise<Blob>} - blob JPEG terkompres
+ */
 function compressImage(file, maxSize = 256) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
     const img = new Image();
+    const reader = new FileReader();
 
-    reader.onload = (e) => (img.src = e.target.result);
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+
     reader.onerror = () => reject(new Error("Gagal membaca file"));
 
     img.onload = () => {
+      const canvas = document.createElement("canvas");
       let { width, height } = img;
 
-      if (width > height && width > maxSize) {
-        height = (height * maxSize) / width;
-        width = maxSize;
-      } else if (height > width && height > maxSize) {
-        width = (width * maxSize) / height;
-        height = maxSize;
+      // hitung rasio supaya max width/height = maxSize
+      if (width > height) {
+        if (width > maxSize) {
+          height = (height * maxSize) / width;
+          width = maxSize;
+        }
+      } else {
+        if (height > maxSize) {
+          width = (width * maxSize) / height;
+          height = maxSize;
+        }
       }
 
-      const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
 
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
 
+      // export ke JPEG kualitas 0.8 (biasanya 50–200KB untuk ukuran segini)
       canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error("Gagal kompres gambar"))),
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Gagal mengompres gambar"));
+          } else {
+            resolve(blob);
+          }
+        },
         "image/jpeg",
         0.8
       );
     };
 
-    img.onerror = () => reject(new Error("File gambar tidak valid"));
+    img.onerror = () => reject(new Error("Gambar tidak valid"));
+
     reader.readAsDataURL(file);
   });
 }
 
-/* ========= Upload Foto Profil ========= */
+// event saat user pilih file foto
 async function handlePhotoChange(e) {
-  const file = e.target.files?.[0];
-  e.target.value = "";
-
+  const file = e.target.files && e.target.files[0];
   if (!file) return;
+
   if (!file.type.startsWith("image/")) {
-    return showAlert("File harus berupa gambar", "error");
+    showAlert("File harus gambar (jpg/png)", "error");
+    e.target.value = "";
+    return;
   }
 
   const user = window.__AX_USER;
-  if (!user) return showAlert("Sesi tidak valid", "error");
+  if (!user || !user.phone) {
+    showAlert("Sesi tidak valid", "error");
+    e.target.value = "";
+    return;
+  }
 
   try {
-    const compressed = await compressImage(file, 256);
+    // resize + kompres dulu
+    const compressedBlob = await compressImage(file, 256);
 
-    if (compressed.size > 300 * 1024) {
-      return showAlert("Setelah kompres masih >300KB, pilih foto lain", "error");
+    if (compressedBlob.size > 300 * 1024) {
+      showAlert("Setelah kompres masih >300KB, coba gambar lain", "error");
+      e.target.value = "";
+      return;
     }
 
     const fd = new FormData();
     fd.append("phone", user.phone);
-    fd.append("photo", compressed, "avatar.jpg");
+    fd.append("photo", compressedBlob, "avatar.jpg");
 
     const res = await fetch("/api/profile/photo", {
       method: "POST",
       body: fd,
     });
 
-    const data = await res.json().catch(() => ({}));
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (err) {
+      // abaikan parsing error
+    }
+
     if (!res.ok || data.ok === false) {
-      throw new Error(data.message || "Upload error");
+      throw new Error(data.message || "Gagal upload foto");
     }
 
     showAlert("Foto profil diperbarui", "success");
     loadProfilePhoto();
   } catch (err) {
     console.error(err);
-    showAlert("Gagal mengupload foto profil", "error");
+    showAlert("Gagal mengompres / upload foto", "error");
+  } finally {
+    e.target.value = "";
   }
 }
