@@ -2,7 +2,7 @@
 // HELPERS
 // ---------------------
 
-// Normalisasi nomor WhatsApp ke 628xxxxxxxxxx
+// Normalisasi nomor WhatsApp / XL ke 628xxxxxxxxxx
 function normalizePhone(phoneRaw) {
   if (!phoneRaw) return null;
 
@@ -15,7 +15,6 @@ function normalizePhone(phoneRaw) {
   } else if (phone.startsWith("628")) {
     // sudah benar
   } else if (phone.startsWith("08")) {
-    // BUANG 0 JADI 62 + sisa
     phone = "62" + phone.slice(1);
   } else {
     return null;
@@ -24,6 +23,41 @@ function normalizePhone(phoneRaw) {
   if (phone.length < 10 || phone.length > 15) return null;
 
   return phone;
+}
+
+// Konversi string kuota ("14.32 GB", "791 MB", "0") ke angka GB
+function parseQuotaToGB(str) {
+  if (!str) return 0;
+  str = String(str).trim();
+
+  if (str === "0") return 0;
+
+  const parts = str.split(/\s+/);
+  const numStr = parts[0] || "0";
+  const unit = (parts[1] || "GB").toUpperCase();
+
+  let value = parseFloat(numStr.replace(",", "."));
+  if (Number.isNaN(value)) return 0;
+
+  if (unit === "GB") return value;
+  if (unit === "MB") return value / 1024;
+
+  // kalau unit lain (Menit, SMS, dll) -> 0 (kita tidak hitung)
+  return 0;
+}
+
+// Ambil Date paling besar dari array ISO string
+function maxExpDate(dates) {
+  if (!Array.isArray(dates) || dates.length === 0) return null;
+  let max = null;
+  for (const d of dates) {
+    if (!d) continue;
+    const t = Date.parse(d);
+    if (Number.isNaN(t)) continue;
+    if (max === null || t > max) max = t;
+  }
+  if (max === null) return null;
+  return new Date(max).toISOString();
 }
 
 // Hash password SHA-256
@@ -229,7 +263,7 @@ export default {
         if (nomorXL)  user.nomorXL  = nomorXL;
         if (jenisKuota) user.jenisKuota = jenisKuota;
         if (alamatGabungan) user.alamat = alamatGabungan;
-        if (photoUrl) user.photoUrl = photoUrl; // opsional, kalau nanti pakai link
+        if (photoUrl) user.photoUrl = photoUrl;
 
         user.profileCompleted = true;
         user.updatedAt = new Date().toISOString();
@@ -244,7 +278,228 @@ export default {
         });
       }
 
-      // =================== API FOTO PROFIL (BARU) ===================
+      // =================== API CEK KUOTA (BARU) ===================
+      // GET /api/kuota?phone=...
+      if (path === "/api/kuota" && request.method === "GET") {
+        const phoneInput = url.searchParams.get("phone");
+        if (!phoneInput) {
+          return json(
+            { status: false, message: "phone query param required" },
+            400
+          );
+        }
+
+        const phone = normalizePhone(phoneInput);
+        if (!phone) {
+          return json(
+            { status: false, message: "Format No WhatsApp tidak valid" },
+            400
+          );
+        }
+
+        // Ambil user
+        const userKey = "user:" + phone;
+        const userJSON = await env.axstore_data.get(userKey);
+        if (!userJSON) {
+          return json(
+            { status: false, message: "User tidak ditemukan" },
+            404
+          );
+        }
+
+        const user = JSON.parse(userJSON);
+        const jenisKuota = (user.jenisKuota || "").toLowerCase();
+        const nomorXLRaw = user.nomorXL || "";
+
+        if (!jenisKuota) {
+          return json(
+            { status: false, message: "Jenis kuota belum diisi di profil" },
+            400
+          );
+        }
+        if (!nomorXLRaw) {
+          return json(
+            { status: false, message: "Nomor XL belum diisi di profil" },
+            400
+          );
+        }
+
+        const msisdn = normalizePhone(nomorXLRaw);
+        if (!msisdn) {
+          return json(
+            { status: false, message: "Nomor XL di profil tidak valid" },
+            400
+          );
+        }
+
+        // Panggil API eksternal
+        const apiUrl =
+          "https://apigw.kmsp-store.com/sidompul/v4/cek_kuota" +
+          `?msisdn=${encodeURIComponent(msisdn)}&isJSON=true`;
+
+        let apiRes;
+        try {
+          apiRes = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+              Authorization: "Basic c2lkb21wdWxhcGk6YXBpZ3drbXNw",
+              "X-API-Key": "60ef29aa-a648-4668-90ae-20951ef90c55",
+              "X-App-Version": "4.0.0",
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          });
+        } catch (e) {
+          return json(
+            { status: false, message: "Gagal menghubungi server kuota" },
+            502
+          );
+        }
+
+        if (!apiRes.ok) {
+          return json(
+            { status: false, message: "API kuota mengembalikan error" },
+            502
+          );
+        }
+
+        let apiJson;
+        try {
+          apiJson = await apiRes.json();
+        } catch (e) {
+          return json(
+            { status: false, message: "Respon kuota bukan JSON valid" },
+            502
+          );
+        }
+
+        if (!apiJson.status || apiJson.statusCode !== 200) {
+          return json(
+            {
+              status: false,
+              message: apiJson.message || "Cek kuota gagal",
+            },
+            502
+          );
+        }
+
+        const data_sp = apiJson.data && apiJson.data.data_sp;
+        const quotas = data_sp && data_sp.quotas && data_sp.quotas.value;
+
+        if (!Array.isArray(quotas)) {
+          return json(
+            { status: false, message: "Data kuota tidak ditemukan" },
+            502
+          );
+        }
+
+        let totalGB = 0;
+        let expDates = [];
+
+        // === JENIS VPN: pakai paket pertama, benefit DATA pertama ===
+        if (jenisKuota === "vpn") {
+          const firstGroup = quotas[0];
+          const firstItem = Array.isArray(firstGroup) ? firstGroup[0] : null;
+          if (!firstItem || !firstItem.benefits || !firstItem.packages) {
+            return json(
+              { status: false, message: "Struktur kuota tidak cocok (VPN)" },
+              502
+            );
+          }
+
+          const dataBenefit = firstItem.benefits.find(
+            (b) => (b.type || "").toUpperCase() === "DATA"
+          );
+          if (!dataBenefit) {
+            return json(
+              { status: false, message: "Kuota DATA tidak ditemukan (VPN)" },
+              502
+            );
+          }
+
+          totalGB = parseQuotaToGB(dataBenefit.remaining);
+          if (firstItem.packages.expDate) {
+            expDates.push(firstItem.packages.expDate);
+          }
+        }
+
+        // === JENIS AKRAB: ambil paket "Paket Akrab" (bukan "Bonus Paket Akrab"),
+        // sum semua benefit DATA di paket tsb ===
+        else if (jenisKuota === "akrab") {
+          const items = [];
+          for (const group of quotas) {
+            if (!Array.isArray(group)) continue;
+            for (const item of group) {
+              if (!item || !item.packages || !item.benefits) continue;
+              const name = String(item.packages.name || "").toLowerCase();
+              items.push(item);
+            }
+          }
+
+          // filter yang nama paketnya mengandung "paket akrab" tapi BUKAN "bonus paket akrab"
+          const akrabItems = items.filter((it) => {
+            const n = String(it.packages.name || "").toLowerCase();
+            return n.includes("paket akrab") && !n.includes("bonus paket akrab");
+          });
+
+          const targetItems = akrabItems.length > 0 ? akrabItems : items;
+
+          for (const it of targetItems) {
+            const pkg = it.packages || {};
+            const benefits = Array.isArray(it.benefits) ? it.benefits : [];
+            for (const b of benefits) {
+              if ((b.type || "").toUpperCase() !== "DATA") continue;
+              totalGB += parseQuotaToGB(b.remaining);
+            }
+            if (pkg.expDate) expDates.push(pkg.expDate);
+          }
+        }
+
+        // === JENIS REGULER: sum semua benefit DATA dari semua paket ===
+        else if (jenisKuota === "reguler") {
+          for (const group of quotas) {
+            if (!Array.isArray(group)) continue;
+            for (const it of group) {
+              if (!it || !it.packages || !it.benefits) continue;
+              const pkg = it.packages;
+              const benefits = Array.isArray(it.benefits) ? it.benefits : [];
+              let hasData = false;
+              for (const b of benefits) {
+                if ((b.type || "").toUpperCase() !== "DATA") continue;
+                hasData = true;
+                totalGB += parseQuotaToGB(b.remaining);
+              }
+              if (hasData && pkg.expDate) {
+                expDates.push(pkg.expDate);
+              }
+            }
+          }
+        } else {
+          return json(
+            {
+              status: false,
+              message: "Jenis kuota tidak dikenali (vpn / akrab / reguler)",
+            },
+            400
+          );
+        }
+
+        const finalExp = maxExpDate(expDates);
+        const sisaKuotaGB = Math.round(totalGB * 100) / 100;
+
+        return json({
+          status: true,
+          message: "Cek kuota berhasil",
+          data: {
+            jenisKuota,
+            msisdn,
+            sisaKuotaGB,
+            sisaKuotaLabel: sisaKuotaGB.toFixed(2) + " GB",
+            berlakuSampai: finalExp, // ISO string, nanti diformat di front-end
+          },
+        });
+      }
+
+      // =================== API FOTO PROFIL ===================
 
       // GET /api/profile/photo?phone=...
       if (path === "/api/profile/photo" && request.method === "GET") {
@@ -274,7 +529,7 @@ export default {
         });
       }
 
-      // POST /api/profile/photo  (upload foto terkompres)
+      // POST /api/profile/photo
       if (path === "/api/profile/photo" && request.method === "POST") {
         const form = await request.formData();
         const phoneInput = form.get("phone");
@@ -295,8 +550,6 @@ export default {
           );
         }
 
-        // file dari browser sudah dikompres (JPEG kecil)
-        // tapi tetap batasi di sisi server
         const arrayBuffer = await file.arrayBuffer();
         if (arrayBuffer.byteLength > 500 * 1024) {
           return json(
@@ -308,7 +561,6 @@ export default {
         const photoKey = "photo:" + phone;
         await env.axstore_data.put(photoKey, arrayBuffer);
 
-        // opsional: set flag hasPhoto di user
         const userKey = "user:" + phone;
         const userJSON = await env.axstore_data.get(userKey);
         if (userJSON) {
@@ -316,9 +568,7 @@ export default {
             const user = JSON.parse(userJSON);
             user.hasPhoto = true;
             await env.axstore_data.put(userKey, JSON.stringify(user));
-          } catch (e) {
-            // abaikan kalau error parsing
-          }
+          } catch (e) {}
         }
 
         return json({ ok: true, message: "Foto profil tersimpan" });
@@ -389,13 +639,11 @@ export default {
       if (path === "/do-register" && request.method === "POST") {
         const form = await request.formData();
 
-        // field "name" di form sekarang = username
         const usernameRaw = (form.get("name") || "").trim();
         const phoneInput = form.get("phone");
         const pwd = form.get("password") || "";
         const pwd2 = form.get("confirm_password") || "";
 
-        // VALIDASI USERNAME (tanpa spasi, minimal 4 char)
         if (!usernameRaw) {
           return redirect(
             `${url.origin}/login?screen=register&error=invalid_username`
@@ -432,7 +680,7 @@ export default {
 
         const data = {
           username: usernameRaw,
-          name: usernameRaw, // kompatibel lama
+          name: usernameRaw,
           phone,
           passwordHash: pwdHash,
           createdAt: new Date().toISOString(),
@@ -578,7 +826,8 @@ export default {
       return new Response("Not found", { status: 404 });
     } catch (err) {
       return new Response(
-        "Worker error: " + (err && err.message ? err.message : String(err)),
+        "Worker error: " +
+          (err && err.message ? err.message : String(err)),
         {
           status: 500,
           headers: { "content-type": "text/plain; charset=utf-8" },
