@@ -46,35 +46,27 @@
 
     <!-- HEADER: FOTO + USERNAME + WHATSAPP -->
     <div class="profile-header-row">
-      <!-- AVATAR PROFIL -->
-      <div id="profile-avatar" class="profile-avatar">
-        <img id="profile-avatar-img" alt="Foto profil" />
-        <span id="profile-avatar-initial"></span>
-      </div>
-
-      <!-- TEKS SEJAJAR DENGAN FOTO -->
-      <div class="profile-header-text">
-        <!-- HANYA USERNAME BESAR (misal: Acong) -->
-        <div class="profile-header-username">
-          <span id="info-username"></span>
-        </div>
-        <!-- WHATSAPP KECIL DI BAWAHNYA -->
-        <div class="profile-header-whatsapp">
-          WhatsApp <span id="info-phone"></span>
-        </div>
-      </div>
+  <!-- BLOK AVATAR + TOMBOL -->
+  <div class="profile-avatar-block">
+    <div id="profile-avatar" class="profile-avatar">
+      <img id="profile-avatar-img" alt="Foto profil" />
+      <span id="profile-avatar-initial"></span>
     </div>
 
-    <!-- TOMBOL UBAH FOTO KECIL, DI BAWAH FOTO -->
-    <div class="profile-change-photo-wrapper">
-      <button
-        id="btn-change-photo"
-        class="btn-change-photo"
-        type="button"
-      >
-        Ubah foto
-      </button>
-    </div>
+    <button
+      id="btn-change-photo"
+      type="button"
+    >
+      Ubah foto
+    </button>
+  </div>
+
+  <!-- TEKS DI SAMPING AVATAR -->
+  <div class="profile-header-text">
+    <div class="profile-header-username" id="profile-username-top"></div>
+    <div class="profile-header-whatsapp" id="profile-whatsapp-top"></div>
+  </div>
+</div>
 
     <!-- INPUT FILE (DISSEMBUNYIKAN, DIPICU OLEH TOMBOL DI ATAS) -->
     <input
