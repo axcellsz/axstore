@@ -16,7 +16,7 @@
   <!-- ALERT GLOBAL -->
   <div id="alert" class="alert" style="display:none;"></div>
 
-  <!-- TOMBOL PROFILE (POJOK KANAN ATAS) -->
+  <!-- TOMBOL PROFILE (FLOATING BAWAH KANAN) -->
   <button
     id="profile-fab"
     class="profile-btn"
@@ -31,7 +31,7 @@
     </svg>
   </button>
 
-  <!-- DASHBOARD UTAMA (sederhana, tanpa detail profil) -->
+  <!-- DASHBOARD UTAMA -->
   <div class="card" id="card-dashboard">
     <h1>Halo, selamat datang!</h1>
     <p id="welcome"></p>
@@ -39,35 +39,35 @@
 
   <!-- PANEL SLIDE PROFIL DARI KANAN -->
   <div id="profile-panel" class="profile-panel">
-  <div class="profile-panel-header">
-    <h2>Profil</h2>
-    <button id="btn-close-profile" class="profile-panel-close" type="button">×</button>
-  </div>
+    <div class="profile-panel-header">
+      <h2>Profil</h2>
+      <button id="btn-close-profile" class="profile-panel-close" type="button">×</button>
+    </div>
 
-  <!-- HEADER DALAM CARD -->
-  <div class="profile-header-card">
-    <div class="profile-header-row">
+    <!-- HEADER PROFIL DALAM CARD -->
+    <div class="profile-header-card">
+      <div class="profile-header-row">
 
-      <!-- BLOK AVATAR + TOMBOL -->
-      <div class="profile-avatar-block">
-        <div id="profile-avatar" class="profile-avatar">
-          <img id="profile-avatar-img" alt="Foto profil" />
-          <span id="profile-avatar-initial"></span>
+        <!-- BLOK AVATAR + TOMBOL -->
+        <div class="profile-avatar-block">
+          <div id="profile-avatar" class="profile-avatar">
+            <img id="profile-avatar-img" alt="Foto profil" />
+            <span id="profile-avatar-initial"></span>
+          </div>
+
+          <button id="btn-change-photo" type="button">
+            Ubah foto
+          </button>
         </div>
 
-        <button id="btn-change-photo" type="button">
-          Ubah foto
-        </button>
-      </div>
+        <!-- TEKS DI SAMPING AVATAR -->
+        <div class="profile-header-text">
+          <div class="profile-header-username" id="profile-username-top"></div>
+          <div class="profile-header-whatsapp" id="profile-whatsapp-top"></div>
+        </div>
 
-      <!-- TEKS DI SAMPING AVATAR -->
-      <div class="profile-header-text">
-        <div class="profile-header-username" id="profile-username-top"></div>
-        <div class="profile-header-whatsapp" id="profile-whatsapp-top"></div>
       </div>
-
     </div>
-  </div>
 
     <!-- INPUT FILE (DISEMBUNYIKAN, DIPICU OLEH TOMBOL DI ATAS) -->
     <input
@@ -77,7 +77,7 @@
       style="display:none;"
     />
 
-    <!-- SPASI KECIL LALU TOMBOL EDIT PROFIL -->
+    <!-- TOMBOL EDIT PROFIL -->
     <button
       type="button"
       class="btn-primary"
@@ -87,30 +87,28 @@
       Lengkapi / edit data diri
     </button>
 
-    <!-- AREA PROFIL LENGKAP (MUNCUL JIKA profileCompleted = true) -->
+    <!-- AREA PROFIL LENGKAP (SISA KUOTA + LINK DETAIL) -->
     <div id="profile-extra" class="profile-extra">
 
       <!-- CARD SISA KUOTA -->
       <div id="profile-quota-card" class="profile-quota-card" style="display:none;">
         <div class="quota-title">Sisa kuota</div>
         <div class="quota-value">
-  <div id="quota-amount" class="quota-amount">-</div>
-  <div id="quota-exp" class="quota-exp">-</div>
-  </div>
-        <!-- tambahan: masa berlaku kuota -->
-        <div class="quota-exp" id="quota-exp"></div>
+          <span id="quota-amount" class="quota-amount">-</span>
+          <span id="quota-exp" class="quota-exp"></span>
+        </div>
       </div>
 
-      <!-- LIST DETAIL PROFIL -->
+      <!-- LIST DETAIL PROFIL (HANYA TEKS "Detail profil") -->
       <div id="profile-detail-list" class="profile-detail-list" style="display:none;">
-      <div id="profile-detail-list" class="profile-detail-list" style="display:none;">
-  <div class="detail-row">
-    <div class="detail-label">Detail profil</div>
-    <div class="detail-value" id="detail-profil-text">Lihat detail lengkap</div>
-  </div>
-  </div>
+        <div class="detail-row">
+          <div class="detail-label">Detail profil</div>
+          <div class="detail-value" id="detail-profil-text">Lihat detail lengkap</div>
+        </div>
+      </div>
+    </div>
 
-    <!-- TOMBOL KELUAR DI PALING BAWAH -->
+    <!-- TOMBOL KELUAR DI PALING BAWAH PANEL -->
     <button
       type="button"
       class="btn-secondary"
