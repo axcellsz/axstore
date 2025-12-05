@@ -469,13 +469,20 @@ body {
 }
 
 .quota-value {
-  font-size: 20px;
-  font-weight: 700;
-  color: #16a34a; /* hijau */
+  display: flex;
+  flex-direction: column;
 }
 
 .quota-exp {
-  margin-top: 2px;
-  font-size: 12px;
+  margin-top: 4px;
+  font-size: 13px;
   color: #6b7280;
+}
+
+/* Angka kuota besar, hijau, bold */
+.quota-amount {
+  font-size: 26px;
+  font-weight: 700;
+  color: #16a34a; /* Hijau */
+  display: block;
 }
