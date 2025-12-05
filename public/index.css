@@ -467,3 +467,15 @@ body {
   opacity: 1;
   pointer-events: auto;
 }
+
+.quota-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #16a34a; /* hijau */
+}
+
+.quota-exp {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
