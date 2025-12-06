@@ -81,7 +81,7 @@ window.openProfilePanel = function () {
   panel.classList.add("open");
   backdrop.classList.add("show");
 
-  // refresh kuota (pakai cache di worker)
+  // setiap kali panel dibuka, refresh kuota (pakai cache di worker)
   loadQuota();
 };
 
@@ -104,7 +104,7 @@ window.openCompleteProfile = function () {
   cardDash.style.display = "none";
   cardProfile.style.display = "block";
 
-  // tutup panel profil
+  // panel profil ditutup supaya fokus ke form
   window.closeProfilePanel();
 };
 
@@ -145,13 +145,9 @@ window.backToDashboard = function () {
     welcome.textContent = `Anda login sebagai ${uname} (${phone}).`;
   }
 
-  // isi teks header profil
+  // isi teks dasar (username & WA)
   const unameSafe = escapeHTML(session.username || session.name || "-");
   const phoneSafe = escapeHTML(session.phone || "-");
-  const statusText = session.profileCompleted ? "Sudah lengkap" : "Belum lengkap";
-
-  const infoStatus = document.getElementById("info-status");
-  if (infoStatus) infoStatus.textContent = statusText;
 
   const headerUsername = document.getElementById("profile-username-top");
   const headerWa = document.getElementById("profile-whatsapp-top");
@@ -161,13 +157,13 @@ window.backToDashboard = function () {
       phoneSafe && phoneSafe !== "-" ? `WhatsApp ${phoneSafe}` : "";
   }
 
-  // inisial avatar
+  // set inisial avatar
   const initial =
     (session.username || session.name || "?").trim().charAt(0).toUpperCase() || "?";
   const avatarInitial = document.getElementById("profile-avatar-initial");
   if (avatarInitial) avatarInitial.textContent = initial;
 
-  // event ubah foto
+  // Pasang event ubah foto
   const fileInput = document.getElementById("profile-photo-input");
   const btnChange = document.getElementById("btn-change-photo");
   if (fileInput) {
@@ -177,32 +173,40 @@ window.backToDashboard = function () {
     btnChange.addEventListener("click", () => fileInput.click());
   }
 
-  // tombol edit profil
+  // Tombol buka form lengkapi profil
   const btnOpenComplete = document.getElementById("btn-open-complete-profile");
   if (btnOpenComplete) {
     btnOpenComplete.addEventListener("click", () => {
-      openCompleteProfile();
+      if (window.openCompleteProfile) window.openCompleteProfile();
     });
   }
 
-  // tombol close panel + backdrop
+  // Tombol tutup panel profil + backdrop
   const closeBtn = document.getElementById("btn-close-profile");
   const backdrop = document.getElementById("profile-panel-backdrop");
   if (closeBtn) closeBtn.addEventListener("click", () => window.closeProfilePanel());
   if (backdrop) backdrop.addEventListener("click", () => window.closeProfilePanel());
 
-  // klik "Lihat / edit detail lengkap"
-  const detailLink = document.getElementById("detail-profil-text");
-  if (detailLink) {
-    detailLink.addEventListener("click", () => {
-      openCompleteProfile();
+  // Toggle "Lihat detail lengkap" (show/hide detail box, BUKAN edit)
+  const detailProfilText = document.getElementById("detail-profil-text");
+  if (detailProfilText) {
+    detailProfilText.style.cursor = "pointer";
+    detailProfilText.addEventListener("click", () => {
+      const box = document.getElementById("profile-detail-box");
+      if (!box) return;
+
+      const isShown = box.style.display === "block";
+      box.style.display = isShown ? "none" : "block";
+      detailProfilText.textContent = isShown
+        ? "Lihat detail lengkap"
+        : "Sembunyikan detail";
     });
   }
 
   // Load foto profil dari server
   loadProfilePhoto();
 
-  // Load detail profil (untuk prefill form & toggle tampilan)
+  // Load detail profil lengkap dari KV
   loadProfileDetail();
 })();
 
@@ -235,17 +239,18 @@ async function loadProfileDetail() {
       localStorage.setItem("axstore_user", JSON.stringify(user));
     }
 
-    // toggle card kuota & link "detail profil"
-    const quotaCard = document.getElementById("profile-quota-card");
-    const detailList = document.getElementById("profile-detail-list");
+    // isi detail read-only
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || "-";
+    };
 
-    if (u.profileCompleted) {
-      if (quotaCard) quotaCard.style.display = "block";
-      if (detailList) detailList.style.display = "block";
-    } else {
-      if (quotaCard) quotaCard.style.display = "none";
-      if (detailList) detailList.style.display = "none";
-    }
+    setText("detail-fullName", u.fullName);
+    setText("detail-email", u.email);
+    setText("detail-nomorXL", u.nomorXL);
+    setText("detail-jenisKuota", u.jenisKuota);
+    setText("detail-alamat", u.alamat);
+    setText("info-status", u.profileCompleted ? "Sudah lengkap" : "Belum lengkap");
 
     // Prefill form lengkapi profil
     const setValue = (id, value) => {
@@ -258,6 +263,21 @@ async function loadProfileDetail() {
     setValue("nomorXL", u.nomorXL);
     setValue("jenisKuota", u.jenisKuota);
     setValue("alamat", u.alamat);
+
+    // tampilkan / sembunyikan kuota & baris toggle
+    const quotaCard = document.getElementById("profile-quota-card");
+    const detailToggle = document.getElementById("profile-detail-toggle");
+    const detailBox = document.getElementById("profile-detail-box");
+
+    if (u.profileCompleted) {
+      if (quotaCard) quotaCard.style.display = "block";
+      if (detailToggle) detailToggle.style.display = "block";
+      // detailBox dibiarkan mengikuti toggle user
+    } else {
+      if (quotaCard) quotaCard.style.display = "none";
+      if (detailToggle) detailToggle.style.display = "none";
+      if (detailBox) detailBox.style.display = "none";
+    }
   } catch (err) {
     console.error("loadProfileDetail error:", err);
   }
@@ -269,15 +289,16 @@ async function loadQuota() {
   const user = window.__AX_USER;
   if (!user || !user.phone) return;
 
+  // kalau profil belum lengkap, nggak usah call API kuota
   if (!user.profileCompleted) return;
 
   const quotaCard = document.getElementById("profile-quota-card");
   const amountEl = document.getElementById("quota-amount");
   const expEl = document.getElementById("quota-exp");
-
   if (!quotaCard || !amountEl) return;
 
   try {
+    // tampilan loading
     amountEl.textContent = "...";
     if (expEl) expEl.textContent = "";
 
@@ -295,12 +316,12 @@ async function loadQuota() {
     const total = typeof q.totalRemaining === "number" ? q.totalRemaining : 0;
     const unit = q.unit || "GB";
 
+    // format angka: 14.32 GB, kalau .00 dibuang
     let numStr = total.toFixed(2);
     if (numStr.endsWith(".00")) {
       numStr = numStr.slice(0, -3);
     }
     const remainingStr = `${numStr} ${unit}`;
-
     amountEl.textContent = remainingStr;
 
     if (expEl) {
@@ -363,6 +384,7 @@ if (formProfile) {
         throw new Error(data.message || "Gagal menyimpan profil");
       }
 
+      // update flag profileCompleted di localStorage
       const updated = data.data || {};
       if (typeof updated.profileCompleted === "boolean") {
         user.profileCompleted = updated.profileCompleted;
@@ -383,6 +405,7 @@ if (formProfile) {
 
 /* ========= FOTO PROFIL ========= */
 
+// load foto dari KV lewat worker
 async function loadProfilePhoto() {
   const user = window.__AX_USER;
   if (!user || !user.phone) return;
@@ -462,6 +485,7 @@ function compressImage(file, maxSize = 256) {
   });
 }
 
+// event saat user pilih file foto
 async function handlePhotoChange(e) {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
