@@ -266,6 +266,7 @@ body {
 
   display: flex;
   flex-direction: column;
+  padding: 18px 16px 150px;  /* padding bawah diperbesar */
 }
 
 .profile-panel.open {
