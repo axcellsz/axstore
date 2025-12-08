@@ -1,104 +1,104 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catatan Hutang</title>
-
-  <link rel="stylesheet" href="/bon.css" />
-  <script src="/bon.js" defer></script>
-</head>
-<body>
-
-  <!-- ====== SCREEN LIST PELANGGAN ====== -->
-  <div id="screenList" class="screen">
-    <header class="bon-header">
-      <h1>Daftar Hutang</h1>
-    </header>
-
-    <main class="bon-main">
-      <div id="customerList"></div>
-    </main>
-
-    <!-- Bar bawah: search + tombol tambah -->
-    <div class="bon-bottom-bar">
-      <input
-        id="searchCustomer"
-        type="text"
-        placeholder="Cari nama pelanggan..."
-        class="bon-search-input"
-      />
-      <button id="btnAddCustomer" class="bon-add-btn">+</button>
-    </div>
-  </div>
-
-  <!-- ====== SCREEN TAMBAH / EDIT PELANGGAN ====== -->
-  <div id="screenAdd" class="screen" hidden>
-    <header class="bon-header">
-      <button class="btn-back-list" type="button">←</button>
-      <h1>Pelanggan baru</h1>
-    </header>
-
-    <main class="bon-main">
-      <label>Nama pelanggan</label>
-      <input type="text" id="addName" class="bon-input" />
-
-      <label>No WhatsApp</label>
-      <input type="tel" id="addPhone" class="bon-input" />
-
-      <button id="btnSaveCustomer" class="bon-btn-primary">
-        Simpan
-      </button>
-    </main>
-  </div>
-
-  <!-- ====== SCREEN DETAIL PELANGGAN ====== -->
-  <div id="screenDetail" class="screen" hidden>
-    <header class="bon-header">
-      <button class="btn-back-list" type="button">←</button>
-      <h1 id="detailName">Nama pelanggan</h1>
-    </header>
-
-    <main class="bon-main">
-      <section class="bon-summary">
-        <div>Total hutang pelanggan ini</div>
-        <div id="detailTotal" class="bon-total">Rp0</div>
-      </section>
-
-      <section class="bon-history">
-        <h2>Riwayat transaksi</h2>
-        <div id="detailHistory"></div>
-      </section>
-    </main>
-
-    <!-- Tombol Berikan / Terima fixed di bawah -->
-    <div class="bon-bottom-two">
-      <button id="btnGive" class="bon-btn-danger">Berikan</button>
-      <button id="btnReceive" class="bon-btn-success">Terima</button>
-    </div>
-  </div>
-
-  <!-- ====== SCREEN INPUT TRANSAKSI ====== -->
-  <div id="screenInput" class="screen" hidden>
-    <header class="bon-header">
-      <button class="btn-back-detail" type="button">←</button>
-      <h1 id="inputTitle">Catatan hutang</h1>
-    </header>
-
-    <main class="bon-main">
-      <input type="hidden" id="trxType" />
-
-      <label>Jumlah (Rp)</label>
-      <input type="number" id="trxAmount" class="bon-input" />
-
-      <label>Keterangan (opsional)</label>
-      <textarea id="trxNote" class="bon-textarea"></textarea>
-
-      <button id="btnSaveTrx" class="bon-btn-primary">
-        Simpan
-      </button>
-    </main>
-  </div>
-
-</body>
+<!DOCTYPE html>  
+<html lang="id">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+  <title>Catatan Hutang</title>  
+  
+  <link rel="stylesheet" href="/bon.css" />  
+  <script src="/bon.js" defer></script>  
+</head>  
+<body>  
+  
+  <!-- ====== SCREEN LIST PELANGGAN ====== -->  
+  <div id="screenList" class="screen">  
+    <header class="bon-header">  
+      <h1>Daftar Hutang</h1>  
+    </header>  
+  
+    <main class="bon-main">  
+      <div id="customerList"></div>  
+    </main>  
+  
+    <!-- Bar bawah: search + tombol tambah -->  
+    <div class="bon-bottom-bar">  
+      <input  
+        id="searchCustomer"  
+        type="text"  
+        placeholder="Cari nama pelanggan..."  
+        class="bon-search-input"  
+      />  
+      <button id="btnAddCustomer" class="bon-add-btn">+</button>  
+    </div>  
+  </div>  
+  
+  <!-- ====== SCREEN TAMBAH / EDIT PELANGGAN ====== -->  
+  <div id="screenAdd" class="screen" hidden>  
+    <header class="bon-header">  
+      <button class="btn-back-list" type="button">←</button>  
+      <h1>Pelanggan baru</h1>  
+    </header>  
+  
+    <main class="bon-main">  
+      <label>Nama pelanggan</label>  
+      <input type="text" id="addName" class="bon-input" />  
+  
+      <label>No WhatsApp</label>  
+      <input type="tel" id="addPhone" class="bon-input" />  
+  
+      <button id="btnSaveCustomer" class="bon-btn-primary">  
+        Simpan  
+      </button>  
+    </main>  
+  </div>  
+  
+  <!-- ====== SCREEN DETAIL PELANGGAN ====== -->  
+  <div id="screenDetail" class="screen" hidden>  
+    <header class="bon-header">  
+      <button class="btn-back-list" type="button">←</button>  
+      <h1 id="detailName">Nama pelanggan</h1>  
+    </header>  
+  
+    <main class="bon-main">  
+      <section class="bon-summary">  
+        <div>Total hutang pelanggan ini</div>  
+        <div id="detailTotal" class="bon-total">Rp0</div>  
+      </section>  
+  
+      <section class="bon-history">  
+        <h2>Riwayat transaksi</h2>  
+        <div id="detailHistory"></div>  
+      </section>  
+    </main>  
+  
+    <!-- Tombol Berikan / Terima fixed di bawah -->  
+    <div class="bon-bottom-two">  
+      <button id="btnGive" class="bon-btn-danger">Berikan</button>  
+      <button id="btnReceive" class="bon-btn-success">Terima</button>  
+    </div>  
+  </div>  
+  
+  <!-- ====== SCREEN INPUT TRANSAKSI ====== -->  
+  <div id="screenInput" class="screen" hidden>  
+    <header class="bon-header">  
+      <button class="btn-back-detail" type="button">←</button>  
+      <h1 id="inputTitle">Catatan hutang</h1>  
+    </header>  
+  
+    <main class="bon-main">  
+      <input type="hidden" id="trxType" />  
+  
+      <label>Jumlah (Rp)</label>  
+      <input type="number" id="trxAmount" class="bon-input" />  
+  
+      <label>Keterangan (opsional)</label>  
+      <textarea id="trxNote" class="bon-textarea"></textarea>  
+  
+      <button id="btnSaveTrx" class="bon-btn-primary">  
+        Simpan  
+      </button>  
+    </main>  
+  </div>  
+  
+</body>  
 </html>
