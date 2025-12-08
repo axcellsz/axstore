@@ -60,6 +60,9 @@ function updateSummary() {
 // ========== RENDER USER LIST ==========
 
 function renderUsers() {
+// ========== RENDER USER LIST ==========
+
+function renderUsers() {
   const list = document.getElementById("userList");
   if (!list) return;
 
@@ -114,9 +117,34 @@ function renderUsers() {
       return row;
     };
 
-    fields.appendChild(makeRow("Username", username));
-    fields.appendChild(makeRow("No WA", phone));
-    fields.appendChild(makeRow("No XL", nomorXL));
+    // buat 3 baris
+    const rowUsername = makeRow("Username", username);
+    const rowWa = makeRow("No WA", phone);
+    const rowXl = makeRow("No XL", nomorXL);
+
+    fields.appendChild(rowUsername);
+    fields.appendChild(rowWa);
+    fields.appendChild(rowXl);
+
+    // --- styling & link untuk No WA ---
+    const waValueEl = rowWa.querySelector(".user-field-value");
+    if (phone && phone !== "-") {
+      const phoneDigits = phone.replace(/[^\d]/g, ""); // buang selain angka
+      const waLink = document.createElement("a");
+      waLink.href = "https://wa.me/" + phoneDigits;
+      waLink.target = "_blank";
+      waLink.rel = "noopener noreferrer";
+      waLink.textContent = phone;
+      waLink.className = "user-phone-strong";
+      waValueEl.innerHTML = "";
+      waValueEl.appendChild(waLink);
+    } else {
+      waValueEl.classList.add("user-phone-strong");
+    }
+
+    // --- styling untuk No XL (hijau & bold juga) ---
+    const xlValueEl = rowXl.querySelector(".user-field-value");
+    xlValueEl.classList.add("user-phone-strong");
 
     // BARIS TOMBOL DI BAWAH DETAIL
     const actionsRow = document.createElement("div");
