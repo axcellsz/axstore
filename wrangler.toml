@@ -5,7 +5,8 @@ workers_dev = true
 compatibility_date = "2024-01-01"
 
 kv_namespaces = [
-  { binding = "axstore_data", id = "672959a6c9724465a3110f1a64a62c36" }
+  { binding = "axstore_data", id = "672959a6c9724465a3110f1a64a62c36" },
+  { binding = "BON_DATA",    id = "ab3988009b8649d2b4b9e6db59fcb0db" } # <- ganti pakai ID BON_DATA kamu
 ]
 
 [assets]
