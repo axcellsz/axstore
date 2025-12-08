@@ -164,53 +164,65 @@ body {
 }
 
 /* ========== USER LIST ========== */
+/* ========== USER LIST ========== */
 .user-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
 /* 1 item user */
 .user-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* baris pertama: nomor + nama + tombol kanan */
+.user-header {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 10px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-}
-
-.user-left {
-  display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
+  margin-bottom: 6px;
 }
 
-/* Nomor urut */
-.user-index {
-  font-weight: 600;
-  color: #6b7280;
-  min-width: 20px;
-}
-
-/* Teks utama user */
-.user-main {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.user-fullname {
-  font-size: 15px;
+.user-title {
+  font-size: 16px;
   font-weight: 600;
   color: #111827;
 }
 
-.user-meta {
-  font-size: 13px;
+/* tombol di kanan */
+.user-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.user-actions .btn {
+  min-width: 68px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* blok garis-garis bawah */
+.user-fields {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+
+.user-field-row {
+  padding: 6px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user-field-label {
+  font-size: 12px;
   color: #6b7280;
+}
+
+.user-field-value {
+  margin-top: 2px;
+  font-size: 14px;
+  color: #111827;
 }
 
 /* Aksi kanan */
