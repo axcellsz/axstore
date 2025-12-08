@@ -64,7 +64,7 @@ function renderUsers() {
 
   if (!filteredUsers.length) {
     const empty = document.createElement("div");
-    empty.className = "user-meta";
+    empty.className = "user-field-value";
     empty.textContent = "Tidak ada user yang cocok dengan pencarian.";
     list.appendChild(empty);
     updateSummary();
@@ -75,41 +75,77 @@ function renderUsers() {
     const item = document.createElement("div");
     item.className = "user-item";
 
-    // Kiri
-    const left = document.createElement("div");
-    left.className = "user-left";
-
-    const indexEl = document.createElement("div");
-    indexEl.className = "user-index";
-    indexEl.textContent = (idx + 1) + ".";  // penomoran
-
-    const main = document.createElement("div");
-    main.className = "user-main";
-
-    const fullNameEl = document.createElement("div");
-    fullNameEl.className = "user-fullname";
     const fullName = u.fullName || u.name || u.username || "(Tanpa nama)";
-    fullNameEl.textContent = fullName;
+    const username = u.username || u.name || "-";
+    const phone = u.phone || "-";
+    const nomorXL = u.nomorXL || "-";
 
-    const usernameEl = document.createElement("div");
-    usernameEl.className = "user-meta";
-    usernameEl.textContent = u.username || u.name || "-";
+    // header: nomor + nama + tombol
+    const header = document.createElement("div");
+    header.className = "user-header";
 
-    const waEl = document.createElement("div");
-    waEl.className = "user-meta";
-    waEl.textContent = "WhatsApp: " + (u.phone || "-");
+    const title = document.createElement("div");
+    title.className = "user-title";
+    title.textContent = `${idx + 1}. ${fullName}`;
 
-    const xlEl = document.createElement("div");
-    xlEl.className = "user-meta";
-    xlEl.textContent = "Nomor XL: " + (u.nomorXL || "-");
+    const actions = document.createElement("div");
+    actions.className = "user-actions";
 
-    main.appendChild(fullNameEl);
-    main.appendChild(usernameEl);
-    main.appendChild(waEl);
-    main.appendChild(xlEl);
+    const btnDelete = document.createElement("button");
+    btnDelete.className = "btn btn-danger";
+    btnDelete.textContent = "DELETE";
+    btnDelete.addEventListener("click", () => handleDelete(u));
 
-    left.appendChild(indexEl);
-    left.appendChild(main);
+    const btnCode = document.createElement("button");
+    btnCode.className = "btn btn-dark";
+    btnCode.textContent = "KODE";
+    btnCode.addEventListener("click", () => handleCode(u));
+
+    const btnBon = document.createElement("button");
+    btnBon.className = "btn btn-outline btn-small";
+    btnBon.textContent = "BON";
+    btnBon.addEventListener("click", () => handleBon(u));
+
+    actions.appendChild(btnDelete);
+    actions.appendChild(btnCode);
+    actions.appendChild(btnBon);
+
+    header.appendChild(title);
+    header.appendChild(actions);
+
+    // bagian bawah dengan garis-garis
+    const fields = document.createElement("div");
+    fields.className = "user-fields";
+
+    const makeRow = (label, value) => {
+      const row = document.createElement("div");
+      row.className = "user-field-row";
+
+      const l = document.createElement("div");
+      l.className = "user-field-label";
+      l.textContent = label;
+
+      const v = document.createElement("div");
+      v.className = "user-field-value";
+      v.textContent = value || "-";
+
+      row.appendChild(l);
+      row.appendChild(v);
+      return row;
+    };
+
+    fields.appendChild(makeRow("Username", username));
+    fields.appendChild(makeRow("No WA", phone));
+    fields.appendChild(makeRow("No XL", nomorXL));
+
+    item.appendChild(header);
+    item.appendChild(fields);
+
+    list.appendChild(item);
+  });
+
+  updateSummary();
+}
 
     // Kanan (aksi)
     const actions = document.createElement("div");
