@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Catatan Hutang</title>
+  <title>Catatan Hutang (Admin)</title>
 
-  <!-- Nanti kita buat bon.css -->
+  <!-- Nanti kita buat bon.css & bon.js -->
   <link rel="stylesheet" href="/bon.css" />
-  <!-- Nanti kita buat bon.js -->
   <script src="/bon.js" defer></script>
 </head>
 <body>
@@ -17,146 +16,108 @@
 
   <div class="bon-page">
 
-    <!-- KARTU UTAMA -->
-    <div class="bon-card">
+    <!-- ========== SCREEN 1: LIST PELANGGAN ========== -->
+    <div class="bon-card" id="screen-list">
+      <header class="bon-header-main">
+        <h1>Daftar hutang pelanggan</h1>
+        <p class="bon-header-sub">
+          Pilih pelanggan untuk melihat dan mencatat hutang.
+        </p>
+      </header>
 
-      <!-- HEADER: BACK + NAMA USER -->
-      <header class="bon-header">
+      <div id="customer-list" class="customer-list">
+        <!-- Contoh struktur 1 item (nanti di-generate oleh bon.js):
+        <div class="customer-item">
+          <div class="customer-main">
+            <div class="customer-name">1. Angga</div>
+            <div class="customer-phone">No WA 08xxxx</div>
+          </div>
+          <button class="btn-small btn-open">BUKA</button>
+        </div>
+        -->
+        <div id="customer-empty" class="customer-empty">
+          Belum ada pelanggan. Tambahkan dengan tombol + di bawah.
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 2: DETAIL HUTANG PELANGGAN ========== -->
+    <div class="bon-card" id="screen-detail" style="display:none;">
+      <header class="bon-header-detail">
         <button
           type="button"
-          class="bon-back-btn"
-          onclick="goBackToAdmin()"
-          aria-label="Kembali ke admin"
+          class="btn-back"
+          onclick="backToCustomerList()"
         >
           ←
         </button>
 
-        <div class="bon-user-info">
-          <div class="bon-user-name" id="bon-user-name">Nama user</div>
-          <div class="bon-user-phone" id="bon-user-phone">-</div>
+        <div class="detail-user-info">
+          <div class="detail-user-name" id="detail-user-name">Nama pelanggan</div>
+          <div class="detail-user-phone" id="detail-user-phone">No WA -</div>
         </div>
       </header>
 
-      <!-- KARTU TOTAL HUTANG -->
-      <section class="bon-total-card">
-        <div class="bon-total-title" id="bon-total-title">
-          Total hutang pengguna ini
-        </div>
-        <div class="bon-total-amount" id="bon-total-amount">
+      <section class="detail-total">
+        <div class="detail-total-label">Total hutang</div>
+        <div class="detail-total-amount" id="detail-total-amount">
           Rp 0
         </div>
-        <button
-          type="button"
-          class="bon-total-action"
-          id="bon-btn-lunaskan"
-        >
-          Lunaskan
-        </button>
       </section>
 
-      <!-- AKSI CEPAT (NANTI BISA DIISI: tagih via WA, dll) -->
-      <section class="bon-quick-actions">
-        <!-- Placeholder, nanti bisa diisi icon WA / laporan / pengingat -->
-        <button
-          type="button"
-          class="bon-quick-btn"
-          id="bon-btn-tagih-wa"
-        >
-          Tagih via WhatsApp
-        </button>
-      </section>
+      <section class="detail-history">
+        <div class="detail-history-title">Riwayat transaksi</div>
+        <div class="detail-history-sub">
+          Berikan = hutang baru, Terima = pembayaran.
+        </div>
 
-      <!-- HEADER LIST TRANSAKSI -->
-      <section class="bon-list-header">
-        <div class="bon-list-title">Riwayat transaksi</div>
-        <div class="bon-list-subtitle">
-          Kolom <strong>Berikan</strong> = hutang baru, 
-          <strong>Terima</strong> = pembayaran.
+        <div id="bon-history-list" class="bon-history-list">
+          <!-- Contoh 1 item (nanti dari bon.js)
+          <div class="bon-history-item">
+            <div class="bon-history-left">
+              <div class="bon-history-date">09 Feb 2025</div>
+              <div class="bon-history-note">Kuota XL 20GB</div>
+            </div>
+            <div class="bon-history-right">
+              <div class="bon-history-beri">Berikan: Rp 20.000</div>
+              <div class="bon-history-terima">Terima: Rp 5.000</div>
+            </div>
+          </div>
+          -->
+          <div id="bon-history-empty" class="bon-history-empty">
+            Belum ada catatan hutang untuk pelanggan ini.
+          </div>
         </div>
       </section>
-
-      <!-- LIST TRANSAKSI -->
-      <section class="bon-list" id="bon-list">
-        <!--
-          Nanti bon.js akan mengisi daftar transaksi di sini.
-          Contoh struktur 1 item (untuk referensi saat styling di bon.css):
-
-          <article class="bon-item">
-            <div class="bon-item-left">
-              <div class="bon-item-date">08 Des 2025</div>
-              <div class="bon-item-note">Kuota XL 20GB</div>
-            </div>
-            <div class="bon-item-amounts">
-              <div class="bon-item-terima">Rp65.000</div>
-              <div class="bon-item-beri bon-item-beri--red">Rp18.000</div>
-            </div>
-          </article>
-        -->
-        <div id="bon-empty" class="bon-empty">
-          Belum ada catatan hutang.
-        </div>
-      </section>
-
-    </div> <!-- /bon-card -->
-
-    <!-- BOTTOM BAR: TOMBOL BERIKAN / TERIMA -->
-    <div class="bon-bottom-bar">
-      <button
-        type="button"
-        class="bon-bottom-btn bon-bottom-btn-beri"
-        onclick="openBonForm('beri')"
-      >
-        Berikan
-      </button>
-      <button
-        type="button"
-        class="bon-bottom-btn bon-bottom-btn-terima"
-        onclick="openBonForm('terima')"
-      >
-        Terima
-      </button>
     </div>
 
-  </div> <!-- /bon-page -->
+    <!-- ========== SCREEN 3: FORM TAMBAH PELANGGAN ========== -->
+    <div class="bon-card" id="screen-add-customer" style="display:none;">
+      <header class="bon-header-main">
+        <h1>Pelanggan baru</h1>
+        <p class="bon-header-sub">
+          Masukan data pelanggan untuk mulai mencatat hutang.
+        </p>
+      </header>
 
-
-  <!-- MODAL FORM TRANSAKSI BON -->
-  <div id="bon-form-modal" class="bon-modal" hidden>
-    <div class="bon-modal-backdrop" onclick="closeBonForm()"></div>
-
-    <div class="bon-modal-content">
-      <h2 id="bon-form-title">Tambah hutang</h2>
-
-      <form id="bon-form">
-        <!-- jenis: beri / terima (diset di JS) -->
-        <input type="hidden" id="bon-form-type" name="type" />
-
-        <label for="bon-form-date">Tanggal</label>
-        <input
-          type="date"
-          id="bon-form-date"
-          name="date"
-          class="input"
-          required
-        />
-
-        <label for="bon-form-amount">Nominal (Rp)</label>
-        <input
-          type="number"
-          id="bon-form-amount"
-          name="amount"
-          class="input"
-          min="1"
-          required
-        />
-
-        <label for="bon-form-note">Keterangan</label>
+      <form id="form-add-customer" class="form-vert">
+        <label for="customer-name">Nama pelanggan</label>
         <input
           type="text"
-          id="bon-form-note"
-          name="note"
+          id="customer-name"
+          name="name"
           class="input"
-          placeholder="contoh: Kuota 20GB, bayar sebagian, dll"
+          required
+        />
+
+        <label for="customer-phone-input">No WhatsApp</label>
+        <input
+          type="tel"
+          id="customer-phone-input"
+          name="phone"
+          class="input"
+          placeholder="contoh: 62812xxxx"
+          required
         />
 
         <button type="submit" class="btn-primary" style="margin-top: 12px;">
@@ -167,12 +128,99 @@
           type="button"
           class="btn-secondary"
           style="margin-top: 8px;"
-          onclick="closeBonForm()"
+          onclick="backToCustomerList()"
         >
           Batal
         </button>
       </form>
     </div>
+
+    <!-- ========== SCREEN 4: FORM TRANSAKSI (BERIKAN / TERIMA) ========== -->
+    <div class="bon-card" id="screen-transaction" style="display:none;">
+      <header class="bon-header-main">
+        <h1 id="trx-title">Catat hutang</h1>
+        <p class="bon-header-sub" id="trx-subtitle">
+          Isi jumlah dan keterangan (opsional), lalu simpan.
+        </p>
+      </header>
+
+      <form id="form-transaction" class="form-vert">
+        <!-- type = 'beri' atau 'terima' -->
+        <input type="hidden" id="trx-type" name="type" />
+
+        <label for="trx-amount">Jumlah (Rp)</label>
+        <input
+          type="number"
+          id="trx-amount"
+          name="amount"
+          class="input"
+          min="1"
+          required
+        />
+
+        <label for="trx-note">Keterangan (opsional)</label>
+        <input
+          type="text"
+          id="trx-note"
+          name="note"
+          class="input"
+          placeholder="contoh: Kuota 20GB, bayar sebagian, dsb."
+        />
+
+        <button type="submit" class="btn-primary" style="margin-top: 12px;">
+          Simpan
+        </button>
+
+        <button
+          type="button"
+          class="btn-secondary"
+          style="margin-top: 8px;"
+          onclick="backToDetailScreen()"
+        >
+          Batal
+        </button>
+      </form>
+    </div>
+
+  </div> <!-- /bon-page -->
+
+  <!-- ========== BOTTOM BAR UNTUK SCREEN LIST ========== -->
+  <div class="bon-bottom-bar" id="bottom-bar-list">
+    <div class="bottom-left">
+      <input
+        type="text"
+        id="searchCustomer"
+        class="search-input"
+        placeholder="Cari nama pelanggan..."
+      />
+    </div>
+    <div class="bottom-right">
+      <button
+        type="button"
+        class="btn-fab"
+        onclick="openAddCustomerScreen()"
+      >
+        +
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== BOTTOM BAR UNTUK SCREEN DETAIL ========== -->
+  <div class="bon-bottom-bar-detail" id="bottom-bar-detail" style="display:none;">
+    <button
+      type="button"
+      class="bottom-btn bottom-btn-terima"
+      onclick="openTransactionScreen('terima')"
+    >
+      TERIMA
+    </button>
+    <button
+      type="button"
+      class="bottom-btn bottom-btn-beri"
+      onclick="openTransactionScreen('beri')"
+    >
+      BERIKAN
+    </button>
   </div>
 
 </body>
