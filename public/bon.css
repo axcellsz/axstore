@@ -75,6 +75,51 @@ body {
 }
 
 /* ==========================
+   RINGKASAN GLOBAL DI LIST
+========================== */
+
+.bon-summary-global {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 10px 14px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.bon-summary-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.bon-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.bon-summary-row span:first-child {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.bon-debt-my {
+  font-size: 14px;
+  font-weight: 700;
+  color: #16a34a; /* hijau */
+}
+
+.bon-debt-cust {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ef4444; /* merah */
+}
+
+/* ==========================
    LIST PELANGGAN
 ========================== */
 
@@ -109,6 +154,23 @@ body {
 .customer-meta {
   font-size: 12px;
   color: #6b7280;
+  margin-top: 2px;
+}
+
+/* baris hutang per pelanggan */
+.customer-debt {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.customer-debt-my {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.customer-debt-cust {
+  color: #ef4444;
+  font-weight: 600;
 }
 
 /* tombol "BUKA" di kartu */
@@ -256,18 +318,16 @@ label {
 .bon-summary {
   background: #ffffff;
   border-radius: 16px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
   margin-bottom: 16px;
   font-size: 13px;
   color: #4b5563;
 }
 
-.bon-total {
-  margin-top: 4px;
-  font-size: 22px;
-  font-weight: 700;
-  color: #ef4444; /* merah untuk total utang */
+/* pakai class row & warna yang sama dengan global summary */
+.bon-summary .bon-summary-row {
+  margin-top: 2px;
 }
 
 .bon-history h2 {
