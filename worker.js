@@ -242,102 +242,6 @@ async function fetchQuotaFromKMSP(msisdn, jenisKuota) {
   return computeQuotaByJenis(jenisKuota, packages);
 }
 
-/* ==========================
-   HELPER BON (HUTANG)
-   KV: env.BON_DATA
-========================== */
-
-function bonKey(msisdn) {
-  return "bon:" + msisdn;
-}
-
-/**
- * Load satu record bon dari KV BON_DATA
- * Jika belum ada, balikan skeleton default.
- */
-async function loadBonRecord(env, msisdn) {
-  if (!env.BON_DATA) {
-    throw new Error("BON_DATA KV belum dikonfigurasi");
-  }
-
-  const key = bonKey(msisdn);
-  const raw = await env.BON_DATA.get(key);
-  const nowIso = new Date().toISOString();
-
-  if (!raw) {
-    return {
-      phone: msisdn,
-      name: "",
-      total: 0,
-      history: [],
-      createdAt: nowIso,
-      updatedAt: nowIso,
-    };
-  }
-
-  try {
-    const obj = JSON.parse(raw);
-    if (!Array.isArray(obj.history)) obj.history = [];
-    if (typeof obj.total !== "number") obj.total = 0;
-    if (!obj.phone) obj.phone = msisdn;
-    if (!obj.createdAt) obj.createdAt = nowIso;
-    if (!obj.updatedAt) obj.updatedAt = nowIso;
-    return obj;
-  } catch (e) {
-    // kalau JSON rusak, mulai baru
-    return {
-      phone: msisdn,
-      name: "",
-      total: 0,
-      history: [],
-      createdAt: nowIso,
-      updatedAt: nowIso,
-    };
-  }
-}
-
-/**
- * Simpan record bon ke KV
- */
-async function saveBonRecord(env, record) {
-  if (!env.BON_DATA) {
-    throw new Error("BON_DATA KV belum dikonfigurasi");
-  }
-  if (!record || !record.phone) return;
-  record.updatedAt = new Date().toISOString();
-  const key = bonKey(record.phone);
-  await env.BON_DATA.put(key, JSON.stringify(record));
-}
-
-/**
- * Tambah transaksi ke record bon
- * type: "beri" (hutang baru) atau "terima" (pembayaran)
- */
-function addBonTransaction(record, { type, amount, note, date }) {
-  const nowIso = new Date().toISOString();
-
-  const trx = {
-    id: "trx_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
-    type: type === "terima" ? "terima" : "beri",
-    amount: Number(amount) || 0,
-    note: (note || "").toString().trim(),
-    date: date || nowIso,
-    createdAt: nowIso,
-  };
-
-  if (!Array.isArray(record.history)) record.history = [];
-  record.history.push(trx);
-
-  if (trx.type === "beri") {
-    record.total = (record.total || 0) + trx.amount;
-  } else {
-    record.total = (record.total || 0) - trx.amount;
-    if (record.total < 0) record.total = 0;
-  }
-
-  return record;
-}
-
 // ---------------------
 // MAIN WORKER
 // ---------------------
@@ -466,19 +370,22 @@ export default {
 
         // Ambil field profil dari body
         const fullName = (body.fullName || "").toString().trim();
-        const email    = (body.email || "").toString().trim();
-        const nomorXL  = (body.nomorXL || "").toString().trim();
-        const jenisKuotaRaw = (body.jenisKuota || "").toString().trim().toLowerCase();
-        const alamatRaw     = (body.alamat || "").toString().trim();
+        const email = (body.email || "").toString().trim();
+        const nomorXL = (body.nomorXL || "").toString().trim();
+        const jenisKuotaRaw = (body.jenisKuota || "")
+          .toString()
+          .trim()
+          .toLowerCase();
+        const alamatRaw = (body.alamat || "").toString().trim();
 
-        const rt        = (body.rt || "").toString().trim();
-        const rw        = (body.rw || "").toString().trim();
-        const desa      = (body.desa || "").toString().trim();
+        const rt = (body.rt || "").toString().trim();
+        const rw = (body.rw || "").toString().trim();
+        const desa = (body.desa || "").toString().trim();
         const kecamatan = (body.kecamatan || "").toString().trim();
         const kabupaten = (body.kabupaten || "").toString().trim();
-        const provinsi  = (body.provinsi || "").toString().trim();
+        const provinsi = (body.provinsi || "").toString().trim();
 
-        const photoUrl  = (body.photoUrl || "").toString().trim();
+        const photoUrl = (body.photoUrl || "").toString().trim();
 
         // Validasi jenisKuota
         const allowedJenis = ["vpn", "akrab", "reguler"];
@@ -496,17 +403,17 @@ export default {
         if (rw) rtRw.push(`RW ${rw}`);
         if (rtRw.length) parts.push(rtRw.join(" / "));
 
-        if (desa)      parts.push(`Desa ${desa}`);
+        if (desa) parts.push(`Desa ${desa}`);
         if (kecamatan) parts.push(`Kec. ${kecamatan}`);
         if (kabupaten) parts.push(`Kab. ${kabupaten}`);
-        if (provinsi)  parts.push(provinsi);
+        if (provinsi) parts.push(provinsi);
 
         const alamatGabungan = parts.join(", ");
 
         // Set ke objek user
         if (fullName) user.fullName = fullName;
-        if (email)    user.email    = email;
-        if (nomorXL)  user.nomorXL  = nomorXL;
+        if (email) user.email = email;
+        if (nomorXL) user.nomorXL = nomorXL;
         if (jenisKuota) user.jenisKuota = jenisKuota;
         if (alamatGabungan) user.alamat = alamatGabungan;
         if (photoUrl) user.photoUrl = photoUrl; // opsional
@@ -720,330 +627,6 @@ export default {
         }
       }
 
-      /* ==========================
-         API BON (HUTANG) - ADMIN
-      =========================== */
-
-      // LIST PELANGGAN BON
-      // GET /api/bon/customers
-      if (path === "/api/bon/customers" && request.method === "GET") {
-        if (!env.BON_DATA) {
-          return json(
-            { ok: false, message: "BON_DATA KV belum dikonfigurasi" },
-            500
-          );
-        }
-
-        const { keys } = await env.BON_DATA.list({ prefix: "bon:" });
-        const customers = [];
-
-        for (const k of keys) {
-          const raw = await env.BON_DATA.get(k.name);
-          if (!raw) continue;
-          try {
-            const obj = JSON.parse(raw);
-            customers.push({
-              phone: obj.phone || k.name.replace(/^bon:/, ""),
-              name: obj.name || "",
-              total: typeof obj.total === "number" ? obj.total : 0,
-              updatedAt: obj.updatedAt || null,
-            });
-          } catch (e) {
-            // skip json rusak
-          }
-        }
-
-        // urutkan: nama lalu phone
-        customers.sort((a, b) => {
-          const na = (a.name || "").toLowerCase();
-          const nb = (b.name || "").toLowerCase();
-          if (na && nb && na !== nb) return na.localeCompare(nb);
-          return (a.phone || "").localeCompare(b.phone || "");
-        });
-
-        return json({ ok: true, customers });
-      }
-
-      // SIMPAN / UPDATE PELANGGAN BON
-      // POST /api/bon/customer
-      // body: { name, phone }
-      if (path === "/api/bon/customer" && request.method === "POST") {
-        if (!env.BON_DATA) {
-          return json(
-            { ok: false, message: "BON_DATA KV belum dikonfigurasi" },
-            500
-          );
-        }
-
-        const body = await request.json().catch(() => null);
-        if (!body) {
-          return json({ ok: false, message: "Invalid JSON body" }, 400);
-        }
-
-        const name = (body.name || "").toString().trim();
-        const phoneInput = (body.phone || "").toString().trim();
-        if (!name || !phoneInput) {
-          return json(
-            { ok: false, message: "Nama dan nomor WA wajib diisi" },
-            400
-          );
-        }
-
-        const msisdn = normalizePhone(phoneInput);
-        if (!msisdn) {
-          return json(
-            { ok: false, message: "Format nomor WA tidak valid" },
-            400
-          );
-        }
-
-        const record = await loadBonRecord(env, msisdn);
-        record.name = name;
-        record.phone = msisdn;
-        if (!record.createdAt) {
-          record.createdAt = new Date().toISOString();
-        }
-
-        await saveBonRecord(env, record);
-
-        return json({
-          ok: true,
-          message: "Pelanggan bon tersimpan",
-          data: {
-            phone: record.phone,
-            name: record.name,
-            total: record.total || 0,
-          },
-        });
-      }
-
-      // DETAIL BON SATU PELANGGAN
-      // GET /api/bon?phone=...
-      if (path === "/api/bon" && request.method === "GET") {
-        if (!env.BON_DATA) {
-          return json(
-            { ok: false, message: "BON_DATA KV belum dikonfigurasi" },
-            500
-          );
-        }
-
-        const phoneInput = url.searchParams.get("phone");
-        if (!phoneInput) {
-          return json(
-            { ok: false, message: "phone query param required" },
-            400
-          );
-        }
-
-        const msisdn = normalizePhone(phoneInput);
-        if (!msisdn) {
-          return json(
-            { ok: false, message: "Format nomor WA tidak valid" },
-            400
-          );
-        }
-
-        const record = await loadBonRecord(env, msisdn);
-
-        return json({
-          ok: true,
-          data: record,
-        });
-      }
-
-      // TAMBAH TRANSAKSI BON
-      // POST /api/bon/transaction
-      // body: { phone, type: "beri"|"terima", amount, note, date(optional) }
-      if (path === "/api/bon/transaction" && request.method === "POST") {
-        if (!env.BON_DATA) {
-          return json(
-            { ok: false, message: "BON_DATA KV belum dikonfigurasi" },
-            500
-          );
-        }
-
-        const body = await request.json().catch(() => null);
-        if (!body) {
-          return json({ ok: false, message: "Invalid JSON body" }, 400);
-        }
-
-        const phoneInput = (body.phone || "").toString().trim();
-        const typeRaw = (body.type || "").toString().trim().toLowerCase();
-        const amountNum = Number(body.amount || 0);
-        const note = (body.note || "").toString();
-        const dateInput = (body.date || "").toString().trim();
-
-        if (!phoneInput) {
-          return json(
-            { ok: false, message: "Nomor WA wajib diisi" },
-            400
-          );
-        }
-        if (!(typeRaw === "beri" || typeRaw === "terima")) {
-          return json(
-            { ok: false, message: "type harus 'beri' atau 'terima'" },
-            400
-          );
-        }
-        if (!amountNum || amountNum <= 0) {
-          return json(
-            { ok: false, message: "Nominal harus lebih dari 0" },
-            400
-          );
-        }
-
-        const msisdn = normalizePhone(phoneInput);
-        if (!msisdn) {
-          return json(
-            { ok: false, message: "Format nomor WA tidak valid" },
-            400
-          );
-        }
-
-        const record = await loadBonRecord(env, msisdn);
-
-        const trxDate =
-          dateInput && !Number.isNaN(Date.parse(dateInput))
-            ? new Date(dateInput).toISOString()
-            : null;
-
-        addBonTransaction(record, {
-          type: typeRaw,
-          amount: amountNum,
-          note,
-          date: trxDate,
-        });
-
-        await saveBonRecord(env, record);
-
-        return json({
-          ok: true,
-          message: "Transaksi bon tersimpan",
-          data: {
-            phone: record.phone,
-            name: record.name,
-            total: record.total,
-            lastTrx:
-              record.history[record.history.length - 1] || null,
-          },
-        });
-      }
-
-      // PINDAH NOMOR WA BON
-      // POST /admin/bon/update-phone
-      // body: { oldPhone, newPhone }
-      if (path === "/admin/bon/update-phone" && request.method === "POST") {
-        if (!env.BON_DATA) {
-          return json(
-            { ok: false, message: "BON_DATA KV belum dikonfigurasi" },
-            500
-          );
-        }
-
-        const body = await request.json().catch(() => null);
-        if (!body) {
-          return json({ ok: false, message: "Invalid JSON body" }, 400);
-        }
-
-        const oldPhoneInput = (body.oldPhone || "").toString().trim();
-        const newPhoneInput = (body.newPhone || "").toString().trim();
-
-        if (!oldPhoneInput || !newPhoneInput) {
-          return json(
-            { ok: false, message: "oldPhone dan newPhone wajib diisi" },
-            400
-          );
-        }
-
-        const oldMsisdn = normalizePhone(oldPhoneInput);
-        const newMsisdn = normalizePhone(newPhoneInput);
-
-        if (!oldMsisdn || !newMsisdn) {
-          return json(
-            { ok: false, message: "Format nomor WA tidak valid" },
-            400
-          );
-        }
-
-        if (oldMsisdn === newMsisdn) {
-          return json(
-            { ok: false, message: "Nomor lama dan baru sama" },
-            400
-          );
-        }
-
-        const oldKey = bonKey(oldMsisdn);
-        const newKey = bonKey(newMsisdn);
-
-        const oldRaw = await env.BON_DATA.get(oldKey);
-        if (!oldRaw) {
-          return json(
-            { ok: false, message: "Tidak ada bon pada nomor lama" },
-            404
-          );
-        }
-
-        let oldRec;
-        try {
-          oldRec = JSON.parse(oldRaw);
-        } catch (e) {
-          oldRec = null;
-        }
-
-        if (!oldRec) {
-          return json(
-            { ok: false, message: "Data bon lama rusak / tidak valid" },
-            500
-          );
-        }
-
-        const newRaw = await env.BON_DATA.get(newKey);
-        let newRec = null;
-        if (newRaw) {
-          try {
-            newRec = JSON.parse(newRaw);
-          } catch (e) {
-            newRec = null;
-          }
-        }
-
-        const nowIso = new Date().toISOString();
-
-        if (!newRec) {
-          // langsung pindahkan
-          oldRec.phone = newMsisdn;
-          oldRec.updatedAt = nowIso;
-          await env.BON_DATA.put(newKey, JSON.stringify(oldRec));
-        } else {
-          // merge
-          const mergedHistory = []
-            .concat(Array.isArray(newRec.history) ? newRec.history : [])
-            .concat(Array.isArray(oldRec.history) ? oldRec.history : []);
-
-          const total =
-            (Number(newRec.total) || 0) + (Number(oldRec.total) || 0);
-
-          const merged = {
-            phone: newMsisdn,
-            name: newRec.name || oldRec.name || "",
-            total,
-            history: mergedHistory,
-            createdAt: newRec.createdAt || oldRec.createdAt || nowIso,
-            updatedAt: nowIso,
-          };
-
-          await env.BON_DATA.put(newKey, JSON.stringify(merged));
-        }
-
-        // hapus key lama
-        await env.BON_DATA.delete(oldKey);
-
-        return json({
-          ok: true,
-          message: "Bon dipindahkan ke nomor baru",
-        });
-      }
-
       // =================== ADMIN API ===================
 
       // LIST USER
@@ -1099,9 +682,126 @@ export default {
           valid: true,
         };
 
-        await env.axstore_data.put("reset:" + phoneRaw, JSON.stringify(payload));
+        await env.axstore_data.put(
+          "reset:" + phoneRaw,
+          JSON.stringify(payload)
+        );
 
         return json({ ok: true, code });
+      }
+
+      // =================== BON API (KV BON_DATA) ===================
+
+      // LIST SEMUA PELANGGAN BON
+      if (path === "/api/bon/list-customers" && request.method === "GET") {
+        const { keys } = await env.BON_DATA.list({ prefix: "cust:" });
+        const customers = [];
+
+        for (const k of keys) {
+          const raw = await env.BON_DATA.get(k.name);
+          if (!raw) continue;
+          try {
+            const obj = JSON.parse(raw);
+            customers.push({
+              phone: obj.phone,
+              name: obj.name,
+              total: obj.total || 0,
+            });
+          } catch (e) {
+            // skip rusak
+          }
+        }
+
+        return json({ ok: true, customers });
+      }
+
+      // BUAT PELANGGAN BARU
+      if (path === "/api/bon/create-customer" && request.method === "POST") {
+        const body = await request.json().catch(() => null);
+        if (!body) return json({ ok: false, message: "Invalid JSON" }, 400);
+
+        let { name, phone } = body;
+        if (!name || !phone) {
+          return json(
+            { ok: false, message: "Nama & nomor WA wajib diisi" },
+            400
+          );
+        }
+
+        phone = phone.replace(/\D/g, "");
+        if (!phone.startsWith("62")) {
+          if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+        }
+
+        const key = "cust:" + phone;
+        const exist = await env.BON_DATA.get(key);
+        if (exist) {
+          return json({ ok: false, message: "Pelanggan sudah ada" }, 400);
+        }
+
+        const data = {
+          phone,
+          name,
+          total: 0,
+          history: [],
+          createdAt: Date.now(),
+        };
+
+        await env.BON_DATA.put(key, JSON.stringify(data));
+        return json({ ok: true, message: "Pelanggan tersimpan" });
+      }
+
+      // DETAIL PELANGGAN
+      if (path === "/api/bon/get" && request.method === "GET") {
+        let phone = url.searchParams.get("phone");
+        if (!phone)
+          return json({ ok: false, message: "phone diperlukan" }, 400);
+
+        phone = phone.replace(/\D/g, "");
+        const key = "cust:" + phone;
+
+        const raw = await env.BON_DATA.get(key);
+        if (!raw)
+          return json({ ok: false, message: "Pelanggan tidak ditemukan" });
+
+        const obj = JSON.parse(raw);
+        return json({ ok: true, ...obj });
+      }
+
+      // TAMBAH TRANSAKSI (BERIKAN / TERIMA)
+      if (path === "/api/bon/add-trx" && request.method === "POST") {
+        const body = await request.json().catch(() => null);
+        if (!body) return json({ ok: false, message: "Invalid JSON" }, 400);
+
+        let { phone, type, amount, note } = body;
+        if (!phone || !type || typeof amount !== "number") {
+          return json({ ok: false, message: "Data tidak lengkap" }, 400);
+        }
+
+        phone = phone.replace(/\D/g, "");
+        const key = "cust:" + phone;
+
+        const raw = await env.BON_DATA.get(key);
+        if (!raw)
+          return json({ ok: false, message: "Pelanggan tidak ditemukan" });
+
+        const obj = JSON.parse(raw);
+
+        if (type === "give") obj.total += amount;
+        else if (type === "receive") obj.total -= amount;
+        else
+          return json({ ok: false, message: "type harus give/receive" }, 400);
+
+        obj.history = obj.history || [];
+        obj.history.push({
+          type,
+          amount,
+          note: note || "",
+          date: new Date().toISOString(),
+        });
+
+        await env.BON_DATA.put(key, JSON.stringify(obj));
+        return json({ ok: true, message: "Transaksi tersimpan" });
       }
 
       // =================== FORM HANDLERS (REGISTER & RESET) ===================
