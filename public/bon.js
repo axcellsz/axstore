@@ -36,11 +36,11 @@ function formatDateTimeID(iso) {
   return `${tgl}, ${jam}`;
 }
 
-// hitung dari total net → hutangPelanggan & hutangSaya
+// dari total net -> hutang pelanggan & hutang saya
 function splitBalanceFromTotal(totalNet) {
   const net = Number(totalNet) || 0;
-  const customerDebt = net > 0 ? net : 0;
-  const myDebt = net < 0 ? -net : 0;
+  const customerDebt = net > 0 ? net : 0;   // pelanggan masih ngutang ke kita
+  const myDebt = net < 0 ? -net : 0;        // kita yang ngutang ke pelanggan
   return { customerDebt, myDebt };
 }
 
@@ -49,25 +49,21 @@ function computeNetFromHistory(history) {
   let net = 0;
   for (const trx of history || []) {
     const amount = Number(trx.amount) || 0;
-    if (trx.type === "give") {
-      net += amount;
-    } else if (trx.type === "receive") {
-      net -= amount;
-    }
+    if (trx.type === "give") net += amount;       // kita berikan -> pelanggan ngutang
+    else if (trx.type === "receive") net -= amount; // pelanggan bayar -> hutang berkurang
   }
   return net;
 }
 
-// cek sesi admin: pakai localStorage dari admin.html
+// cek sesi admin
 function ensureAdminSession() {
   const logged = localStorage.getItem("admin_logged_in");
   if (logged !== "1") {
-    // paksa balik ke admin
     window.location.href = "/admin.html";
   }
 }
 
-// switch antar screen
+// ganti screen
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach((s) => {
     s.hidden = s.id !== id;
@@ -215,7 +211,6 @@ async function saveCustomer() {
     return;
   }
 
-  try:
   try {
     const res = await fetch(API_CREATE, {
       method: "POST",
@@ -287,11 +282,9 @@ function renderHistory(history) {
       amountEl.className = "trx-amount";
       const amount = Number(trx.amount) || 0;
 
-      if (trx.type === "give") {
-        amountEl.classList.add("give");
-      } else {
-        amountEl.classList.add("receive");
-      }
+      if (trx.type === "give") amountEl.classList.add("give");
+      else amountEl.classList.add("receive");
+
       amountEl.textContent = formatRupiah(amount);
 
       item.appendChild(main);
@@ -335,7 +328,7 @@ async function openDetail(phone) {
     renderDetailHeader(net);
     renderHistory(currentHistory);
 
-    // refresh list juga supaya angka di list ikut update
+    // refresh list supaya angka list & ringkasan global ikut update
     await loadCustomers();
 
     showScreen("screenDetail");
@@ -346,7 +339,7 @@ async function openDetail(phone) {
 }
 
 // =======================
-// TRANSAKSI (BERIKAN / TERIMA)
+// TRANSAKSI
 // =======================
 function openInputScreen(type) {
   if (!currentCustomer) return;
@@ -399,7 +392,7 @@ async function saveTrx() {
       throw new Error(data.message || "Gagal menyimpan transaksi");
     }
 
-    // setelah simpan, reload detail (itu juga reload list & ringkasan)
+    // reload detail (juga akan reload list & ringkasan)
     await openDetail(currentCustomer.phone);
   } catch (err) {
     console.error(err);
@@ -411,8 +404,11 @@ async function saveTrx() {
 // INIT
 // =======================
 document.addEventListener("DOMContentLoaded", () => {
-  // keamanan: wajib admin login
+  // wajib admin login
   ensureAdminSession();
+
+  // default tampilan
+  showScreen("screenList");
 
   // tombol di list
   const btnAdd = document.getElementById("btnAddCustomer");
@@ -421,7 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const search = document.getElementById("searchCustomer");
   if (search) search.addEventListener("input", applyFilter);
 
-  // tombol back dari add / detail
+  // tombol back
   document.querySelectorAll(".btn-back-list").forEach((btn) => {
     btn.addEventListener("click", () => showScreen("screenList"));
   });
@@ -431,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnBackDetail.addEventListener("click", () => showScreen("screenDetail"));
   }
 
-  // tombol simpan pelanggan baru
+  // simpan pelanggan baru
   const btnSaveCustomer = document.getElementById("btnSaveCustomer");
   if (btnSaveCustomer) btnSaveCustomer.addEventListener("click", saveCustomer);
 
@@ -443,7 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnReceive)
     btnReceive.addEventListener("click", () => openInputScreen("receive"));
 
-  // tombol simpan transaksi
+  // simpan transaksi
   const btnSaveTrx = document.getElementById("btnSaveTrx");
   if (btnSaveTrx) btnSaveTrx.addEventListener("click", saveTrx);
 
