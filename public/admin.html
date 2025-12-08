@@ -1,32 +1,74 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Panel</title>
 
-  <!-- CSS terpisah -->
   <link rel="stylesheet" href="/admin.css" />
-  <!-- JS terpisah -->
   <script src="/admin.js" defer></script>
 </head>
 <body>
 
-  <div class="container">
-    <h2>Admin Panel</h2>
+  <!-- TOAST NOTIF -->
+  <div id="toast" class="toast" hidden></div>
 
-    <div id="result"></div>
+  <div class="admin-page">
 
-    <table id="usersTable">
-      <thead>
-        <tr>
-          <th>Nama</th>
-          <th>No WA</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- ============ LOGIN ADMIN ============ -->
+    <div id="admin-login" class="card login-card">
+      <h1>Login Admin</h1>
+      <p class="login-desc">
+        Masukan password admin untuk mengakses panel.
+      </p>
+
+      <form id="admin-login-form">
+        <label for="admin-password">Password</label>
+        <input
+          type="password"
+          id="admin-password"
+          class="input"
+          autocomplete="off"
+          required
+        />
+
+        <div id="login-error" class="login-error" hidden>
+          Password salah.
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          Masuk
+        </button>
+      </form>
+    </div>
+
+    <!-- ============ DASHBOARD ADMIN ============ -->
+    <div id="admin-main" class="card admin-card" hidden>
+      <div class="admin-header">
+        <div>
+          <h1>Daftar User</h1>
+          <p id="admin-summary" class="admin-summary"></p>
+        </div>
+        <button id="btn-refresh" class="btn btn-outline">
+          Refresh
+        </button>
+      </div>
+
+      <div id="admin-info" class="admin-info" hidden></div>
+
+      <!-- LIST USER -->
+      <div id="userList" class="user-list"></div>
+    </div>
+  </div>
+
+  <!-- SEARCH BAR FIXED BAWAH -->
+  <div id="search-bar" class="search-bar" hidden>
+    <input
+      type="text"
+      id="searchInput"
+      class="search-input"
+      placeholder="Cari nama lengkap user..."
+    />
   </div>
 
 </body>
