@@ -7,13 +7,13 @@ const API_BON_CREATE = "/api/bon/create-customer";
 const API_BON_ADD_TRX = "/api/bon/add-trx";
 
 // STATE
-let allCustomers = [];      // semua pelanggan dari server
+let allCustomers = [];      // semua pelanggan dari server (plus total)
 let filteredCustomers = []; // setelah filter search
 let currentCustomer = null; // pelanggan yang sedang dibuka di detail
 let currentTrxType = "give"; // "give" = Berikan, "receive" = Terima
 
 // =====================
-// HELPER UI
+// HELPER UMUM
 // =====================
 
 // Cek session admin, kalau belum login -> lempar ke /admin.html
@@ -44,51 +44,57 @@ function showScreen(screenId) {
   });
 }
 
-// Tampilkan pesan error/alert sederhana
+// Popup error sederhana
 function showError(msg) {
   alert(msg || "Terjadi kesalahan");
 }
 
 // =====================
-// HITUNG HUTANG
+// HITUNG HUTANG DARI HISTORY
 // =====================
+// Aturan:
+//  - type "give"   => pelanggan berhutang ( + )
+//  - type "receive"=> pelanggan bayar ( - )
+//  Jika hasil akhir (net) > 0  => Hutang pelanggan = net, Hutang saya = 0
+//  Jika net < 0                => Hutang saya = -net, Hutang pelanggan = 0
+function computeDebtsFromHistory(historyRaw) {
+  const history = Array.isArray(historyRaw) ? historyRaw : [];
+  let net = 0;
 
-// Backend idealnya sudah kirim customerDebt & ownerDebt.
-// Tapi untuk jaga-jaga, kalau cuma ada "total", kita hitung sendiri.
-function splitDebtsFromItem(item) {
-  const totalCustomer =
-    typeof item.totalCustomerDebt === "number"
-      ? item.totalCustomerDebt
-      : undefined;
-  const totalOwner =
-    typeof item.totalOwnerDebt === "number"
-      ? item.totalOwnerDebt
-      : undefined;
+  for (const trx of history) {
+    const amount = Number(trx.amount || 0);
+    if (!amount) continue;
 
-  if (totalCustomer !== undefined || totalOwner !== undefined) {
-    return {
-      customerDebt: totalCustomer || 0,
-      ownerDebt: totalOwner || 0,
-    };
+    if (trx.type === "give") {
+      net += amount;
+    } else if (trx.type === "receive") {
+      net -= amount;
+    }
   }
 
-  // fallback: pakai field "total" (bisa + / -)
-  const total = Number(item.total || 0);
-  const customerDebt = total > 0 ? total : 0;
-  const ownerDebt = total < 0 ? -total : 0;
+  let customerDebt = 0;
+  let ownerDebt = 0;
+
+  if (net > 0) {
+    customerDebt = net;
+  } else if (net < 0) {
+    ownerDebt = -net;
+  }
 
   return { customerDebt, ownerDebt };
 }
 
-// Hitung total hutang saya & hutang pelanggan dari semua pelanggan
+// =====================
+// SUMMARY GLOBAL (atas list)
+// =====================
+
 function updateGlobalSummary() {
   let totalOwner = 0;
   let totalCustomer = 0;
 
   for (const c of allCustomers) {
-    const { customerDebt, ownerDebt } = splitDebtsFromItem(c);
-    totalOwner += ownerDebt;
-    totalCustomer += customerDebt;
+    totalOwner += Number(c.ownerDebt || 0);
+    totalCustomer += Number(c.customerDebt || 0);
   }
 
   const elOwner = document.getElementById("sumOwnerTop");
@@ -111,13 +117,15 @@ function renderCustomerList() {
   if (!filteredCustomers.length) {
     const empty = document.createElement("div");
     empty.className = "bon-empty";
-    empty.textContent = "Belum ada pelanggan / tidak ada yang cocok dengan pencarian.";
+    empty.textContent =
+      "Belum ada pelanggan / tidak ada yang cocok dengan pencarian.";
     listEl.appendChild(empty);
     return;
   }
 
   filteredCustomers.forEach((cust, idx) => {
-    const { customerDebt, ownerDebt } = splitDebtsFromItem(cust);
+    const customerDebt = Number(cust.customerDebt || 0);
+    const ownerDebt = Number(cust.ownerDebt || 0);
 
     const item = document.createElement("div");
     item.className = "customer-item";
@@ -154,7 +162,9 @@ function renderCustomerList() {
     const custLine = document.createElement("div");
     custLine.className = "customer-debt-line";
     custLine.innerHTML =
-      `Hutang pelanggan <span class="debt-customer">${formatRupiah(customerDebt)}</span>`;
+      `Hutang pelanggan <span class="debt-customer">${formatRupiah(
+        customerDebt
+      )}</span>`;
 
     debtsEl.appendChild(ownerLine);
     debtsEl.appendChild(custLine);
@@ -180,10 +190,38 @@ async function loadCustomers(initialPhoneToOpen) {
       throw new Error(data.message || "Gagal memuat daftar hutang");
     }
 
-    allCustomers = data.customers;
+    // data.customers biasanya cuma {phone,name} atau ada field lain,
+    // tapi belum ada total. Kita ambil detail masing2, hitung total dari history.
+    const baseList = data.customers;
+
+    const detailedList = await Promise.all(
+      baseList.map(async (c) => {
+        try {
+          const url = API_BON_GET + "?phone=" + encodeURIComponent(c.phone);
+          const r = await fetch(url);
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok || !d.ok) {
+            return { ...c, history: [], customerDebt: 0, ownerDebt: 0 };
+          }
+          const { customerDebt, ownerDebt } = computeDebtsFromHistory(
+            d.history || []
+          );
+          return {
+            ...c,
+            history: d.history || [],
+            customerDebt,
+            ownerDebt,
+          };
+        } catch {
+          return { ...c, history: [], customerDebt: 0, ownerDebt: 0 };
+        }
+      })
+    );
+
+    allCustomers = detailedList;
     applyCustomerFilter();
 
-    // kalau ada query ?phone=... dibuka langsung
+    // kalau dipanggil dari admin "BON" (bon.html?phone=...)
     if (initialPhoneToOpen) {
       const found = allCustomers.find((c) => c.phone === initialPhoneToOpen);
       if (found) {
@@ -209,32 +247,32 @@ function applyCustomerFilter() {
   }
 
   renderCustomerList();
-  updateGlobalSummary(); // total semua pelanggan
+  updateGlobalSummary();
 }
 
 // =====================
 // DETAIL PELANGGAN
 // =====================
 
-function renderDetailHeaderAndSummary(detailObj) {
+function renderDetailHeader(detailObj) {
   const nameEl = document.getElementById("detailName");
   if (nameEl) {
     nameEl.textContent = detailObj.name || "(Tanpa nama)";
   }
 
-  // Kita coba pakai elemen baru (detailTotalOwner & detailTotalCustomer).
   const ownerEl = document.getElementById("detailTotalOwner");
   const customerEl = document.getElementById("detailTotalCustomer");
-  const singleEl = document.getElementById("detailTotal"); // fallback lama
+  const singleEl = document.getElementById("detailTotal"); // kalau masih ada yang lama
 
-  const { customerDebt, ownerDebt } = splitDebtsFromItem(detailObj);
+  const { customerDebt, ownerDebt } = computeDebtsFromHistory(
+    detailObj.history || []
+  );
 
   if (ownerEl && customerEl) {
     ownerEl.textContent = formatRupiah(ownerDebt);
     customerEl.textContent = formatRupiah(customerDebt);
-    if (singleEl) singleEl.textContent = ""; // kalau masih ada, kosongkan saja
+    if (singleEl) singleEl.textContent = "";
   } else if (singleEl) {
-    // Fallback: hanya satu angka, pakai hutang pelanggan (positif), tanpa minus
     singleEl.textContent = formatRupiah(customerDebt);
   }
 }
@@ -276,7 +314,8 @@ function renderDetailHistory(detailObj) {
 
       const noteEl = document.createElement("div");
       noteEl.className = "history-note";
-      noteEl.textContent = trx.note || (trx.type === "give" ? "Hutang baru" : "Pembayaran");
+      noteEl.textContent =
+        trx.note || (trx.type === "give" ? "Hutang baru" : "Pembayaran");
 
       left.appendChild(dateEl);
       left.appendChild(noteEl);
@@ -308,13 +347,10 @@ async function openCustomerDetail(phone) {
     currentCustomer = {
       phone: data.phone,
       name: data.name,
-      total: data.total,
-      totalCustomerDebt: data.totalCustomerDebt,
-      totalOwnerDebt: data.totalOwnerDebt,
       history: data.history || [],
     };
 
-    renderDetailHeaderAndSummary(currentCustomer);
+    renderDetailHeader(currentCustomer);
     renderDetailHistory(currentCustomer);
 
     showScreen("screenDetail");
@@ -325,7 +361,7 @@ async function openCustomerDetail(phone) {
 }
 
 // =====================
-// TAMBAH / EDIT PELANGGAN
+// TAMBAH PELANGGAN
 // =====================
 
 async function saveCustomer() {
@@ -358,10 +394,7 @@ async function saveCustomer() {
     if (nameInput) nameInput.value = "";
     if (phoneInput) phoneInput.value = "";
 
-    // reload daftar pelanggan
-    await loadCustomers(phone);
-
-    // kembali ke list / langsung ke detail (sudah di-handle di loadCustomers)
+    await loadCustomers(phone); // reload + buka pelanggan ini
     showScreen("screenList");
   } catch (err) {
     console.error(err);
@@ -389,7 +422,6 @@ function openTrxInput(type) {
 
   const amountEl = document.getElementById("trxAmount");
   const noteEl = document.getElementById("trxNote");
-
   if (amountEl) amountEl.value = "";
   if (noteEl) noteEl.value = "";
 
@@ -432,7 +464,6 @@ async function saveTrx() {
 
     // reload detail
     await openCustomerDetail(currentCustomer.phone);
-    // setelah openCustomerDetail berhasil, screenDetail sudah aktif
   } catch (err) {
     console.error(err);
     showError("Gagal menyimpan transaksi");
@@ -447,14 +478,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1. Cek dulu sesi admin
   checkAdminSession();
 
-  // 2. Inisialisasi screen awal
+  // 2. Screen awal
   showScreen("screenList");
 
-  // 3. Ambil query phone (kalau bon.html?phone=62xxx)
+  // 3. Ambil query phone (bon.html?phone=62xxx)
   const url = new URL(window.location.href);
   const phoneFromQuery = url.searchParams.get("phone") || "";
 
-  // 4. Event tombol + (tambah pelanggan)
+  // 4. Event tombol +
   const btnAddCustomer = document.getElementById("btnAddCustomer");
   if (btnAddCustomer) {
     btnAddCustomer.addEventListener("click", () => {
@@ -462,49 +493,48 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 5. Tombol Simpan pelanggan baru
+  // 5. Simpan pelanggan baru
   const btnSaveCustomer = document.getElementById("btnSaveCustomer");
   if (btnSaveCustomer) {
     btnSaveCustomer.addEventListener("click", saveCustomer);
   }
 
-  // 6. Tombol back dari tambah -> list
+  // 6. Back dari tambah -> list
   document.querySelectorAll(".btn-back-list").forEach((btn) => {
     btn.addEventListener("click", () => {
       showScreen("screenList");
     });
   });
 
-  // 7. Tombol back dari input trx -> detail
+  // 7. Back dari input transaksi -> detail
   document.querySelectorAll(".btn-back-detail").forEach((btn) => {
     btn.addEventListener("click", () => {
       showScreen("screenDetail");
     });
   });
 
-  // 8. Tombol Berikan / Terima (di detail)
+  // 8. Tombol Berikan / Terima di detail
   const btnGive = document.getElementById("btnGive");
   if (btnGive) {
     btnGive.addEventListener("click", () => openTrxInput("give"));
   }
-
   const btnReceive = document.getElementById("btnReceive");
   if (btnReceive) {
     btnReceive.addEventListener("click", () => openTrxInput("receive"));
   }
 
-  // 9. Tombol simpan transaksi
+  // 9. Simpan transaksi
   const btnSaveTrx = document.getElementById("btnSaveTrx");
   if (btnSaveTrx) {
     btnSaveTrx.addEventListener("click", saveTrx);
   }
 
-  // 10. Input search pelanggan
+  // 10. Search pelanggan
   const searchInput = document.getElementById("searchCustomer");
   if (searchInput) {
     searchInput.addEventListener("input", applyCustomerFilter);
   }
 
-  // 11. Load daftar pelanggan dari server
+  // 11. Load pelanggan
   loadCustomers(phoneFromQuery);
 });
