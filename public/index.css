@@ -15,7 +15,6 @@ body {
   height: 100%;
 }
 
-/* Background & layout mirip login */
 body {
   position: relative;
   background: #f3f4f6;
@@ -57,8 +56,9 @@ body {
 }
 
 /* ==========================
-   CARD DASHBOARD & FORM
+   CARD (Dashboard & Form)
 ========================== */
+
 .card {
   width: 100%;
   max-width: 480px;
@@ -67,28 +67,19 @@ body {
   padding: 18px 18px 20px;
   box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.12);
   margin-top: 80px;
-  margin-bottom: 96px;  /* <<< TAMBAHAN: ngasih jarak dari bawah */
+  margin-bottom: 96px;
 }
 
+/* form lengkapi profil card */
 #card-complete-profile {
   margin-top: 2px;
   padding-bottom: 100px;
 }
 
-.card h1 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 6px;
-}
+/* ==========================
+   FORM INPUT
+========================== */
 
-.card p {
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 8px;
-}
-
-/* FORM LENGKAPI PROFIL */
 #form-complete-profile {
   margin-top: 6px;
   display: flex;
@@ -101,7 +92,6 @@ body {
   color: #374151;
 }
 
-/* RT & RW sejajar  */
 .row-2col {
   display: flex;
   gap: 14px;
@@ -114,21 +104,16 @@ body {
   flex-direction: column;
 }
 
-/* Input & select garis bawah */
+/* input bawah garis */
 .input {
   width: 100%;
   border: none;
   border-bottom: 1px solid #d1d5db;
-  border-radius: 0;
   padding: 8px 0;
   font-size: 14px;
   background-color: transparent;
   outline: none;
   color: #111827;
-}
-
-.input:where(select) {
-  background-color: transparent;
 }
 
 .input:focus {
@@ -140,11 +125,10 @@ body {
 }
 
 /* ==========================
-   BUTTON
+   BUTTONS
 ========================== */
 
 .btn-primary {
-  margin-top: 12px;
   width: 100%;
   padding: 10px 0;
   border: none;
@@ -186,23 +170,17 @@ body {
 /* ==========================
    RESPONSIVE
 ========================== */
-
 @media (max-width: 480px) {
   .card {
     margin-top: 70px;
     padding: 16px 16px 18px;
     border-radius: 14px;
   }
-
-  .card h1 {
-    font-size: 18px;
-  }
 }
 
 /* ==========================
    FLOATING PROFILE BUTTON
 ========================== */
-
 .profile-btn {
   position: fixed;
   bottom: 24px;
@@ -219,18 +197,8 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   cursor: pointer;
   z-index: 2000;
-
   outline: none;
-  -webkit-tap-highlight-color: transparent;
-
-  transition:
-    transform 0.12s ease-out,
-    box-shadow 0.12s ease-out,
-    opacity 0.12s ease-out;
-}
-
-.profile-btn:focus {
-  outline: none;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, opacity 0.12s ease-out;
 }
 
 .profile-btn:active {
@@ -240,7 +208,7 @@ body {
 }
 
 /* ==========================
-   PANEL PROFIL SLIDE
+   PROFILE PANEL (SLIDE)
 ========================== */
 
 .profile-panel {
@@ -248,26 +216,17 @@ body {
   top: 0;
   right: 0;
   z-index: 1200;
-
   width: 80vw;
   max-width: 320px;
   height: 100vh;
-
   background: #ffffff;
   box-shadow: -6px 0 18px rgba(15, 23, 42, 0.18);
-  padding: 18px 16px 100px;
-
-  box-sizing: border-box;
-
+  padding: 18px 16px 150px;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-
   transform: translateX(100%);
   transition: transform 0.22s ease-out;
-
   display: flex;
   flex-direction: column;
-  padding: 18px 16px 150px;  /* padding bawah diperbesar */
 }
 
 .profile-panel.open {
@@ -281,26 +240,18 @@ body {
   margin-bottom: 16px;
 }
 
-.profile-panel-header h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #111827;
-}
-
 .profile-panel-close {
   border: none;
   background: transparent;
   font-size: 22px;
-  line-height: 1;
   cursor: pointer;
   padding: 2px 6px;
 }
 
 /* ==========================
-   AVATAR + USERNAME + WHATSAPP
+   AVATAR + USER INFO
 ========================== */
 
-/* CARD UNTUK HEADER PROFIL */
 .profile-header-card {
   background: #f9fafb;
   border-radius: 16px;
@@ -310,11 +261,9 @@ body {
 
 .profile-header-row {
   display: flex;
-  align-items: flex-start;
   gap: 16px;
 }
 
-/* avatar + tombol menjadi satu kolom */
 .profile-avatar-block {
   display: flex;
   flex-direction: column;
@@ -328,7 +277,6 @@ body {
   background: #e5e7eb;
   position: relative;
   overflow: hidden;
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -356,7 +304,6 @@ body {
   display: none;
 }
 
-/* Tombol ubah foto kecil tepat di bawah avatar */
 #btn-change-photo {
   padding: 6px 14px;
   border-radius: 999px;
@@ -364,27 +311,17 @@ body {
   border: 1px solid #d1d5db;
   font-size: 13px;
   color: #374151;
-  width: auto;
-  min-width: 0;
 }
 
-#btn-change-photo:active {
-  transform: scale(0.97);
-}
-
-/* Teks di samping avatar */
 .profile-header-text {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   margin-top: 18px;
 }
 
 .profile-header-username {
   font-size: 18px;
   font-weight: 600;
-  color: #111827;
 }
 
 .profile-header-whatsapp {
@@ -394,15 +331,14 @@ body {
 }
 
 /* ==========================
-   EXTRA PROFIL (SISA KUOTA + DETAIL)
+   EXTRA PROFIL (KUOTA + DETAIL)
 ========================== */
 
 .profile-extra {
   margin-top: 20px;
-  flex: 1;
 }
 
-/* Card sisa kuota */
+/* KUOTA */
 .profile-quota-card {
   background: #f9fafb;
   border-radius: 12px;
@@ -410,22 +346,21 @@ body {
   margin-bottom: 12px;
 }
 
-.profile-quota-card .quota-title {
+.quota-title {
   font-size: 12px;
   color: #6b7280;
 }
 
 .quota-value {
+  margin-top: 4px;
   display: flex;
   flex-direction: column;
-  margin-top: 4px;
 }
 
 .quota-amount {
   font-size: 26px;
   font-weight: 700;
-  color: #16a34a; /* hijau */
-  line-height: 1.1;
+  color: #16a34a;
 }
 
 .quota-exp {
@@ -434,7 +369,7 @@ body {
   color: #6b7280;
 }
 
-/* List detail profil */
+/* DETAIL PROFIL */
 .profile-detail-list {
   border-top: 1px solid #e5e7eb;
 }
@@ -450,20 +385,19 @@ body {
 }
 
 .detail-value {
-  margin-top: 2px;
   font-size: 14px;
   font-weight: 500;
   color: #9ca3af;
 }
 
-/* link look untuk teks "Lihat detail lengkap" */
 #detail-profil-text {
   color: #0d6efd;
   font-weight: 600;
   text-decoration: underline;
+  cursor: pointer;
 }
 
-/* BACKDROP di belakang panel profil */
+/* BACKDROP */
 .profile-panel-backdrop {
   position: fixed;
   inset: 0;
