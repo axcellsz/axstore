@@ -56,6 +56,7 @@ function updateSummary() {
 
 // ========== RENDER USER LIST ==========
 function renderUsers() {
+function renderUsers() {
   const list = document.getElementById("userList");
   if (!list) return;
 
@@ -79,7 +80,7 @@ function renderUsers() {
     const phone = u.phone || "-";
     const nomorXL = u.nomorXL || "-";
 
-    // header: nomor + nama + tombol
+    // HEADER: nomor + nama
     const header = document.createElement("div");
     header.className = "user-header";
 
@@ -87,32 +88,9 @@ function renderUsers() {
     title.className = "user-title";
     title.textContent = `${idx + 1}. ${fullName}`;
 
-    const actions = document.createElement("div");
-    actions.className = "user-actions";
-
-    const btnDelete = document.createElement("button");
-    btnDelete.className = "btn btn-danger";
-    btnDelete.textContent = "DELETE";
-    btnDelete.addEventListener("click", () => handleDelete(u));
-
-    const btnCode = document.createElement("button");
-    btnCode.className = "btn btn-dark";
-    btnCode.textContent = "KODE";
-    btnCode.addEventListener("click", () => handleCode(u));
-
-    const btnBon = document.createElement("button");
-    btnBon.className = "btn btn-outline btn-small";
-    btnBon.textContent = "BON";
-    btnBon.addEventListener("click", () => handleBon(u));
-
-    actions.appendChild(btnDelete);
-    actions.appendChild(btnCode);
-    actions.appendChild(btnBon);
-
     header.appendChild(title);
-    header.appendChild(actions);
 
-    // bagian bawah dengan garis-garis
+    // DETAIL DENGAN GARIS-GARIS
     const fields = document.createElement("div");
     fields.className = "user-fields";
 
@@ -137,15 +115,39 @@ function renderUsers() {
     fields.appendChild(makeRow("No WA", phone));
     fields.appendChild(makeRow("No XL", nomorXL));
 
+    // BARIS TOMBOL DI BAWAH DETAIL
+    const actionsRow = document.createElement("div");
+    actionsRow.className = "user-actions-row";
+
+    const btnDelete = document.createElement("button");
+    btnDelete.className = "btn btn-danger";
+    btnDelete.textContent = "DELETE";
+    btnDelete.addEventListener("click", () => handleDelete(u));
+
+    const btnCode = document.createElement("button");
+    btnCode.className = "btn btn-dark";
+    btnCode.textContent = "KODE";
+    btnCode.addEventListener("click", () => handleCode(u));
+
+    const btnBon = document.createElement("button");
+    btnBon.className = "btn btn-outline btn-small";
+    btnBon.textContent = "BON";
+    btnBon.addEventListener("click", () => handleBon(u));
+
+    actionsRow.appendChild(btnDelete);
+    actionsRow.appendChild(btnCode);
+    actionsRow.appendChild(btnBon);
+
+    // susun ke dalam card
     item.appendChild(header);
     item.appendChild(fields);
+    item.appendChild(actionsRow);
 
     list.appendChild(item);
   });
 
   updateSummary();
 }
-
 // ========== LOAD USERS ==========
 async function loadUsers() {
   showInfo("");
