@@ -11,48 +11,32 @@ function escapeHTML(str) {
     .replace(/'/g, "&#039;");
 }
 
-/* ========= Helper format tanggal Indonesia ========= */
+/* ========= Helper format tanggal ========= */
 function formatDateID(isoString) {
   if (!isoString) return "";
   const d = new Date(isoString);
   if (Number.isNaN(d.getTime())) return isoString;
 
-  const bulan = [
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember",
+  const namaBulan = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
   ];
 
-  const day = d.getDate();
-  const monthName = bulan[d.getMonth()];
-  const year = d.getFullYear();
-  return `${day} ${monthName} ${year}`;
+  return `${d.getDate()} ${namaBulan[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /* ========= ALERT ========= */
 let alertTimeout = null;
 
-function showAlert(message, type = "info") {
+function showAlert(msg, type = "info") {
   const box = document.getElementById("alert");
   if (!box) return;
 
-  box.textContent = message || "";
-
+  box.textContent = msg;
   box.classList.remove("alert-success", "alert-error");
-  if (type === "success") {
-    box.classList.add("alert-success");
-  } else if (type === "error") {
-    box.classList.add("alert-error");
-  }
+
+  if (type === "success") box.classList.add("alert-success");
+  if (type === "error") box.classList.add("alert-error");
 
   box.style.display = "block";
   box.style.opacity = "1";
@@ -60,9 +44,7 @@ function showAlert(message, type = "info") {
   if (alertTimeout) clearTimeout(alertTimeout);
   alertTimeout = setTimeout(() => {
     box.style.opacity = "0";
-    setTimeout(() => {
-      box.style.display = "none";
-    }, 300);
+    setTimeout(() => (box.style.display = "none"), 300);
   }, 4000);
 }
 
@@ -72,177 +54,109 @@ window.doLogout = function () {
   window.location.href = LOGIN_URL;
 };
 
-/* ========= PANEL PROFIL (SLIDE) ========= */
+/* ========= PANEL PROFIL SLIDER ========= */
 window.openProfilePanel = function () {
-  const panel = document.getElementById("profile-panel");
-  const backdrop = document.getElementById("profile-panel-backdrop");
-  if (!panel || !backdrop) return;
-
-  panel.classList.add("open");
-  backdrop.classList.add("show");
-
-  // setiap kali panel dibuka, refresh kuota (pakai cache di worker)
+  document.getElementById("profile-panel").classList.add("open");
+  document.getElementById("profile-panel-backdrop").classList.add("show");
   loadQuota();
 };
 
 window.closeProfilePanel = function () {
-  const panel = document.getElementById("profile-panel");
-  const backdrop = document.getElementById("profile-panel-backdrop");
-  if (!panel || !backdrop) return;
-
-  panel.classList.remove("open");
-  backdrop.classList.remove("show");
+  document.getElementById("profile-panel").classList.remove("open");
+  document.getElementById("profile-panel-backdrop").classList.remove("show");
 };
 
-/* ========= LENGKAPI PROFIL: buka/tutup card ========= */
-
+/* ========= CARD SWITCH ========= */
 window.openCompleteProfile = function () {
-  const cardDash = document.getElementById("card-dashboard");
-  const cardProfile = document.getElementById("card-complete-profile");
-  if (!cardDash || !cardProfile) return;
-
-  cardDash.style.display = "none";
-  cardProfile.style.display = "block";
-
-  // panel profil ditutup supaya fokus ke form
+  document.getElementById("card-dashboard").style.display = "none";
+  document.getElementById("card-complete-profile").style.display = "block";
   window.closeProfilePanel();
 };
 
 window.backToDashboard = function () {
-  const cardDash = document.getElementById("card-dashboard");
-  const cardProfile = document.getElementById("card-complete-profile");
-  if (!cardDash || !cardProfile) return;
-
-  cardProfile.style.display = "none";
-  cardDash.style.display = "block";
+  document.getElementById("card-complete-profile").style.display = "none";
+  document.getElementById("card-dashboard").style.display = "block";
 };
 
 /* ========= INIT SESSION ========= */
 (function initSession() {
   const raw = localStorage.getItem("axstore_user");
-  if (!raw) {
-    window.location.href = LOGIN_URL;
-    return;
-  }
+  if (!raw) return (window.location.href = LOGIN_URL);
 
-  let session;
+  let session = null;
   try {
     session = JSON.parse(raw);
-  } catch (e) {
+  } catch (_) {
     localStorage.removeItem("axstore_user");
-    window.location.href = LOGIN_URL;
-    return;
+    return (window.location.href = LOGIN_URL);
   }
 
-  // Simpan sesi global
   window.__AX_USER = session;
 
-  // Teks di dashboard
-  const welcome = document.getElementById("welcome");
-  if (welcome) {
-    const uname = session.username || session.name || "(tanpa nama)";
-    const phone = session.phone || "-";
-    welcome.textContent = `Anda login sebagai ${uname} (${phone}).`;
-  }
+  /*** WELCOME MESSAGE DINONAKTIFKAN ***/
+  // const welcome = document.getElementById("welcome");
+  // if (welcome) welcome.textContent = "";
 
-  // isi teks dasar (username & WA)
-  const unameSafe = escapeHTML(session.username || session.name || "-");
-  const phoneSafe = escapeHTML(session.phone || "-");
+  // Header profil
+  const uname = escapeHTML(session.username || session.name || "-");
+  const phone = escapeHTML(session.phone || "-");
 
-  const headerUsername = document.getElementById("profile-username-top");
-  const headerWa = document.getElementById("profile-whatsapp-top");
-  if (headerUsername) headerUsername.textContent = unameSafe;
-  if (headerWa) {
-    headerWa.textContent =
-      phoneSafe && phoneSafe !== "-" ? `WhatsApp ${phoneSafe}` : "";
-  }
+  const headerU = document.getElementById("profile-username-top");
+  const headerW = document.getElementById("profile-whatsapp-top");
 
-  // set inisial avatar
-  const initial =
-    (session.username || session.name || "?").trim().charAt(0).toUpperCase() || "?";
+  if (headerU) headerU.textContent = uname;
+  if (headerW) headerW.textContent = phone ? "WhatsApp " + phone : "";
+
+  const initial = (session.username || session.name || "?").charAt(0).toUpperCase();
   const avatarInitial = document.getElementById("profile-avatar-initial");
   if (avatarInitial) avatarInitial.textContent = initial;
 
-  // Pasang event ubah foto
+  // Event tombol foto
   const fileInput = document.getElementById("profile-photo-input");
+  if (fileInput) fileInput.addEventListener("change", handlePhotoChange);
+
   const btnChange = document.getElementById("btn-change-photo");
-  if (fileInput) {
-    fileInput.addEventListener("change", handlePhotoChange);
-  }
-  if (btnChange && fileInput) {
-    btnChange.addEventListener("click", () => fileInput.click());
-  }
+  if (btnChange) btnChange.addEventListener("click", () => fileInput.click());
 
-  // Tombol buka form lengkapi profil
-  const btnOpenComplete = document.getElementById("btn-open-complete-profile");
-  if (btnOpenComplete) {
-    btnOpenComplete.addEventListener("click", () => {
-      if (window.openCompleteProfile) window.openCompleteProfile();
-    });
-  }
-
-  // Tombol tutup panel profil + backdrop
+  // Tombol profil
   const closeBtn = document.getElementById("btn-close-profile");
-  const backdrop = document.getElementById("profile-panel-backdrop");
   if (closeBtn) closeBtn.addEventListener("click", () => window.closeProfilePanel());
+
+  const backdrop = document.getElementById("profile-panel-backdrop");
   if (backdrop) backdrop.addEventListener("click", () => window.closeProfilePanel());
 
-  // Toggle "Lihat detail lengkap" (show/hide detail box, BUKAN edit)
-  const detailProfilText = document.getElementById("detail-profil-text");
-  if (detailProfilText) {
-    detailProfilText.style.cursor = "pointer";
-    detailProfilText.addEventListener("click", () => {
+  // Detail toggle
+  const detailText = document.getElementById("detail-profil-text");
+  if (detailText) {
+    detailText.addEventListener("click", () => {
       const box = document.getElementById("profile-detail-box");
-      if (!box) return;
-
-      const isShown = box.style.display === "block";
-      box.style.display = isShown ? "none" : "block";
-      detailProfilText.textContent = isShown
-        ? "Lihat detail lengkap"
-        : "Sembunyikan detail";
+      const showing = box.style.display === "block";
+      box.style.display = showing ? "none" : "block";
+      detailText.textContent = showing ? "Lihat detail lengkap" : "Sembunyikan detail";
     });
   }
 
-  // Load foto profil dari server
-  loadProfilePhoto();
-
-  // Load detail profil lengkap dari KV
+  // Load data profil & foto
   loadProfileDetail();
+  loadProfilePhoto();
 })();
 
-/* ========= LOAD DETAIL PROFIL DARI KV ========= */
-
+/* ========= LOAD DETAIL PROFIL ========= */
 async function loadProfileDetail() {
   const user = window.__AX_USER;
-  if (!user || !user.phone) return;
+  if (!user) return;
 
   try {
-    const res = await fetch(
-      "/api/profile?phone=" + encodeURIComponent(user.phone)
-    );
-
-    if (!res.ok) {
-      throw new Error("HTTP " + res.status);
-    }
-
+    const res = await fetch("/api/profile?phone=" + encodeURIComponent(user.phone));
     const data = await res.json();
-    if (!data.status || !data.data) {
-      throw new Error(data.message || "Gagal mengambil profil");
-    }
 
-    const u = data.data || {};
+    if (!data.status) return;
 
-    // update flag profileCompleted di sesi + localStorage
-    if (typeof u.profileCompleted === "boolean") {
-      user.profileCompleted = u.profileCompleted;
-      window.__AX_USER = user;
-      localStorage.setItem("axstore_user", JSON.stringify(user));
-    }
+    const u = data.data;
 
-    // isi detail read-only
-    const setText = (id, value) => {
+    const setText = (id, val) => {
       const el = document.getElementById(id);
-      if (el) el.textContent = value || "-";
+      if (el) el.textContent = val || "-";
     };
 
     setText("detail-fullName", u.fullName);
@@ -252,289 +166,134 @@ async function loadProfileDetail() {
     setText("detail-alamat", u.alamat);
     setText("info-status", u.profileCompleted ? "Sudah lengkap" : "Belum lengkap");
 
-    // Prefill form lengkapi profil
-    const setValue = (id, value) => {
-      const el = document.getElementById(id);
-      if (el) el.value = value || "";
-    };
+    // FORM TIDAK DI-PREFILL SESUAI PERMINTAAN
+    // (Biarkan kosong)
 
-    setValue("fullName", u.fullName);
-    setValue("email", u.email);
-    setValue("nomorXL", u.nomorXL);
-    setValue("jenisKuota", u.jenisKuota);
-    setValue("alamat", u.alamat);
-
-    // tampilkan / sembunyikan kuota & baris toggle
     const quotaCard = document.getElementById("profile-quota-card");
-    const detailToggle = document.getElementById("profile-detail-toggle");
-    const detailBox = document.getElementById("profile-detail-box");
+    const toggle = document.getElementById("profile-detail-toggle");
 
     if (u.profileCompleted) {
-      if (quotaCard) quotaCard.style.display = "block";
-      if (detailToggle) detailToggle.style.display = "block";
-      // detailBox dibiarkan mengikuti toggle user
+      quotaCard.style.display = "block";
+      toggle.style.display = "block";
     } else {
-      if (quotaCard) quotaCard.style.display = "none";
-      if (detailToggle) detailToggle.style.display = "none";
-      if (detailBox) detailBox.style.display = "none";
+      quotaCard.style.display = "none";
+      toggle.style.display = "none";
+      document.getElementById("profile-detail-box").style.display = "none";
     }
-  } catch (err) {
-    console.error("loadProfileDetail error:", err);
-  }
+  } catch (_) {}
 }
 
-/* ========= LOAD KUOTA DARI BACKEND (/api/kuota) ========= */
-
+/* ========= LOAD KUOTA ========= */
 async function loadQuota() {
   const user = window.__AX_USER;
-  if (!user || !user.phone) return;
+  if (!user || !user.profileCompleted) return;
 
-  // kalau profil belum lengkap, nggak usah call API kuota
-  if (!user.profileCompleted) return;
-
-  const quotaCard = document.getElementById("profile-quota-card");
   const amountEl = document.getElementById("quota-amount");
   const expEl = document.getElementById("quota-exp");
-  if (!quotaCard || !amountEl) return;
 
   try {
-    // tampilan loading
     amountEl.textContent = "...";
-    if (expEl) expEl.textContent = "";
 
-    const res = await fetch(
-      "/api/kuota?phone=" + encodeURIComponent(user.phone)
-    );
+    const res = await fetch("/api/kuota?phone=" + encodeURIComponent(user.phone));
+    const data = await res.json();
 
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok || data.status !== true || !data.data) {
-      throw new Error(data.message || "Gagal mengambil kuota");
-    }
+    if (!data.status) throw 0;
 
     const q = data.data;
-    const total = typeof q.totalRemaining === "number" ? q.totalRemaining : 0;
-    const unit = q.unit || "GB";
+    let num = q.totalRemaining.toFixed(2);
+    if (num.endsWith(".00")) num = num.slice(0, -3);
 
-    // format angka: 14.32 GB, kalau .00 dibuang
-    let numStr = total.toFixed(2);
-    if (numStr.endsWith(".00")) {
-      numStr = numStr.slice(0, -3);
-    }
-    const remainingStr = `${numStr} ${unit}`;
-    amountEl.textContent = remainingStr;
+    amountEl.textContent = num + " " + q.unit;
 
-    if (expEl) {
-      if (q.expDate) {
-        const tgl = formatDateID(q.expDate);
-        expEl.textContent = `Berlaku hingga: ${tgl}`;
-      } else {
-        expEl.textContent = "";
-      }
-    }
-
-    quotaCard.style.display = "block";
+    if (q.expDate) expEl.textContent = "Berlaku hingga: " + formatDateID(q.expDate);
   } catch (err) {
-    console.error("loadQuota error:", err);
     amountEl.textContent = "-";
-    if (expEl) expEl.textContent = "";
+    expEl.textContent = "";
   }
-}
-
-/* ========= SUBMIT FORM LENGKAPI PROFIL ========= */
-
-const formProfile = document.getElementById("form-complete-profile");
-if (formProfile) {
-  formProfile.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const user = window.__AX_USER;
-    if (!user || !user.phone) {
-      showAlert("Sesi tidak valid, silakan login ulang", "error");
-      return;
-    }
-
-    const fd = new FormData(formProfile);
-
-    const payload = {
-      phone: user.phone,
-      fullName: fd.get("fullName") || "",
-      email: fd.get("email") || "",
-      nomorXL: fd.get("nomorXL") || "",
-      jenisKuota: fd.get("jenisKuota") || "",
-      alamat: fd.get("alamat") || "",
-      rt: fd.get("rt") || "",
-      rw: fd.get("rw") || "",
-      desa: fd.get("desa") || "",
-      kecamatan: fd.get("kecamatan") || "",
-      kabupaten: fd.get("kabupaten") || "",
-      provinsi: fd.get("provinsi") || "",
-    };
-
-    try {
-      const res = await fetch("/api/profile/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || data.status !== true) {
-        throw new Error(data.message || "Gagal menyimpan profil");
-      }
-
-      // update flag profileCompleted di localStorage
-      const updated = data.data || {};
-      if (typeof updated.profileCompleted === "boolean") {
-        user.profileCompleted = updated.profileCompleted;
-        window.__AX_USER = user;
-        localStorage.setItem("axstore_user", JSON.stringify(user));
-      }
-
-      showAlert("Profil berhasil disimpan", "success");
-
-      await loadProfileDetail();
-      backToDashboard();
-    } catch (err) {
-      console.error(err);
-      showAlert("Terjadi kesalahan saat menyimpan profil", "error");
-    }
-  });
 }
 
 /* ========= FOTO PROFIL ========= */
 
-// load foto dari KV lewat worker
 async function loadProfilePhoto() {
   const user = window.__AX_USER;
-  if (!user || !user.phone) return;
-
   const img = document.getElementById("profile-avatar-img");
   const avatar = document.getElementById("profile-avatar");
-  if (!img || !avatar) return;
+  if (!user || !img || !avatar) return;
 
   avatar.classList.remove("has-photo");
+  img.onload = () => avatar.classList.add("has-photo");
+  img.onerror = () => avatar.classList.remove("has-photo");
 
-  img.onload = () => {
-    avatar.classList.add("has-photo");
-  };
-  img.onerror = () => {
-    avatar.classList.remove("has-photo");
-  };
-
-  img.src =
-    "/api/profile/photo?phone=" +
-    encodeURIComponent(user.phone) +
-    "&t=" +
-    Date.now();
+  img.src = "/api/profile/photo?phone=" + encodeURIComponent(user.phone) + "&t=" + Date.now();
 }
 
-/**
- * Kompres + resize gambar di browser
- */
+/* ========= KOMPRES & UPLOAD FOTO ========= */
+
 function compressImage(file, maxSize = 256) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const reader = new FileReader();
-
-    reader.onload = (e) => {
-      img.src = e.target.result;
-    };
-
-    reader.onerror = () => reject(new Error("Gagal membaca file"));
+    reader.onload = e => (img.src = e.target.result);
+    reader.onerror = reject;
 
     img.onload = () => {
-      const canvas = document.createElement("canvas");
       let { width, height } = img;
-
       if (width > height) {
-        if (width > maxSize) {
-          height = (height * maxSize) / width;
-          width = maxSize;
-        }
+        if (width > maxSize) height = (height * maxSize) / width, (width = maxSize);
       } else {
-        if (height > maxSize) {
-          width = (width * maxSize) / height;
-          height = maxSize;
-        }
+        if (height > maxSize) width = (width * maxSize) / height, (height = maxSize);
       }
 
+      const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
 
       canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Gagal mengompres gambar"));
-          } else {
-            resolve(blob);
-          }
-        },
+        b => (b ? resolve(b) : reject()),
         "image/jpeg",
         0.8
       );
     };
 
-    img.onerror = () => reject(new Error("Gambar tidak valid"));
-
+    img.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
-// event saat user pilih file foto
 async function handlePhotoChange(e) {
-  const file = e.target.files && e.target.files[0];
+  const file = e.target.files?.[0];
   if (!file) return;
 
   if (!file.type.startsWith("image/")) {
-    showAlert("File harus gambar (jpg/png)", "error");
-    e.target.value = "";
-    return;
+    showAlert("File harus berupa gambar", "error");
+    return (e.target.value = "");
   }
 
   const user = window.__AX_USER;
-  if (!user || !user.phone) {
-    showAlert("Sesi tidak valid", "error");
-    e.target.value = "";
-    return;
-  }
+  if (!user) return;
 
   try {
-    const compressedBlob = await compressImage(file, 256);
-
-    if (compressedBlob.size > 300 * 1024) {
-      showAlert("Setelah kompres masih >300KB, coba gambar lain", "error");
-      e.target.value = "";
-      return;
+    const comp = await compressImage(file);
+    if (comp.size > 300 * 1024) {
+      showAlert("Foto setelah kompres masih terlalu besar (>300KB)", "error");
+      return (e.target.value = "");
     }
 
     const fd = new FormData();
     fd.append("phone", user.phone);
-    fd.append("photo", compressedBlob, "avatar.jpg");
+    fd.append("photo", comp, "avatar.jpg");
 
-    const res = await fetch("/api/profile/photo", {
-      method: "POST",
-      body: fd,
-    });
+    const r = await fetch("/api/profile/photo", { method: "POST", body: fd });
+    const d = await r.json();
 
-    let data = {};
-    try {
-      data = await res.json();
-    } catch (err) {}
-
-    if (!res.ok || data.ok === false) {
-      throw new Error(data.message || "Gagal upload foto");
-    }
+    if (!r.ok || !d.ok) throw 0;
 
     showAlert("Foto profil diperbarui", "success");
     loadProfilePhoto();
-  } catch (err) {
-    console.error(err);
-    showAlert("Gagal mengompres / upload foto", "error");
+  } catch {
+    showAlert("Gagal upload foto", "error");
   } finally {
     e.target.value = "";
   }
