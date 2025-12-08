@@ -189,8 +189,20 @@ function renderDetail() {
     const dateDiv = document.createElement("div");
     dateDiv.className = "history-date";
     const d = new Date(h.date || h.time || Date.now());
-    dateDiv.textContent = d.toLocaleString("id-ID");
 
+const bulan = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+];
+
+const tgl = d.getDate();
+const bln = bulan[d.getMonth()];
+const thn = d.getFullYear();
+
+const jam = String(d.getHours()).padStart(2, "0");
+const menit = String(d.getMinutes()).padStart(2, "0");
+
+dateDiv.textContent = `${tgl} ${bln} ${thn} ${jam}:${menit}`;
     const amountDiv = document.createElement("div");
     amountDiv.className = "history-amount";
     amountDiv.textContent = formatRupiah(h.amount || 0);
