@@ -28,11 +28,8 @@
     </svg>
   </button>
 
-  <!-- DASHBOARD UTAMA -->
-  <div class="card" id="card-dashboard">
-    <h1>Halo, selamat datang!</h1>
-    <p id="welcome"></p>
-  </div>
+  <!-- DASHBOARD UTAMA (DIKOSONGKAN) -->
+  <div class="card" id="card-dashboard" style="height:140px;"></div>
 
   <!-- PANEL SLIDE PROFIL DARI KANAN -->
   <div id="profile-panel" class="profile-panel">
@@ -41,53 +38,30 @@
       <button id="btn-close-profile" class="profile-panel-close" type="button">×</button>
     </div>
 
-    <!-- HEADER DALAM CARD (AVATAR + NAMA + WA + UBAH FOTO) -->
+    <!-- HEADER DALAM PANEL (TIDAK DIUBAH) -->
     <div class="profile-header-card">
       <div class="profile-header-row">
-
-        <!-- BLOK AVATAR + TOMBOL -->
         <div class="profile-avatar-block">
           <div id="profile-avatar" class="profile-avatar">
             <img id="profile-avatar-img" alt="Foto profil" />
             <span id="profile-avatar-initial"></span>
           </div>
-
-          <button id="btn-change-photo" type="button">
-            Ubah foto
-          </button>
+          <button id="btn-change-photo" type="button">Ubah foto</button>
         </div>
-
-        <!-- TEKS DI SAMPING AVATAR -->
         <div class="profile-header-text">
           <div class="profile-header-username" id="profile-username-top"></div>
           <div class="profile-header-whatsapp" id="profile-whatsapp-top"></div>
         </div>
-
       </div>
     </div>
 
-    <!-- INPUT FILE (DISEMBUNYIKAN, DIPICU OLEH TOMBOL DI ATAS) -->
-    <input
-      type="file"
-      accept="image/*"
-      id="profile-photo-input"
-      style="display:none;"
-    />
+    <input type="file" accept="image/*" id="profile-photo-input" style="display:none;" />
 
-    <!-- TOMBOL EDIT PROFIL -->
-    <button
-      type="button"
-      class="btn-primary"
-      id="btn-open-complete-profile"
-      style="margin-top:20px;"
-    >
+    <button type="button" class="btn-primary" id="btn-open-complete-profile" style="margin-top:20px;">
       Lengkapi / edit data diri
     </button>
 
-    <!-- AREA PROFIL LENGKAP (kuota + detail) -->
     <div id="profile-extra" class="profile-extra">
-
-      <!-- CARD SISA KUOTA -->
       <div id="profile-quota-card" class="profile-quota-card" style="display:none;">
         <div class="quota-title">Sisa kuota</div>
         <div class="quota-value">
@@ -96,7 +70,6 @@
         </div>
       </div>
 
-      <!-- BARIS TOGGLE: HANYA TEKS "Lihat detail lengkap" -->
       <div id="profile-detail-toggle" class="profile-detail-list" style="display:none; margin-top:12px;">
         <div class="detail-row">
           <div class="detail-label">Detail profil</div>
@@ -106,50 +79,24 @@
         </div>
       </div>
 
-      <!-- BOX DETAIL READ-ONLY (tidak untuk edit) -->
       <div id="profile-detail-box" class="profile-detail-list" style="display:none;">
-        <div class="detail-row">
-          <div class="detail-label">Nama lengkap</div>
-          <div class="detail-value" id="detail-fullName">-</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">Email</div>
-          <div class="detail-value" id="detail-email">-</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">Nomor XL</div>
-          <div class="detail-value" id="detail-nomorXL">-</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">Jenis kuota</div>
-          <div class="detail-value" id="detail-jenisKuota">-</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">Alamat</div>
-          <div class="detail-value" id="detail-alamat">-</div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-label">Status profil</div>
-          <div class="detail-value" id="info-status">-</div>
-        </div>
+        <div class="detail-row"><div class="detail-label">Nama lengkap</div><div class="detail-value" id="detail-fullName">-</div></div>
+        <div class="detail-row"><div class="detail-label">Email</div><div class="detail-value" id="detail-email">-</div></div>
+        <div class="detail-row"><div class="detail-label">Nomor XL</div><div class="detail-value" id="detail-nomorXL">-</div></div>
+        <div class="detail-row"><div class="detail-label">Jenis kuota</div><div class="detail-value" id="detail-jenisKuota">-</div></div>
+        <div class="detail-row"><div class="detail-label">Alamat</div><div class="detail-value" id="detail-alamat">-</div></div>
+        <div class="detail-row"><div class="detail-label">Status profil</div><div class="detail-value" id="info-status">-</div></div>
       </div>
     </div>
 
-    <!-- TOMBOL KELUAR -->
-    <button
-      type="button"
-      class="btn-secondary"
-      onclick="doLogout()"
-      style="margin-top:16px;"
-    >
+    <button type="button" class="btn-secondary" onclick="doLogout()" style="margin-top:16px;">
       Keluar
     </button>
   </div>
 
-  <!-- BACKDROP GELAP DI BELAKANG PANEL PROFIL -->
   <div id="profile-panel-backdrop" class="profile-panel-backdrop"></div>
 
-  <!-- CARD LENGKAPI PROFIL (FORM EDIT) -->
+  <!-- FORM LENGKAPI PROFIL (TIDAK DIUBAH) -->
   <div class="card" id="card-complete-profile" style="display:none;">
     <h1>Lengkapi data diri</h1>
     <p id="profile-hint">Masukan informasi dengan benar</p>
@@ -161,7 +108,7 @@
       <label>Email</label>
       <input type="email" name="email" id="email" class="input" />
 
-      <label>Nomor XL (kartu data/kuota)</label>
+      <label>Nomor XL</label>
       <input type="number" name="nomorXL" id="nomorXL" class="input" />
 
       <label>Jenis kuota</label>
@@ -176,40 +123,17 @@
       <input type="text" name="alamat" id="alamat" class="input" />
 
       <div class="row-2col">
-        <div class="col">
-          <label>RT</label>
-          <input type="number" name="rt" id="rt" class="input" />
-        </div>
-        <div class="col">
-          <label>RW</label>
-          <input type="number" name="rw" id="rw" class="input" />
-        </div>
+        <div class="col"><label>RT</label><input type="number" name="rt" id="rt" class="input" /></div>
+        <div class="col"><label>RW</label><input type="number" name="rw" id="rw" class="input" /></div>
       </div>
 
-      <label>Desa</label>
-      <input type="text" name="desa" id="desa" class="input" />
+      <label>Desa</label><input type="text" name="desa" id="desa" class="input" />
+      <label>Kecamatan</label><input type="text" name="kecamatan" id="kecamatan" class="input" />
+      <label>Kabupaten</label><input type="text" name="kabupaten" id="kabupaten" class="input" />
+      <label>Provinsi</label><input type="text" name="provinsi" id="provinsi" class="input" />
 
-      <label>Kecamatan</label>
-      <input type="text" name="kecamatan" id="kecamatan" class="input" />
-
-      <label>Kabupaten</label>
-      <input type="text" name="kabupaten" id="kabupaten" class="input" />
-
-      <label>Provinsi</label>
-      <input type="text" name="provinsi" id="provinsi" class="input" />
-
-      <button type="submit" class="btn-primary" style="margin-top:12px;">
-        Simpan
-      </button>
-
-      <button
-        type="button"
-        class="btn-secondary"
-        style="margin-top:8px;"
-        onclick="backToDashboard()"
-      >
-        Batal
-      </button>
+      <button type="submit" class="btn-primary" style="margin-top:12px;">Simpan</button>
+      <button type="button" class="btn-secondary" style="margin-top:8px;" onclick="backToDashboard()">Batal</button>
     </form>
   </div>
 
