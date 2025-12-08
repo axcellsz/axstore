@@ -1,80 +1,169 @@
-// ================== KONFIG API ==================
-const API_LIST_CUSTOMERS = "/api/bon/list-customers";
-const API_CREATE_CUSTOMER = "/api/bon/create-customer";
-const API_GET_CUSTOMER = "/api/bon/get";
+// =======================
+// KONFIGURASI API
+// =======================
+const API_LIST = "/api/bon/list-customers";
+const API_GET = "/api/bon/get";
+const API_CREATE = "/api/bon/create-customer";
 const API_ADD_TRX = "/api/bon/add-trx";
 
+// state
 let customers = [];
 let filteredCustomers = [];
-let currentCustomer = null; // {phone,name,total,history}
+let currentCustomer = null; // { phone, name }
+let currentHistory = [];
 
-// ================== HELPER ==================
-
-function formatRupiah(num) {
-  const n = Number(num || 0);
-  return "Rp " + n.toLocaleString("id-ID");
+// =======================
+// HELPER
+// =======================
+function formatRupiah(n) {
+  const num = Number(n) || 0;
+  return "Rp " + num.toLocaleString("id-ID");
 }
 
-function showScreen(name) {
-  const screenList = document.getElementById("screenList");
-  const screenAdd = document.getElementById("screenAdd");
-  const screenDetail = document.getElementById("screenDetail");
-  const screenInput = document.getElementById("screenInput");
+function formatDateTimeID(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
 
-  screenList.hidden = name !== "list";
-  screenAdd.hidden = name !== "add";
-  screenDetail.hidden = name !== "detail";
-  screenInput.hidden = name !== "input";
+  const tgl = d.toLocaleDateString("id-ID");
+  const jam = d.toLocaleTimeString("id-ID", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  return `${tgl}, ${jam}`;
 }
 
-// ================== RENDER LIST PELANGGAN ==================
+// hitung dari total net → hutangPelanggan & hutangSaya
+function splitBalanceFromTotal(totalNet) {
+  const net = Number(totalNet) || 0;
+  const customerDebt = net > 0 ? net : 0;
+  const myDebt = net < 0 ? -net : 0;
+  return { customerDebt, myDebt };
+}
 
-function renderCustomers() {
-  const listEl = document.getElementById("customerList");
-  if (!listEl) return;
+// hitung net dari history
+function computeNetFromHistory(history) {
+  let net = 0;
+  for (const trx of history || []) {
+    const amount = Number(trx.amount) || 0;
+    if (trx.type === "give") {
+      net += amount;
+    } else if (trx.type === "receive") {
+      net -= amount;
+    }
+  }
+  return net;
+}
 
-  listEl.innerHTML = "";
+// cek sesi admin: pakai localStorage dari admin.html
+function ensureAdminSession() {
+  const logged = localStorage.getItem("admin_logged_in");
+  if (logged !== "1") {
+    // paksa balik ke admin
+    window.location.href = "/admin.html";
+  }
+}
+
+// switch antar screen
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach((s) => {
+    s.hidden = s.id !== id;
+  });
+}
+
+// =======================
+// RENDER LIST PELANGGAN
+// =======================
+function updateGlobalTotals() {
+  const elMy = document.getElementById("globalMyTotal");
+  const elCust = document.getElementById("globalCustomerTotal");
+  if (!elMy || !elCust) return;
+
+  let totalMy = 0;
+  let totalCust = 0;
+
+  for (const c of customers) {
+    const net = Number(c.total) || 0;
+    const { customerDebt, myDebt } = splitBalanceFromTotal(net);
+    totalMy += myDebt;
+    totalCust += customerDebt;
+  }
+
+  elMy.textContent = formatRupiah(totalMy);
+  elCust.textContent = formatRupiah(totalCust);
+}
+
+function renderCustomerList() {
+  const list = document.getElementById("customerList");
+  if (!list) return;
+
+  list.innerHTML = "";
 
   if (!filteredCustomers.length) {
     const empty = document.createElement("div");
-    empty.textContent = "Belum ada pelanggan.";
-    listEl.appendChild(empty);
+    empty.className = "bon-history-list-empty";
+    empty.textContent = "Belum ada pelanggan atau tidak cocok dengan pencarian.";
+    list.appendChild(empty);
+    updateGlobalTotals();
     return;
   }
 
   filteredCustomers.forEach((c, idx) => {
+    const net = Number(c.total) || 0;
+    const { customerDebt, myDebt } = splitBalanceFromTotal(net);
+
     const card = document.createElement("div");
-    card.className = "customer-card";
+    card.className = "bon-customer-card";
 
-    // baris atas: nomor + nama + tombol buka
-    const topRow = document.createElement("div");
-    topRow.className = "customer-top-row";
+    const top = document.createElement("div");
+    top.className = "bon-cust-main";
 
-    const nameDiv = document.createElement("div");
-    nameDiv.className = "customer-name";
-    nameDiv.textContent = `${idx + 1}. ${c.name || "(tanpa nama)"}`;
+    const nameEl = document.createElement("div");
+    nameEl.className = "bon-cust-name";
+    nameEl.textContent = `${idx + 1}. ${c.name || "(Tanpa nama)"}`;
 
-    const btn = document.createElement("button");
-    btn.className = "customer-open-btn";
-    btn.textContent = "BUKA";
-    btn.addEventListener("click", () => openCustomer(c));
+    const btnOpen = document.createElement("button");
+    btnOpen.type = "button";
+    btnOpen.className = "bon-btn-open";
+    btnOpen.textContent = "BUKA";
+    btnOpen.addEventListener("click", () => openDetail(c.phone));
 
-    topRow.appendChild(nameDiv);
-    topRow.appendChild(btn);
+    top.appendChild(nameEl);
+    top.appendChild(btnOpen);
 
-    // baris info WA
-    const meta = document.createElement("div");
-    meta.className = "customer-meta";
-    meta.textContent = `WA: ${c.phone}`;
+    const wa = document.createElement("div");
+    wa.className = "bon-cust-wa";
+    wa.textContent = `WA: ${c.phone || "-"}`;
 
-    card.appendChild(topRow);
-    card.appendChild(meta);
+    const bal = document.createElement("div");
+    bal.className = "bon-cust-balance";
 
-    listEl.appendChild(card);
+    const rowMy = document.createElement("div");
+    rowMy.innerHTML = `Hutang saya <span class="bon-total-me">${formatRupiah(
+      myDebt
+    )}</span>`;
+
+    const rowCust = document.createElement("div");
+    rowCust.innerHTML = `Hutang pelanggan <span class="bon-total-customer">${formatRupiah(
+      customerDebt
+    )}</span>`;
+
+    bal.appendChild(rowMy);
+    bal.appendChild(rowCust);
+
+    card.appendChild(top);
+    card.appendChild(wa);
+    card.appendChild(bal);
+
+    list.appendChild(card);
   });
+
+  updateGlobalTotals();
 }
 
-// filter by nama
 function applyFilter() {
   const input = document.getElementById("searchCustomer");
   const keyword = (input?.value || "").trim().toLowerCase();
@@ -86,18 +175,19 @@ function applyFilter() {
       (c.name || "").toLowerCase().includes(keyword)
     );
   }
-  renderCustomers();
-}
 
-// ================== LOAD LIST PELANGGAN ==================
+  renderCustomerList();
+}
 
 async function loadCustomers() {
   try {
-    const res = await fetch(API_LIST_CUSTOMERS);
+    const res = await fetch(API_LIST);
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || data.ok === false || !Array.isArray(data.customers)) {
-      throw new Error(data.message || "Gagal memuat pelanggan");
+
+    if (!res.ok || data.ok !== true || !Array.isArray(data.customers)) {
+      throw new Error("Gagal memuat pelanggan");
     }
+
     customers = data.customers;
     filteredCustomers = [...customers];
     applyFilter();
@@ -107,134 +197,176 @@ async function loadCustomers() {
   }
 }
 
-// ================== DETAIL PELANGGAN ==================
-
-async function openCustomer(cust) {
-  currentCustomer = null;
-  try {
-    const url = API_GET_CUSTOMER + "?phone=" + encodeURIComponent(cust.phone);
-    const res = await fetch(url);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data.ok === false) {
-      throw new Error(data.message || "Gagal memuat detail pelanggan");
-    }
-    currentCustomer = data;
-    renderDetail();
-    showScreen("detail");
-  } catch (err) {
-    console.error(err);
-    alert("Gagal membuka detail pelanggan");
-  }
+// =======================
+// PELANGGAN BARU
+// =======================
+function openAddCustomerScreen() {
+  document.getElementById("addName").value = "";
+  document.getElementById("addPhone").value = "";
+  showScreen("screenAdd");
 }
-
-function renderDetail() {
-  if (!currentCustomer) return;
-
-  const nameEl = document.getElementById("detailName");
-  const totalEl = document.getElementById("detailTotal");
-  const historyEl = document.getElementById("detailHistory");
-
-  if (nameEl) nameEl.textContent = currentCustomer.name || "(tanpa nama)";
-  if (totalEl) totalEl.textContent = formatRupiah(currentCustomer.total || 0);
-
-  if (!historyEl) return;
-  historyEl.innerHTML = "";
-
-  const history = currentCustomer.history || [];
-  if (!history.length) {
-    const empty = document.createElement("div");
-    empty.textContent = "Belum ada catatan hutang.";
-    historyEl.appendChild(empty);
-    return;
-  }
-
-  history.forEach((h) => {
-    const item = document.createElement("div");
-    item.className = "history-item " + (h.type === "give" ? "history-give" : "history-receive");
-
-    const header = document.createElement("div");
-    header.className = "history-header";
-
-    const dateDiv = document.createElement("div");
-    dateDiv.className = "history-date";
-    const d = new Date(h.time || Date.now());
-    dateDiv.textContent = d.toLocaleString("id-ID");
-
-    const amountDiv = document.createElement("div");
-    amountDiv.className = "history-amount";
-    amountDiv.textContent = formatRupiah(h.amount || 0);
-
-    header.appendChild(dateDiv);
-    header.appendChild(amountDiv);
-
-    const noteDiv = document.createElement("div");
-    noteDiv.className = "history-note";
-    noteDiv.textContent =
-      h.note || (h.type === "give" ? "Berikan (hutang baru)" : "Terima (pembayaran)");
-
-    item.appendChild(header);
-    item.appendChild(noteDiv);
-
-    historyEl.appendChild(item);
-  });
-}
-
-// ================== TAMBAH PELANGGAN ==================
 
 async function saveCustomer() {
-  const nameInput = document.getElementById("addName");
-  const phoneInput = document.getElementById("addPhone");
-
-  const name = (nameInput.value || "").trim();
-  const phone = (phoneInput.value || "").trim();
+  const name = document.getElementById("addName").value.trim();
+  const phone = document.getElementById("addPhone").value.trim();
 
   if (!name || !phone) {
     alert("Nama dan nomor WhatsApp wajib diisi");
     return;
   }
 
+  try:
   try {
-    const res = await fetch(API_CREATE_CUSTOMER, {
+    const res = await fetch(API_CREATE, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, phone }),
     });
+
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || data.ok === false) {
+    if (!res.ok || data.ok !== true) {
       throw new Error(data.message || "Gagal menyimpan pelanggan");
     }
-    // reset form
-    nameInput.value = "";
-    phoneInput.value = "";
 
     await loadCustomers();
-    showScreen("list");
+    showScreen("screenList");
   } catch (err) {
     console.error(err);
     alert("Gagal menyimpan pelanggan");
   }
 }
 
-// ================== INPUT TRANSAKSI ==================
+// =======================
+// DETAIL PELANGGAN
+// =======================
+function renderDetailHeader(netTotal) {
+  const elCust = document.getElementById("detailCustomerTotal");
+  const elMy = document.getElementById("detailMyTotal");
+  const { customerDebt, myDebt } = splitBalanceFromTotal(netTotal);
 
-function openInputScreen(type) {
-  if (!currentCustomer) return;
-  const titleEl = document.getElementById("inputTitle");
-  const typeEl = document.getElementById("trxType");
-  const amountEl = document.getElementById("trxAmount");
-  const noteEl = document.getElementById("trxNote");
+  if (elCust) elCust.textContent = formatRupiah(customerDebt);
+  if (elMy) elMy.textContent = formatRupiah(myDebt);
+}
 
-  if (type === "give") {
-    titleEl.textContent = "Berikan (hutang baru)";
-  } else {
-    titleEl.textContent = "Terima (pembayaran)";
+function renderHistory(history) {
+  const container = document.getElementById("detailHistory");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!history.length) {
+    const empty = document.createElement("div");
+    empty.className = "bon-history-list-empty";
+    empty.textContent = "Belum ada catatan hutang.";
+    container.appendChild(empty);
+    return;
   }
 
-  typeEl.value = type;
-  amountEl.value = "";
-  noteEl.value = "";
+  history
+    .slice()
+    .sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""))
+    .forEach((trx) => {
+      const item = document.createElement("div");
+      item.className = "trx-item";
 
-  showScreen("input");
+      const main = document.createElement("div");
+      main.className = "trx-main";
+
+      const dateEl = document.createElement("div");
+      dateEl.className = "trx-date";
+      dateEl.textContent = formatDateTimeID(trx.createdAt);
+
+      const noteEl = document.createElement("div");
+      noteEl.className = "trx-note";
+      noteEl.textContent =
+        trx.note || (trx.type === "give" ? "Berikan" : "Terima");
+
+      main.appendChild(dateEl);
+      main.appendChild(noteEl);
+
+      const amountEl = document.createElement("div");
+      amountEl.className = "trx-amount";
+      const amount = Number(trx.amount) || 0;
+
+      if (trx.type === "give") {
+        amountEl.classList.add("give");
+      } else {
+        amountEl.classList.add("receive");
+      }
+      amountEl.textContent = formatRupiah(amount);
+
+      item.appendChild(main);
+      item.appendChild(amountEl);
+
+      container.appendChild(item);
+    });
+}
+
+async function openDetail(phone) {
+  if (!phone) return;
+
+  try {
+    const res = await fetch(`${API_GET}?phone=${encodeURIComponent(phone)}`);
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.ok !== true) {
+      throw new Error(data.message || "Gagal mengambil data pelanggan");
+    }
+
+    const name = data.name || (data.customer && data.customer.name) || "";
+    const history = data.history || (data.customer && data.customer.history) || [];
+    const totalFromServer =
+      typeof data.total === "number"
+        ? data.total
+        : data.customer && typeof data.customer.total === "number"
+        ? data.customer.total
+        : null;
+
+    currentCustomer = { phone, name };
+    currentHistory = history || [];
+
+    document.getElementById("detailName").textContent =
+      name || "(Tanpa nama)";
+
+    const net =
+      totalFromServer != null
+        ? Number(totalFromServer) || 0
+        : computeNetFromHistory(currentHistory);
+
+    renderDetailHeader(net);
+    renderHistory(currentHistory);
+
+    // refresh list juga supaya angka di list ikut update
+    await loadCustomers();
+
+    showScreen("screenDetail");
+  } catch (err) {
+    console.error(err);
+    alert("Gagal membuka detail pelanggan");
+  }
+}
+
+// =======================
+// TRANSAKSI (BERIKAN / TERIMA)
+// =======================
+function openInputScreen(type) {
+  if (!currentCustomer) return;
+
+  const title = document.getElementById("inputTitle");
+  const typeInput = document.getElementById("trxType");
+  const amountInput = document.getElementById("trxAmount");
+  const noteInput = document.getElementById("trxNote");
+
+  typeInput.value = type;
+  amountInput.value = "";
+  noteInput.value = "";
+
+  if (type === "give") {
+    title.textContent = `Berikan hutang untuk ${currentCustomer.name || ""}`;
+  } else {
+    title.textContent = `Terima pembayaran dari ${currentCustomer.name || ""}`;
+  }
+
+  showScreen("screenInput");
 }
 
 async function saveTrx() {
@@ -242,11 +374,11 @@ async function saveTrx() {
 
   const type = document.getElementById("trxType").value;
   const amountRaw = document.getElementById("trxAmount").value;
-  const note = document.getElementById("trxNote").value || "";
+  const note = document.getElementById("trxNote").value.trim();
 
   const amount = Number(amountRaw);
-  if (!amount || amount <= 0) {
-    alert("Jumlah harus lebih besar dari 0");
+  if (!type || !amount || amount <= 0) {
+    alert("Jenis transaksi dan jumlah harus diisi dengan benar");
     return;
   }
 
@@ -263,65 +395,58 @@ async function saveTrx() {
     });
 
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || data.ok === false) {
+    if (!res.ok || data.ok !== true) {
       throw new Error(data.message || "Gagal menyimpan transaksi");
     }
 
-    // reload detail dan kembali ke screen detail
-    await openCustomer({ phone: currentCustomer.phone });
+    // setelah simpan, reload detail (itu juga reload list & ringkasan)
+    await openDetail(currentCustomer.phone);
   } catch (err) {
     console.error(err);
     alert("Gagal menyimpan transaksi");
   }
 }
 
-// ================== INIT ==================
-
+// =======================
+// INIT
+// =======================
 document.addEventListener("DOMContentLoaded", () => {
-  // tombol + pelanggan baru
-  document
-    .getElementById("btnAddCustomer")
-    ?.addEventListener("click", () => showScreen("add"));
+  // keamanan: wajib admin login
+  ensureAdminSession();
 
-  // back dari screenAdd ke list
-  document
-    .querySelector("#screenAdd .btn-back-list")
-    ?.addEventListener("click", () => showScreen("list"));
+  // tombol di list
+  const btnAdd = document.getElementById("btnAddCustomer");
+  if (btnAdd) btnAdd.addEventListener("click", openAddCustomerScreen);
 
-  // back dari screenDetail ke list
-  document
-    .querySelector("#screenDetail .btn-back-list")
-    ?.addEventListener("click", () => showScreen("list"));
+  const search = document.getElementById("searchCustomer");
+  if (search) search.addEventListener("input", applyFilter);
 
-  // back dari screenInput ke detail
-  document
-    .querySelector("#screenInput .btn-back-detail")
-    ?.addEventListener("click", () => showScreen("detail"));
+  // tombol back dari add / detail
+  document.querySelectorAll(".btn-back-list").forEach((btn) => {
+    btn.addEventListener("click", () => showScreen("screenList"));
+  });
 
-  // simpan pelanggan baru
-  document
-    .getElementById("btnSaveCustomer")
-    ?.addEventListener("click", saveCustomer);
+  const btnBackDetail = document.querySelector(".btn-back-detail");
+  if (btnBackDetail) {
+    btnBackDetail.addEventListener("click", () => showScreen("screenDetail"));
+  }
 
-  // search
-  document
-    .getElementById("searchCustomer")
-    ?.addEventListener("input", applyFilter);
+  // tombol simpan pelanggan baru
+  const btnSaveCustomer = document.getElementById("btnSaveCustomer");
+  if (btnSaveCustomer) btnSaveCustomer.addEventListener("click", saveCustomer);
 
-  // tombol Berikan / Terima
-  document.getElementById("btnGive")?.addEventListener("click", () =>
-    openInputScreen("give")
-  );
-  document.getElementById("btnReceive")?.addEventListener("click", () =>
-    openInputScreen("receive")
-  );
+  // tombol Berikan / Terima di detail
+  const btnGive = document.getElementById("btnGive");
+  if (btnGive) btnGive.addEventListener("click", () => openInputScreen("give"));
 
-  // simpan transaksi
-  document
-    .getElementById("btnSaveTrx")
-    ?.addEventListener("click", saveTrx);
+  const btnReceive = document.getElementById("btnReceive");
+  if (btnReceive)
+    btnReceive.addEventListener("click", () => openInputScreen("receive"));
 
-  // pertama kali: tampilkan list
-  showScreen("list");
+  // tombol simpan transaksi
+  const btnSaveTrx = document.getElementById("btnSaveTrx");
+  if (btnSaveTrx) btnSaveTrx.addEventListener("click", saveTrx);
+
+  // load awal
   loadCustomers();
 });
