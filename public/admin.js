@@ -1,13 +1,10 @@
 // ========== KONFIGURASI ==========
-
-// Ganti ini sesuai keinginan kamu
-const ADMIN_PASSWORD = "admin123";  // <<=== ubah di sini kalau mau
+const ADMIN_PASSWORD = "admin123"; // << ubah di sini kalau mau
 
 const API_USERS = "/admin/users";
 const API_DELETE = "/admin/delete-user";
 const API_RESET = "/admin/generate-reset-code";
 
-// Data user global
 let allUsers = [];
 let filteredUsers = [];
 
@@ -44,10 +41,12 @@ function updateSummary() {
 
   const total = allUsers.length;
   const shown = filteredUsers.length;
+
   if (!total) {
     summaryEl.textContent = "Belum ada user terdaftar.";
     return;
   }
+
   if (shown === total) {
     summaryEl.textContent = `Total user: ${total}`;
   } else {
@@ -147,38 +146,6 @@ function renderUsers() {
   updateSummary();
 }
 
-    // Kanan (aksi)
-    const actions = document.createElement("div");
-    actions.className = "user-actions";
-
-    const btnDelete = document.createElement("button");
-    btnDelete.className = "btn btn-danger";
-    btnDelete.textContent = "DELETE";
-    btnDelete.addEventListener("click", () => handleDelete(u));
-
-    const btnCode = document.createElement("button");
-    btnCode.className = "btn btn-dark";
-    btnCode.textContent = "KODE";
-    btnCode.addEventListener("click", () => handleCode(u));
-
-    const btnBon = document.createElement("button");
-    btnBon.className = "btn btn-outline btn-small";
-    btnBon.textContent = "BON";
-    btnBon.addEventListener("click", () => handleBon(u));
-
-    actions.appendChild(btnDelete);
-    actions.appendChild(btnCode);
-    actions.appendChild(btnBon);
-
-    item.appendChild(left);
-    item.appendChild(actions);
-
-    list.appendChild(item);
-  });
-
-  updateSummary();
-}
-
 // ========== LOAD USERS ==========
 async function loadUsers() {
   showInfo("");
@@ -268,8 +235,7 @@ async function handleCode(user) {
     }
 
     const msg = `Kode reset untuk ${name} (${phone}): ${data.code}`;
-    // Tampilkan via alert (jelas & tidak hilang otomatis)
-    alert(msg);
+    alert(msg); // supaya jelas & tidak hilang
   } catch (err) {
     console.error(err);
     showToast("Terjadi kesalahan saat membuat kode reset");
@@ -282,8 +248,6 @@ function handleBon(user) {
     showToast("User tidak memiliki nomor WhatsApp yang valid.");
     return;
   }
-
-  // arahkan ke halaman bon dengan query phone
   const url = "/bon.html?phone=" + encodeURIComponent(phone);
   window.location.href = url;
 }
@@ -311,7 +275,6 @@ function initLogin() {
     const pwd = inputPwd.value || "";
 
     if (pwd === ADMIN_PASSWORD) {
-      // sukses
       if (errBox) {
         errBox.hidden = true;
         errBox.textContent = "";
@@ -331,16 +294,13 @@ function initLogin() {
 
 // ========== INIT ==========
 document.addEventListener("DOMContentLoaded", () => {
-  // login
   initLogin();
 
-  // tombol refresh
   const btnRefresh = document.getElementById("btn-refresh");
   if (btnRefresh) {
     btnRefresh.addEventListener("click", loadUsers);
   }
 
-  // search
   const searchInput = document.getElementById("searchInput");
   if (searchInput) {
     searchInput.addEventListener("input", applyFilter);
