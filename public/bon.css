@@ -1,72 +1,69 @@
-/* ====== RESET & BASE ====== */
+/* ==========================
+   RESET & BASE
+========================== */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
 }
 
 body {
   background: #f3f4f6;
   color: #111827;
-  min-height: 100vh;
 }
 
-/* ====== SCREEN LAYOUT ====== */
+/* ==========================
+   LAYOUT SCREEN
+========================== */
 .screen {
-  display: none;
   min-height: 100vh;
-  padding-bottom: 90px; /* ruang buat bottom bar */
-}
-
-.screen.active {
   display: flex;
   flex-direction: column;
 }
 
-/* ====== HEADER ====== */
+/* ==========================
+   HEADER
+========================== */
 .bon-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: #f3f4f6;
-  padding: 14px 18px 10px;
+  padding: 14px 16px 10px;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
+  z-index: 10;
 }
 
 .bon-header h1 {
   font-size: 22px;
   font-weight: 700;
-  color: #111827;
 }
 
-.btn-back-list,
-.btn-back-detail {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: none;
-  background: #ffffff;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-/* ====== GLOBAL SUMMARY DI LIST ====== */
+/* global summary di header list */
 .bon-global-summary {
-  padding: 0 18px 8px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.bon-global-row {
+.bon-summary-row {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
-  margin-bottom: 2px;
+  align-items: baseline;
+  font-size: 13px;
+}
+
+.bon-summary-row span:first-child {
+  color: #6b7280;
 }
 
 .bon-total-me {
@@ -76,85 +73,103 @@ body {
 
 .bon-total-customer {
   font-weight: 700;
-  color: #dc2626;
+  color: #ef4444;
 }
 
-/* ====== MAIN CONTENT ====== */
+.btn-back-list,
+.btn-back-detail {
+  border: none;
+  background: #e5e7eb;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+/* ==========================
+   MAIN CONTENT
+========================== */
 .bon-main {
   flex: 1;
-  padding: 6px 18px 14px;
+  padding: 14px 16px 90px;
 }
 
-/* ====== LIST PELANGGAN ====== */
+/* ==========================
+   LIST PELANGGAN
+========================== */
+#customerList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .bon-customer-card {
   background: #ffffff;
-  border-radius: 18px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.09);
+  border-radius: 16px;
   padding: 12px 14px 10px;
-  margin-bottom: 12px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
 }
 
 .bon-cust-main {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  align-items: center;
 }
 
 .bon-cust-name {
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
 }
 
 .bon-cust-wa {
+  margin-top: 4px;
   font-size: 12px;
   color: #6b7280;
-  margin-bottom: 6px;
 }
 
 .bon-cust-balance {
-  font-size: 13px;
-  line-height: 1.4;
+  margin-top: 8px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.bon-cust-balance .bon-total-me {
-  margin-left: 6px;
-}
-
-.bon-cust-balance .bon-total-customer {
-  margin-left: 6px;
-}
-
+/* tombol "BUKA" kecil di kartu pelanggan */
 .bon-btn-open {
-  border: none;
-  border-radius: 999px;
   padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  background: #0f172a;
+  border-radius: 999px;
+  border: none;
+  background: #020617;
   color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
 }
 
-/* ====== FORM INPUT & TEXTAREA ====== */
-label {
-  font-size: 14px;
-  color: #374151;
-  display: block;
-  margin-bottom: 4px;
-  margin-top: 10px;
-}
-
+/* ==========================
+   FORM INPUT
+========================== */
 .bon-input,
-.bon-textarea {
+.bon-textarea,
+.bon-search-input {
   width: 100%;
   border-radius: 999px;
-  border: 1px solid #d1d5db;
-  padding: 9px 12px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 14px;
   font-size: 14px;
   outline: none;
   background: #ffffff;
+}
+
+.bon-input:focus,
+.bon-textarea:focus,
+.bon-search-input:focus {
+  border-color: #020617;
 }
 
 .bon-textarea {
@@ -163,74 +178,20 @@ label {
   resize: vertical;
 }
 
-/* ====== BUTTON UMUM ====== */
-.bon-btn-primary {
-  margin-top: 20px;
-  width: 100%;
-  padding: 11px 0;
-  border-radius: 999px;
-  border: none;
-  background: #0f172a;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-/* ====== BOTTOM BAR LIST ====== */
-.bon-bottom-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 10px 18px 14px;
-  background: #f3f4f6;
-  display: flex;
-  gap: 10px;
-}
-
-.bon-search-input {
-  flex: 1;
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  padding: 9px 12px;
-  font-size: 14px;
-  background: #ffffff;
-  outline: none;
-}
-
-.bon-add-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 999px;
-  border: none;
-  background: #0f172a;
-  color: #ffffff;
-  font-size: 26px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-/* ====== SUMMARY DI DETAIL ====== */
+/* ==========================
+   SUMMARY DETAIL
+========================== */
 .bon-summary {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 12px 14px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.07);
   margin-bottom: 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
 }
 
-.bon-summary-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-/* ====== HISTORY ====== */
+/* ==========================
+   HISTORY
+========================== */
 .bon-history h2 {
   font-size: 16px;
   font-weight: 600;
@@ -244,69 +205,73 @@ label {
 }
 
 .bon-history-list-empty {
+  margin-top: 6px;
   font-size: 13px;
-  color: #6b7280;
-  padding: 8px 0;
+  color: #9ca3af;
 }
 
-/* item transaksi */
 .trx-item {
   background: #ffffff;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 10px 12px;
-  margin-bottom: 8px;
+  margin-top: 8px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-  border-left: 4px solid #16a34a;
+  align-items: flex-start;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.12);
 }
 
 .trx-main {
-  max-width: 68%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .trx-date {
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
 }
 
 .trx-note {
-  font-size: 14px;
+  font-size: 13px;
   color: #111827;
 }
 
 .trx-amount {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
 .trx-amount.give {
-  color: #dc2626;
+  color: #ef4444;
 }
 
 .trx-amount.receive {
   color: #16a34a;
 }
 
-/* ====== BOTTOM BUTTONS (DETAIL) ====== */
-.bon-bottom-two {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 10px 18px 14px;
-  display: flex;
-  gap: 10px;
-  background: #f3f4f6;
+/* ==========================
+   BUTTONS
+========================== */
+.bon-btn-primary {
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 999px;
+  border: none;
+  background: #020617;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .bon-btn-danger,
 .bon-btn-success {
   flex: 1;
+  padding: 12px 0;
   border-radius: 999px;
   border: none;
-  padding: 11px 0;
   font-size: 15px;
   font-weight: 600;
   color: #ffffff;
@@ -314,20 +279,72 @@ label {
 }
 
 .bon-btn-danger {
-  background: #dc2626;
+  background: #ef4444;
 }
 
 .bon-btn-success {
   background: #16a34a;
 }
 
-/* ====== RESPONSIVE KECIL ====== */
-@media (max-width: 480px) {
-  .bon-header h1 {
-    font-size: 20px;
+/* ==========================
+   BOTTOM BARS
+========================== */
+.bon-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 16px 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(to top, #f3f4f6 70%, transparent);
+}
+
+.bon-add-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: #020617;
+  color: #ffffff;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.bon-bottom-two {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 16px 14px;
+  display: flex;
+  gap: 12px;
+  background: linear-gradient(to top, #f3f4f6 70%, transparent);
+}
+
+/* ==========================
+   MEDIA
+========================== */
+@media (min-width: 640px) {
+  .bon-main {
+    max-width: 480px;
+    margin: 0 auto;
   }
 
-  .bon-cust-name {
-    font-size: 15px;
+  .bon-bottom-bar,
+  .bon-bottom-two {
+    max-width: 480px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .bon-header {
+    max-width: 480px;
+    margin: 0 auto;
   }
 }
