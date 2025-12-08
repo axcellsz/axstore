@@ -1,5 +1,7 @@
 // ========== KONFIGURASI ==========
-const ADMIN_PASSWORD = "admin123"; // << ubah di sini kalau mau
+
+// Ubah password admin di sini
+const ADMIN_PASSWORD = "admin123";
 
 const API_USERS = "/admin/users";
 const API_DELETE = "/admin/delete-user";
@@ -9,6 +11,7 @@ let allUsers = [];
 let filteredUsers = [];
 
 // ========== UTIL ==========
+
 function showToast(message) {
   const toast = document.getElementById("toast");
   if (!toast) return;
@@ -55,7 +58,7 @@ function updateSummary() {
 }
 
 // ========== RENDER USER LIST ==========
-function renderUsers() {
+
 function renderUsers() {
   const list = document.getElementById("userList");
   if (!list) return;
@@ -148,7 +151,9 @@ function renderUsers() {
 
   updateSummary();
 }
+
 // ========== LOAD USERS ==========
+
 async function loadUsers() {
   showInfo("");
   try {
@@ -237,7 +242,7 @@ async function handleCode(user) {
     }
 
     const msg = `Kode reset untuk ${name} (${phone}): ${data.code}`;
-    alert(msg); // supaya jelas & tidak hilang
+    alert(msg);
   } catch (err) {
     console.error(err);
     showToast("Terjadi kesalahan saat membuat kode reset");
@@ -250,19 +255,33 @@ function handleBon(user) {
     showToast("User tidak memiliki nomor WhatsApp yang valid.");
     return;
   }
+
   const url = "/bon.html?phone=" + encodeURIComponent(phone);
   window.location.href = url;
 }
 
-// ========== LOGIN ADMIN ==========
+// ========== LOGIN & SESSION ==========
+
 function setLoggedInUI(isLoggedIn) {
   const loginCard = document.getElementById("admin-login");
   const adminMain = document.getElementById("admin-main");
   const searchBar = document.getElementById("search-bar");
+  const logoutBtn = document.getElementById("btn-logout");
 
   if (loginCard) loginCard.hidden = isLoggedIn;
   if (adminMain) adminMain.hidden = !isLoggedIn;
   if (searchBar) searchBar.hidden = !isLoggedIn;
+  if (logoutBtn) logoutBtn.hidden = !isLoggedIn;
+}
+
+function checkSession() {
+  const logged = localStorage.getItem("admin_logged_in");
+  if (logged === "1") {
+    setLoggedInUI(true);
+    loadUsers();
+  } else {
+    setLoggedInUI(false);
+  }
 }
 
 function initLogin() {
@@ -277,6 +296,7 @@ function initLogin() {
     const pwd = inputPwd.value || "";
 
     if (pwd === ADMIN_PASSWORD) {
+      localStorage.setItem("admin_logged_in", "1");
       if (errBox) {
         errBox.hidden = true;
         errBox.textContent = "";
@@ -294,9 +314,22 @@ function initLogin() {
   });
 }
 
+function initLogout() {
+  const logoutBtn = document.getElementById("btn-logout");
+  if (!logoutBtn) return;
+
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("admin_logged_in");
+    allUsers = [];
+    filteredUsers = [];
+    setLoggedInUI(false);
+  });
+}
+
 // ========== INIT ==========
 document.addEventListener("DOMContentLoaded", () => {
   initLogin();
+  initLogout();
 
   const btnRefresh = document.getElementById("btn-refresh");
   if (btnRefresh) {
@@ -307,4 +340,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (searchInput) {
     searchInput.addEventListener("input", applyFilter);
   }
+
+  checkSession();
 });
