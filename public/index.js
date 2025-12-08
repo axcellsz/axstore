@@ -117,6 +117,80 @@ window.backToDashboard = function () {
   cardDash.style.display = "block";
 };
 
+/* ========= Helper pecah alamat gabungan ========= */
+/**
+ * Input contoh:
+ * "Kp sungapan, RT 26 / RW 06, Desa Padabeungh, Kec. Cimaung, Kab. Bandung, Jawa Barat"
+ *
+ * Output:
+ * {
+ *   alamatUtama: "Kp sungapan",
+ *   rt: "26",
+ *   rw: "06",
+ *   desa: "Padabeungh",
+ *   kecamatan: "Cimaung",
+ *   kabupaten: "Bandung",
+ *   provinsi: "Jawa Barat"
+ * }
+ */
+function parseAlamatGabungan(alamatGabungan) {
+  const result = {
+    alamatUtama: "",
+    rt: "",
+    rw: "",
+    desa: "",
+    kecamatan: "",
+    kabupaten: "",
+    provinsi: "",
+  };
+
+  if (!alamatGabungan) return result;
+
+  const parts = String(alamatGabungan)
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const keywordRegex = /^(RT\s|RW\s|Desa\s|Kec\.\s|Kab\.\s)/i;
+
+  for (const p of parts) {
+    let m;
+
+    // alamat utama = non-keyword pertama
+    if (!keywordRegex.test(p) && !result.alamatUtama) {
+      result.alamatUtama = p;
+      continue;
+    }
+
+    m = /RT\s+(\S+)/i.exec(p);
+    if (m && !result.rt) result.rt = m[1];
+
+    m = /RW\s+(\S+)/i.exec(p);
+    if (m && !result.rw) result.rw = m[1];
+
+    m = /^Desa\s+(.+)/i.exec(p);
+    if (m && !result.desa) result.desa = m[1];
+
+    m = /^Kec\.\s+(.+)/i.exec(p);
+    if (m && !result.kecamatan) result.kecamatan = m[1];
+
+    m = /^Kab\.\s+(.+)/i.exec(p);
+    if (m && !result.kabupaten) result.kabupaten = m[1];
+
+    // provinsi = non-keyword lain setelah alamatUtama
+    if (
+      !keywordRegex.test(p) &&
+      result.alamatUtama &&
+      p !== result.alamatUtama &&
+      !result.provinsi
+    ) {
+      result.provinsi = p;
+    }
+  }
+
+  return result;
+}
+
 /* ========= INIT SESSION ========= */
 (function initSession() {
   const raw = localStorage.getItem("axstore_user");
@@ -137,13 +211,9 @@ window.backToDashboard = function () {
   // Simpan sesi global
   window.__AX_USER = session;
 
-  // (WELCOME DIMATIKAN – dashboard sekarang kosong)
+  // Dashboard welcome dimatikan, card kosong.
   // const welcome = document.getElementById("welcome");
-  // if (welcome) {
-  //   const uname = session.username || session.name || "(tanpa nama)";
-  //   const phone = session.phone || "-";
-  //   welcome.textContent = `Anda login sebagai ${uname} (${phone}).`;
-  // }
+  // ...
 
   // isi teks dasar (username & WA)
   const unameSafe = escapeHTML(session.username || session.name || "-");
@@ -174,7 +244,7 @@ window.backToDashboard = function () {
     btnChange.addEventListener("click", () => fileInput.click());
   }
 
-  // Tombol buka form lengkapi profil (INI YANG PENTING)
+  // Tombol buka form lengkapi profil
   const btnOpenComplete = document.getElementById("btn-open-complete-profile");
   if (btnOpenComplete) {
     btnOpenComplete.addEventListener("click", () => {
@@ -190,7 +260,7 @@ window.backToDashboard = function () {
   if (backdrop)
     backdrop.addEventListener("click", () => window.closeProfilePanel());
 
-  // Toggle "Lihat detail lengkap" (show/hide detail box, BUKAN edit)
+  // Toggle "Lihat detail lengkap"
   const detailProfilText = document.getElementById("detail-profil-text");
   if (detailProfilText) {
     detailProfilText.style.cursor = "pointer";
@@ -206,10 +276,8 @@ window.backToDashboard = function () {
     });
   }
 
-  // Load foto profil dari server
+  // Load foto profil & detail
   loadProfilePhoto();
-
-  // Load detail profil lengkap dari KV
   loadProfileDetail();
 })();
 
@@ -258,16 +326,26 @@ async function loadProfileDetail() {
       u.profileCompleted ? "Sudah lengkap" : "Belum lengkap"
     );
 
-    // Prefill form lengkapi profil DIMATIKAN supaya form kosong
-     const setValue = (id, value) => {
-       const el = document.getElementById(id);
-       if (el) el.value = value || "";
-     };
-     setValue("fullName", u.fullName);
-     setValue("email", u.email);
-     setValue("nomorXL", u.nomorXL);
-     setValue("jenisKuota", u.jenisKuota);
-     setValue("alamat", u.alamat);
+    // ===== Prefill form lengkapi profil =====
+    const setValue = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.value = value || "";
+    };
+
+    setValue("fullName", u.fullName);
+    setValue("email", u.email);
+    setValue("nomorXL", u.nomorXL);
+    setValue("jenisKuota", u.jenisKuota);
+
+    // Pecah alamat gabungan ke field alamat + RT/RW/Desa/Kec/Kab/Provinsi
+    const parsedAlamat = parseAlamatGabungan(u.alamat || "");
+    setValue("alamat", parsedAlamat.alamatUtama);
+    setValue("rt", parsedAlamat.rt);
+    setValue("rw", parsedAlamat.rw);
+    setValue("desa", parsedAlamat.desa);
+    setValue("kecamatan", parsedAlamat.kecamatan);
+    setValue("kabupaten", parsedAlamat.kabupaten);
+    setValue("provinsi", parsedAlamat.provinsi);
 
     // tampilkan / sembunyikan kuota & baris toggle
     const quotaCard = document.getElementById("profile-quota-card");
