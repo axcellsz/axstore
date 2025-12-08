@@ -1,230 +1,261 @@
-// ==========================
-// KONFIGURASI API BON
-// ==========================
-const API_BON_LIST = "/api/bon/list-customers";
-const API_BON_GET = "/api/bon/get";
-const API_BON_CREATE = "/api/bon/create-customer";
-const API_BON_ADD_TRX = "/api/bon/add-trx";
+// =======================
+// KONFIGURASI API
+// =======================
+const API_LIST = "/api/bon/list-customers";
+const API_GET = "/api/bon/get";
+const API_CREATE = "/api/bon/create-customer";
+const API_ADD_TRX = "/api/bon/add-trx";
 
-// state sederhana
-let currentPhone = null;
-let currentCustomer = null; // {phone, name, total, history}
-let allCustomers = [];
+// state
+let customers = [];
+let filteredCustomers = [];
+let currentCustomer = null; // { phone, name }
+let currentHistory = [];
 
-// ==========================
-// HELPER DOM
-// ==========================
-
-function $(id) {
-  return document.getElementById(id);
+// =======================
+// HELPER
+// =======================
+function formatRupiah(n) {
+  const num = Number(n) || 0;
+  return "Rp " + num.toLocaleString("id-ID");
 }
 
-function formatRupiah(num) {
-  if (!num || Number.isNaN(num)) num = 0;
-  const s = Number(num).toLocaleString("id-ID");
-  return "Rp " + s;
+function formatDateTimeID(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+
+  const tgl = d.toLocaleDateString("id-ID");
+  const jam = d.toLocaleTimeString("id-ID", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  return `${tgl}, ${jam}`;
 }
 
-// total → {hutangPelanggan, hutangSaya}
-function splitDebt(total) {
-  const t = Number(total) || 0;
-  if (t >= 0) {
-    // pelanggan masih punya hutang ke kita
-    return {
-      hutangPelanggan: t,
-      hutangSaya: 0,
-    };
-  } else {
-    // kita yang berhutang ke pelanggan
-    return {
-      hutangPelanggan: 0,
-      hutangSaya: -t,
-    };
-  }
+// hitung dari total net → hutangPelanggan & hutangSaya
+function splitBalanceFromTotal(totalNet) {
+  const net = Number(totalNet) || 0;
+  const customerDebt = net > 0 ? net : 0;
+  const myDebt = net < 0 ? -net : 0;
+  return { customerDebt, myDebt };
 }
 
-// hitung total dari riwayat
-function computeTotalFromHistory(history) {
-  let total = 0;
+// hitung net dari history
+function computeNetFromHistory(history) {
+  let net = 0;
   for (const trx of history || []) {
     const amount = Number(trx.amount) || 0;
     if (trx.type === "give") {
-      // kita "berikan" → pelanggan berhutang
-      total += amount;
+      net += amount;
     } else if (trx.type === "receive") {
-      // pelanggan "terima" → bayar / setor
-      total -= amount;
+      net -= amount;
     }
   }
-  return total;
+  return net;
 }
 
-// screen management (pakai attribute hidden)
-function showScreen(which) {
-  const screens = ["screenList", "screenAdd", "screenDetail", "screenInput"];
-  screens.forEach((id) => {
-    const el = $(id);
-    if (!el) return;
-    el.hidden = id !== which;
+// cek sesi admin: pakai localStorage dari admin.html
+function ensureAdminSession() {
+  const logged = localStorage.getItem("admin_logged_in");
+  if (logged !== "1") {
+    // paksa balik ke admin
+    window.location.href = "/admin.html";
+  }
+}
+
+// switch antar screen
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach((s) => {
+    s.hidden = s.id !== id;
   });
 }
 
-// ==========================
-// CEK LOGIN ADMIN
-// ==========================
+// =======================
+// RENDER LIST PELANGGAN
+// =======================
+function updateGlobalTotals() {
+  const elMy = document.getElementById("globalMyTotal");
+  const elCust = document.getElementById("globalCustomerTotal");
+  if (!elMy || !elCust) return;
 
-function guardAdmin() {
-  const logged = localStorage.getItem("admin_logged_in");
-  if (logged !== "1") {
-    // belum login admin → balik ke halaman admin
-    window.location.href = "/admin.html";
-    return false;
+  let totalMy = 0;
+  let totalCust = 0;
+
+  for (const c of customers) {
+    const net = Number(c.total) || 0;
+    const { customerDebt, myDebt } = splitBalanceFromTotal(net);
+    totalMy += myDebt;
+    totalCust += customerDebt;
   }
-  return true;
+
+  elMy.textContent = formatRupiah(totalMy);
+  elCust.textContent = formatRupiah(totalCust);
 }
 
-// ==========================
-// LOAD & RENDER LIST PELANGGAN
-// ==========================
+function renderCustomerList() {
+  const list = document.getElementById("customerList");
+  if (!list) return;
 
-async function loadCustomers() {
-  const res = await fetch(API_BON_LIST);
-  const data = await res.json().catch(() => ({}));
+  list.innerHTML = "";
 
-  if (!res.ok || !data.ok || !Array.isArray(data.customers)) {
-    console.error("Gagal load customers", data);
-    return;
-  }
-
-  allCustomers = data.customers;
-
-  const listEl = $("customerList");
-  if (!listEl) return;
-
-  listEl.innerHTML = "";
-
-  if (!allCustomers.length) {
+  if (!filteredCustomers.length) {
     const empty = document.createElement("div");
-    empty.className = "bon-empty";
-    empty.textContent = "Belum ada pelanggan.";
-    listEl.appendChild(empty);
-    updateGlobalSummary();
+    empty.className = "bon-history-list-empty";
+    empty.textContent = "Belum ada pelanggan atau tidak cocok dengan pencarian.";
+    list.appendChild(empty);
+    updateGlobalTotals();
     return;
   }
 
-  // render tiap pelanggan
-  allCustomers.forEach((c, index) => {
+  filteredCustomers.forEach((c, idx) => {
+    const net = Number(c.total) || 0;
+    const { customerDebt, myDebt } = splitBalanceFromTotal(net);
+
     const card = document.createElement("div");
     card.className = "bon-customer-card";
 
-    // total c.total diperlakukan sama seperti di detail
-    const total = Number(c.total) || 0;
-    const { hutangPelanggan, hutangSaya } = splitDebt(total);
+    const top = document.createElement("div");
+    top.className = "bon-cust-main";
 
-    card.innerHTML = `
-      <div class="bon-customer-main">
-        <div class="bon-customer-name">
-          ${index + 1}. ${c.name || "(Tanpa nama)"}
-        </div>
-        <button type="button" class="bon-btn-open">BUKA</button>
-      </div>
-      <div class="bon-customer-wa">
-        WA: ${c.phone || "-"}
-      </div>
-      <div class="bon-customer-debts">
-        <div class="bon-debt-row">
-          <span>Hutang saya</span>
-          <span class="bon-debt-me">${formatRupiah(hutangSaya)}</span>
-        </div>
-        <div class="bon-debt-row">
-          <span>Hutang pelanggan</span>
-          <span class="bon-debt-customer">${formatRupiah(hutangPelanggan)}</span>
-        </div>
-      </div>
-    `;
+    const nameEl = document.createElement("div");
+    nameEl.className = "bon-cust-name";
+    nameEl.textContent = `${idx + 1}. ${c.name || "(Tanpa nama)"}`;
 
-    const btnOpen = card.querySelector(".bon-btn-open");
-    if (btnOpen) {
-      btnOpen.addEventListener("click", () => {
-        openCustomerDetail(c.phone);
-      });
-    }
+    const btnOpen = document.createElement("button");
+    btnOpen.type = "button";
+    btnOpen.className = "bon-btn-open";
+    btnOpen.textContent = "BUKA";
+    btnOpen.addEventListener("click", () => openDetail(c.phone));
 
-    listEl.appendChild(card);
+    top.appendChild(nameEl);
+    top.appendChild(btnOpen);
+
+    const wa = document.createElement("div");
+    wa.className = "bon-cust-wa";
+    wa.textContent = `WA: ${c.phone || "-"}`;
+
+    const bal = document.createElement("div");
+    bal.className = "bon-cust-balance";
+
+    const rowMy = document.createElement("div");
+    rowMy.innerHTML = `Hutang saya <span class="bon-total-me">${formatRupiah(
+      myDebt
+    )}</span>`;
+
+    const rowCust = document.createElement("div");
+    rowCust.innerHTML = `Hutang pelanggan <span class="bon-total-customer">${formatRupiah(
+      customerDebt
+    )}</span>`;
+
+    bal.appendChild(rowMy);
+    bal.appendChild(rowCust);
+
+    card.appendChild(top);
+    card.appendChild(wa);
+    card.appendChild(bal);
+
+    list.appendChild(card);
   });
 
-  updateGlobalSummary();
+  updateGlobalTotals();
 }
 
-// Update total global di header list
-function updateGlobalSummary() {
-  const spanMy = $("globalMyDebt");
-  const spanCust = $("globalCustDebt");
-  if (!spanMy || !spanCust) return;
+function applyFilter() {
+  const input = document.getElementById("searchCustomer");
+  const keyword = (input?.value || "").trim().toLowerCase();
 
-  let sumMy = 0;
-  let sumCust = 0;
-
-  for (const c of allCustomers || []) {
-    const total = Number(c.total) || 0;
-    const { hutangPelanggan, hutangSaya } = splitDebt(total);
-    sumMy += hutangSaya;
-    sumCust += hutangPelanggan;
+  if (!keyword) {
+    filteredCustomers = [...customers];
+  } else {
+    filteredCustomers = customers.filter((c) =>
+      (c.name || "").toLowerCase().includes(keyword)
+    );
   }
 
-  spanMy.textContent = formatRupiah(sumMy);
-  spanCust.textContent = formatRupiah(sumCust);
+  renderCustomerList();
 }
 
-// ==========================
-// DETAIL PELANGGAN
-// ==========================
+async function loadCustomers() {
+  try {
+    const res = await fetch(API_LIST);
+    const data = await res.json().catch(() => ({}));
 
-async function openCustomerDetail(phone) {
-  if (!phone) return;
+    if (!res.ok || data.ok !== true || !Array.isArray(data.customers)) {
+      throw new Error("Gagal memuat pelanggan");
+    }
 
-  const url = `${API_BON_GET}?phone=${encodeURIComponent(phone)}`;
-  const res = await fetch(url);
-  const data = await res.json().catch(() => ({}));
+    customers = data.customers;
+    filteredCustomers = [...customers];
+    applyFilter();
+  } catch (err) {
+    console.error(err);
+    alert("Gagal memuat daftar pelanggan");
+  }
+}
 
-  if (!res.ok || !data.ok) {
-    alert(data.message || "Gagal memuat detail pelanggan");
+// =======================
+// PELANGGAN BARU
+// =======================
+function openAddCustomerScreen() {
+  document.getElementById("addName").value = "";
+  document.getElementById("addPhone").value = "";
+  showScreen("screenAdd");
+}
+
+async function saveCustomer() {
+  const name = document.getElementById("addName").value.trim();
+  const phone = document.getElementById("addPhone").value.trim();
+
+  if (!name || !phone) {
+    alert("Nama dan nomor WhatsApp wajib diisi");
     return;
   }
 
-  currentPhone = data.phone;
-  currentCustomer = data;
+  try:
+  try {
+    const res = await fetch(API_CREATE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, phone }),
+    });
 
-  // nama di header
-  const nameEl = $("detailName");
-  if (nameEl) {
-    nameEl.textContent = data.name || "(Tanpa nama)";
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok !== true) {
+      throw new Error(data.message || "Gagal menyimpan pelanggan");
+    }
+
+    await loadCustomers();
+    showScreen("screenList");
+  } catch (err) {
+    console.error(err);
+    alert("Gagal menyimpan pelanggan");
   }
+}
 
-  // hitung total & split
-  const total = computeTotalFromHistory(data.history || []);
-  const { hutangPelanggan, hutangSaya } = splitDebt(total);
+// =======================
+// DETAIL PELANGGAN
+// =======================
+function renderDetailHeader(netTotal) {
+  const elCust = document.getElementById("detailCustomerTotal");
+  const elMy = document.getElementById("detailMyTotal");
+  const { customerDebt, myDebt } = splitBalanceFromTotal(netTotal);
 
-  const spanCust = $("detailDebtCustomer");
-  const spanMe = $("detailDebtMe");
-  if (spanCust) spanCust.textContent = formatRupiah(hutangPelanggan);
-  if (spanMe) spanMe.textContent = formatRupiah(hutangSaya);
-
-  // render riwayat
-  renderHistory(data.history || []);
-
-  showScreen("screenDetail");
+  if (elCust) elCust.textContent = formatRupiah(customerDebt);
+  if (elMy) elMy.textContent = formatRupiah(myDebt);
 }
 
 function renderHistory(history) {
-  const container = $("detailHistory");
+  const container = document.getElementById("detailHistory");
   if (!container) return;
-
   container.innerHTML = "";
 
   if (!history.length) {
     const empty = document.createElement("div");
-    empty.className = "bon-empty";
+    empty.className = "bon-history-list-empty";
     empty.textContent = "Belum ada catatan hutang.";
     container.appendChild(empty);
     return;
@@ -232,213 +263,190 @@ function renderHistory(history) {
 
   history
     .slice()
-    .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+    .sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""))
     .forEach((trx) => {
-      const row = document.createElement("div");
-      row.className = "bon-trx-row bon-trx-" + (trx.type === "give" ? "give" : "receive");
+      const item = document.createElement("div");
+      item.className = "trx-item";
 
-      const dt = new Date(trx.timestamp || Date.now());
-      const tStr = dt.toLocaleString("id-ID", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
+      const main = document.createElement("div");
+      main.className = "trx-main";
 
-      row.innerHTML = `
-        <div class="bon-trx-top">
-          <div class="bon-trx-date">${tStr}</div>
-          <div class="bon-trx-amount">${formatRupiah(trx.amount)}</div>
-        </div>
-        <div class="bon-trx-note">${trx.note || ""}</div>
-      `;
+      const dateEl = document.createElement("div");
+      dateEl.className = "trx-date";
+      dateEl.textContent = formatDateTimeID(trx.createdAt);
 
-      container.appendChild(row);
+      const noteEl = document.createElement("div");
+      noteEl.className = "trx-note";
+      noteEl.textContent =
+        trx.note || (trx.type === "give" ? "Berikan" : "Terima");
+
+      main.appendChild(dateEl);
+      main.appendChild(noteEl);
+
+      const amountEl = document.createElement("div");
+      amountEl.className = "trx-amount";
+      const amount = Number(trx.amount) || 0;
+
+      if (trx.type === "give") {
+        amountEl.classList.add("give");
+      } else {
+        amountEl.classList.add("receive");
+      }
+      amountEl.textContent = formatRupiah(amount);
+
+      item.appendChild(main);
+      item.appendChild(amountEl);
+
+      container.appendChild(item);
     });
 }
 
-// ==========================
-// TAMBAH / EDIT PELANGGAN
-// ==========================
+async function openDetail(phone) {
+  if (!phone) return;
 
-async function saveCustomer() {
-  const name = ($("addName")?.value || "").trim();
-  const phone = ($("addPhone")?.value || "").trim();
+  try {
+    const res = await fetch(`${API_GET}?phone=${encodeURIComponent(phone)}`);
+    const data = await res.json().catch(() => ({}));
 
-  if (!name || !phone) {
-    alert("Nama dan No WhatsApp wajib diisi");
-    return;
+    if (!res.ok || data.ok !== true) {
+      throw new Error(data.message || "Gagal mengambil data pelanggan");
+    }
+
+    const name = data.name || (data.customer && data.customer.name) || "";
+    const history = data.history || (data.customer && data.customer.history) || [];
+    const totalFromServer =
+      typeof data.total === "number"
+        ? data.total
+        : data.customer && typeof data.customer.total === "number"
+        ? data.customer.total
+        : null;
+
+    currentCustomer = { phone, name };
+    currentHistory = history || [];
+
+    document.getElementById("detailName").textContent =
+      name || "(Tanpa nama)";
+
+    const net =
+      totalFromServer != null
+        ? Number(totalFromServer) || 0
+        : computeNetFromHistory(currentHistory);
+
+    renderDetailHeader(net);
+    renderHistory(currentHistory);
+
+    // refresh list juga supaya angka di list ikut update
+    await loadCustomers();
+
+    showScreen("screenDetail");
+  } catch (err) {
+    console.error(err);
+    alert("Gagal membuka detail pelanggan");
   }
-
-  const res = await fetch(API_BON_CREATE, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, phone }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.ok) {
-    alert(data.message || "Gagal menyimpan pelanggan");
-    return;
-  }
-
-  // reset form
-  if ($("addName")) $("addName").value = "";
-  if ($("addPhone")) $("addPhone").value = "";
-
-  // kembali ke list & refresh
-  await loadCustomers();
-  showScreen("screenList");
 }
 
-// ==========================
-// INPUT TRANSAKSI
-// ==========================
-
+// =======================
+// TRANSAKSI (BERIKAN / TERIMA)
+// =======================
 function openInputScreen(type) {
-  if (!currentPhone) {
-    alert("Pilih pelanggan terlebih dahulu.");
-    return;
-  }
+  if (!currentCustomer) return;
 
-  const titleEl = $("inputTitle");
-  const typeEl = $("trxType");
-  const amountEl = $("trxAmount");
-  const noteEl = $("trxNote");
+  const title = document.getElementById("inputTitle");
+  const typeInput = document.getElementById("trxType");
+  const amountInput = document.getElementById("trxAmount");
+  const noteInput = document.getElementById("trxNote");
 
-  if (typeEl) typeEl.value = type;
-  if (amountEl) amountEl.value = "";
-  if (noteEl) noteEl.value = "";
+  typeInput.value = type;
+  amountInput.value = "";
+  noteInput.value = "";
 
-  if (titleEl) {
-    titleEl.textContent = type === "give" ? "Catat hutang baru" : "Catat pembayaran";
+  if (type === "give") {
+    title.textContent = `Berikan hutang untuk ${currentCustomer.name || ""}`;
+  } else {
+    title.textContent = `Terima pembayaran dari ${currentCustomer.name || ""}`;
   }
 
   showScreen("screenInput");
 }
 
 async function saveTrx() {
-  if (!currentPhone) {
-    alert("Tidak ada pelanggan aktif.");
-    return;
-  }
+  if (!currentCustomer) return;
 
-  const type = $("trxType")?.value || "";
-  const amount = Number($("trxAmount")?.value || "0");
-  const note = ($("trxNote")?.value || "").trim();
+  const type = document.getElementById("trxType").value;
+  const amountRaw = document.getElementById("trxAmount").value;
+  const note = document.getElementById("trxNote").value.trim();
 
+  const amount = Number(amountRaw);
   if (!type || !amount || amount <= 0) {
-    alert("Jumlah harus lebih dari 0.");
+    alert("Jenis transaksi dan jumlah harus diisi dengan benar");
     return;
   }
 
-  const res = await fetch(API_BON_ADD_TRX, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      phone: currentPhone,
-      type,
-      amount,
-      note,
-    }),
-  });
+  try {
+    const res = await fetch(API_ADD_TRX, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: currentCustomer.phone,
+        type,
+        amount,
+        note,
+      }),
+    });
 
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.ok) {
-    alert(data.message || "Gagal menyimpan transaksi");
-    return;
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok !== true) {
+      throw new Error(data.message || "Gagal menyimpan transaksi");
+    }
+
+    // setelah simpan, reload detail (itu juga reload list & ringkasan)
+    await openDetail(currentCustomer.phone);
+  } catch (err) {
+    console.error(err);
+    alert("Gagal menyimpan transaksi");
   }
-
-  // reload detail
-  await openCustomerDetail(currentPhone);
-  // setelah simpan, kembali ke detail
-  showScreen("screenDetail");
-  // dan refresh list total global
-  loadCustomers();
 }
 
-// ==========================
-// EVENT LISTENER
-// ==========================
-
+// =======================
+// INIT
+// =======================
 document.addEventListener("DOMContentLoaded", () => {
-  // pastikan admin login
-  if (!guardAdmin()) return;
+  // keamanan: wajib admin login
+  ensureAdminSession();
 
-  // default show list
-  showScreen("screenList");
+  // tombol di list
+  const btnAdd = document.getElementById("btnAddCustomer");
+  if (btnAdd) btnAdd.addEventListener("click", openAddCustomerScreen);
 
-  // tombol + tambah pelanggan
-  const btnAdd = $("btnAddCustomer");
-  if (btnAdd) {
-    btnAdd.addEventListener("click", () => {
-      showScreen("screenAdd");
-    });
-  }
+  const search = document.getElementById("searchCustomer");
+  if (search) search.addEventListener("input", applyFilter);
 
-  // tombol simpan pelanggan
-  const btnSaveCust = $("btnSaveCustomer");
-  if (btnSaveCust) {
-    btnSaveCust.addEventListener("click", saveCustomer);
-  }
-
-  // back dari screenAdd & screenDetail ke List
+  // tombol back dari add / detail
   document.querySelectorAll(".btn-back-list").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      showScreen("screenList");
-    });
+    btn.addEventListener("click", () => showScreen("screenList"));
   });
 
-  // back dari screenInput ke Detail
-  document.querySelectorAll(".btn-back-detail").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      showScreen("screenDetail");
-    });
-  });
+  const btnBackDetail = document.querySelector(".btn-back-detail");
+  if (btnBackDetail) {
+    btnBackDetail.addEventListener("click", () => showScreen("screenDetail"));
+  }
+
+  // tombol simpan pelanggan baru
+  const btnSaveCustomer = document.getElementById("btnSaveCustomer");
+  if (btnSaveCustomer) btnSaveCustomer.addEventListener("click", saveCustomer);
 
   // tombol Berikan / Terima di detail
-  const btnGive = $("btnGive");
-  if (btnGive) {
-    btnGive.addEventListener("click", () => openInputScreen("give"));
-  }
+  const btnGive = document.getElementById("btnGive");
+  if (btnGive) btnGive.addEventListener("click", () => openInputScreen("give"));
 
-  const btnReceive = $("btnReceive");
-  if (btnReceive) {
+  const btnReceive = document.getElementById("btnReceive");
+  if (btnReceive)
     btnReceive.addEventListener("click", () => openInputScreen("receive"));
-  }
 
-  // tombol Simpan transaksi
-  const btnSaveTrx = $("btnSaveTrx");
-  if (btnSaveTrx) {
-    btnSaveTrx.addEventListener("click", saveTrx);
-  }
+  // tombol simpan transaksi
+  const btnSaveTrx = document.getElementById("btnSaveTrx");
+  if (btnSaveTrx) btnSaveTrx.addEventListener("click", saveTrx);
 
-  // search (filter nama pelanggan)
-  const searchInput = $("searchCustomer");
-  if (searchInput) {
-    searchInput.addEventListener("input", () => {
-      const keyword = searchInput.value.trim().toLowerCase();
-      const filtered = allCustomers.filter((c) =>
-        (c.name || "").toLowerCase().includes(keyword)
-      );
-      // render ulang tapi memakai filtered
-      const backup = allCustomers;
-      allCustomers = filtered;
-      const listEl = $("customerList");
-      if (listEl) listEl.innerHTML = "";
-      filtered.length ? filtered.forEach((c, idx) => {
-        // sementara: set sementara, lalu panggil loadCustomers lagi
-      }) : null;
-      // lebih gampang: reload from server dan filter di sana
-      // untuk simpel: panggil loadCustomers, filter langsung di DOM
-      // → supaya nggak terlalu ribet, di versi ini kita abaikan filter,
-      //   kalau mau filter bener2 nanti bisa dibuat lagi.
-      loadCustomers();
-    });
-  }
-
-  // load awal data pelanggan
+  // load awal
   loadCustomers();
 });
