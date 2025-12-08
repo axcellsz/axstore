@@ -14,18 +14,6 @@
   <div id="screenList" class="screen">
     <header class="bon-header">
       <h1>Daftar Hutang</h1>
-
-      <!-- Ringkasan total global -->
-      <div class="bon-global-summary">
-        <div class="bon-summary-row">
-          <span>Hutang saya</span>
-          <span id="globalMyTotal" class="bon-total-me">Rp 0</span>
-        </div>
-        <div class="bon-summary-row">
-          <span>Hutang pelanggan</span>
-          <span id="globalCustomerTotal" class="bon-total-customer">Rp 0</span>
-        </div>
-      </div>
     </header>
 
     <main class="bon-main">
@@ -72,23 +60,13 @@
     </header>
 
     <main class="bon-main">
-      <!-- Ringkasan hutang pelanggan vs hutang saya -->
       <section class="bon-summary">
-        <div class="bon-summary-row">
-          <span>Hutang pelanggan</span>
-          <span id="detailCustomerTotal" class="bon-total-customer">Rp 0</span>
-        </div>
-        <div class="bon-summary-row">
-          <span>Hutang saya</span>
-          <span id="detailMyTotal" class="bon-total-me">Rp 0</span>
-        </div>
+        <div>Total hutang pelanggan ini</div>
+        <div id="detailTotal" class="bon-total">Rp0</div>
       </section>
 
       <section class="bon-history">
         <h2>Riwayat transaksi</h2>
-        <div class="bon-history-hint">
-          Kolom <strong>Berikan</strong> = hutang baru, <strong>Terima</strong> = pembayaran.
-        </div>
         <div id="detailHistory"></div>
       </section>
     </main>
