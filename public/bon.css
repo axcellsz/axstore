@@ -22,6 +22,11 @@ body {
   color: #111827;
 }
 
+/* pastikan elemen dengan atribut hidden benar-benar hilang */
+[hidden] {
+  display: none !important;
+}
+
 /* ==========================
    LAYOUT SCREEN
 ========================== */
@@ -32,7 +37,7 @@ body {
   flex-direction: column;
 }
 
-/* header biru muda mirip app lain */
+/* header */
 .bon-header {
   position: sticky;
   top: 0;
@@ -87,11 +92,12 @@ body {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
 }
 
-.customer-header {
+/* baris pertama: nomor + nama + tombol buka */
+.customer-top-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .customer-name {
@@ -99,8 +105,9 @@ body {
   font-weight: 600;
 }
 
-.customer-phone {
-  font-size: 11px;
+/* baris info WA */
+.customer-meta {
+  font-size: 12px;
   color: #6b7280;
 }
 
