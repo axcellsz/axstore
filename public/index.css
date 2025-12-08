@@ -413,7 +413,7 @@ body {
   pointer-events: auto;
 }
 .card-dashboard {
-  margin-top: 20px;
+  margin-top: 16px;
   height: 140px;
   box-shadow: none !important;
 }
