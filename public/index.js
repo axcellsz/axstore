@@ -259,15 +259,15 @@ async function loadProfileDetail() {
     );
 
     // Prefill form lengkapi profil DIMATIKAN supaya form kosong
-    // const setValue = (id, value) => {
-    //   const el = document.getElementById(id);
-    //   if (el) el.value = value || "";
-    // };
-    // setValue("fullName", u.fullName);
-    // setValue("email", u.email);
-    // setValue("nomorXL", u.nomorXL);
-    // setValue("jenisKuota", u.jenisKuota);
-    // setValue("alamat", u.alamat);
+     const setValue = (id, value) => {
+       const el = document.getElementById(id);
+       if (el) el.value = value || "";
+     };
+     setValue("fullName", u.fullName);
+     setValue("email", u.email);
+     setValue("nomorXL", u.nomorXL);
+     setValue("jenisKuota", u.jenisKuota);
+     setValue("alamat", u.alamat);
 
     // tampilkan / sembunyikan kuota & baris toggle
     const quotaCard = document.getElementById("profile-quota-card");
