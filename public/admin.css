@@ -1,93 +1,276 @@
-/* ==========================
-   BASE
-========================== */
+/* ========== RESET & BASE ========== */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   background: #f3f4f6;
-  padding: 20px;
 }
 
-/* ==========================
-   CONTAINER & TITLE
-========================== */
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.container {
-  max-width: 600px;
-  margin: auto;
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-/* ==========================
-   TABLE
-========================== */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-th,
-td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
-}
-
-/* ==========================
-   BUTTON BASE
-========================== */
-button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* ==========================
-   TOMBOL AKSI DI TABEL
-========================== */
-.table-actions {
+/* Halaman admin */
+.admin-page {
+  min-height: 100vh;
   display: flex;
-  gap: 8px;          /* jarak antar tombol */
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 16px 76px; /* ada ruang bawah untuk search bar fixed */
 }
 
-.table-actions button {
-  width: 72px;       /* ukuran lebar sama */
-  padding: 8px 0;
-  text-align: center;
+/* Kartu umum */
+.card {
+  width: 100%;
+  max-width: 720px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 18px 20px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* ========== LOGIN CARD ========== */
+.login-card h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.login-desc {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+#admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#admin-login-form label {
+  font-size: 13px;
+  color: #374151;
+}
+
+.input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  padding: 8px 10px;
   font-size: 14px;
-  font-weight: 500;
+  outline: none;
 }
 
-/* Tombol Kode */
-.code-btn {
-  background: #1f2937;
-  color: #fff;
-  border-radius: 6px;
+.input:focus {
+  border-color: #111827;
 }
 
-/* Tombol Delete */
-.del-btn {
+.login-error {
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+/* ========== BUTTONS ========== */
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: #111827;
+  color: #ffffff;
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.btn-small {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.btn-danger {
   background: #ef4444;
-  color: #fff;
-  border-radius: 6px;
+  color: #ffffff;
 }
 
-/* ==========================
-   RESULT BOX
-========================== */
-#result {
-  margin-top: 15px;
-  padding: 10px;
-  background: #d1fae5;
-  border: 1px solid #10b981;
-  color: #065f46;
-  display: none;
+.btn-dark {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+/* ========== TOAST ========== */
+.toast {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  max-width: 260px;
+  padding: 8px 10px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+}
+
+/* ========== ADMIN MAIN ========== */
+.admin-card {
+  /* sama seperti .card, hanya nama */
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.admin-summary {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.admin-info {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ========== USER LIST ========== */
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 1 item user */
+.user-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.user-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Nomor urut */
+.user-index {
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 20px;
+}
+
+/* Teks utama user */
+.user-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-fullname {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.user-meta {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Aksi kanan */
+.user-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-actions .btn {
+  min-width: 72px;
+  padding: 6px 10px;
+}
+
+/* Kalau layar lebar, tombol boleh sejajar */
+@media (min-width: 640px) {
+  .user-actions {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* ========== SEARCH BAR FIXED BAWAH ========== */
+.search-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 14px 12px;
+  background: rgba(243, 244, 246, 0.95);
+  border-top: 1px solid #e5e7eb;
+  backdrop-filter: blur(6px);
+  z-index: 1500;
+}
+
+.search-input {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 8px 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #111827;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 480px) {
+  .card {
+    border-radius: 16px;
+    padding: 16px 14px 18px;
+  }
+
+  .user-item {
+    padding: 8px;
+  }
+
+  .user-fullname {
+    font-size: 14px;
+  }
 }
