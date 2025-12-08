@@ -157,6 +157,23 @@ body {
   margin-top: 2px;
 }
 
+.customer-debt-row {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.debt-green {
+  color: #16a34a;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.debt-red {
+  color: #ef4444;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
 /* baris hutang per pelanggan */
 .customer-debt {
   font-size: 13px;
