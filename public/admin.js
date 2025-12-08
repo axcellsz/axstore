@@ -60,9 +60,6 @@ function updateSummary() {
 // ========== RENDER USER LIST ==========
 
 function renderUsers() {
-// ========== RENDER USER LIST ==========
-
-function renderUsers() {
   const list = document.getElementById("userList");
   if (!list) return;
 
