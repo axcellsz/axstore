@@ -11,21 +11,22 @@
 <body>
 
   <!-- ====== SCREEN LIST PELANGGAN ====== -->
-  <div id="screenList" class="screen active">
+  <div id="screenList" class="screen">
     <header class="bon-header">
       <h1>Daftar Hutang</h1>
-    </header>
 
-    <section class="bon-global-summary">
-      <div class="bon-global-row">
-        <span>Hutang saya</span>
-        <span id="globalMyTotal" class="bon-total-me">Rp 0</span>
+      <!-- Ringkasan total global -->
+      <div class="bon-global-summary">
+        <div class="bon-summary-row">
+          <span>Hutang saya</span>
+          <span id="globalMyTotal" class="bon-total-me">Rp 0</span>
+        </div>
+        <div class="bon-summary-row">
+          <span>Hutang pelanggan</span>
+          <span id="globalCustomerTotal" class="bon-total-customer">Rp 0</span>
+        </div>
       </div>
-      <div class="bon-global-row">
-        <span>Hutang pelanggan</span>
-        <span id="globalCustomerTotal" class="bon-total-customer">Rp 0</span>
-      </div>
-    </section>
+    </header>
 
     <main class="bon-main">
       <div id="customerList"></div>
@@ -44,7 +45,7 @@
   </div>
 
   <!-- ====== SCREEN TAMBAH / EDIT PELANGGAN ====== -->
-  <div id="screenAdd" class="screen">
+  <div id="screenAdd" class="screen" hidden>
     <header class="bon-header">
       <button class="btn-back-list" type="button">←</button>
       <h1>Pelanggan baru</h1>
@@ -64,13 +65,14 @@
   </div>
 
   <!-- ====== SCREEN DETAIL PELANGGAN ====== -->
-  <div id="screenDetail" class="screen">
+  <div id="screenDetail" class="screen" hidden>
     <header class="bon-header">
       <button class="btn-back-list" type="button">←</button>
       <h1 id="detailName">Nama pelanggan</h1>
     </header>
 
     <main class="bon-main">
+      <!-- Ringkasan hutang pelanggan vs hutang saya -->
       <section class="bon-summary">
         <div class="bon-summary-row">
           <span>Hutang pelanggan</span>
@@ -84,9 +86,9 @@
 
       <section class="bon-history">
         <h2>Riwayat transaksi</h2>
-        <p class="bon-history-hint">
-          Kolom <b>Berikan</b> = hutang baru, <b>Terima</b> = pembayaran.
-        </p>
+        <div class="bon-history-hint">
+          Kolom <strong>Berikan</strong> = hutang baru, <strong>Terima</strong> = pembayaran.
+        </div>
         <div id="detailHistory"></div>
       </section>
     </main>
@@ -99,7 +101,7 @@
   </div>
 
   <!-- ====== SCREEN INPUT TRANSAKSI ====== -->
-  <div id="screenInput" class="screen">
+  <div id="screenInput" class="screen" hidden>
     <header class="bon-header">
       <button class="btn-back-detail" type="button">←</button>
       <h1 id="inputTitle">Catatan hutang</h1>
