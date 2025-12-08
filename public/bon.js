@@ -15,12 +15,12 @@ function formatRupiah(num) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-// split total: >0 = hutang pelanggan, <0 = hutang saya
+// pecah total menjadi: hutang saya & hutang pelanggan
 function splitDebt(total) {
   const t = Number(total || 0);
   return {
-    cust: t > 0 ? t : 0, // pelanggan utang ke kamu
-    me: t < 0 ? -t : 0,  // kamu "utang" ke pelanggan (kelebihan bayar)
+    myDebt: t < 0 ? -t : 0,       // kalau total negatif → saya berhutang
+    customerDebt: t > 0 ? t : 0,  // kalau total positif → pelanggan berhutang
   };
 }
 
@@ -36,26 +36,6 @@ function showScreen(name) {
   if (screenInput) screenInput.hidden = name !== "input";
 }
 
-// ================== RINGKASAN GLOBAL ==================
-
-function updateGlobalSummary() {
-  const elMy = document.getElementById("summaryMyDebt");
-  const elCust = document.getElementById("summaryCustDebt");
-  if (!elMy || !elCust) return;
-
-  let totalCust = 0;
-  let totalMe = 0;
-
-  filteredCustomers.forEach((c) => {
-    const t = Number(c.total || 0);
-    if (t > 0) totalCust += t;
-    else if (t < 0) totalMe += -t;
-  });
-
-  elCust.textContent = formatRupiah(totalCust);
-  elMy.textContent = formatRupiah(totalMe);
-}
-
 // ================== RENDER LIST PELANGGAN ==================
 
 function renderCustomers() {
@@ -68,7 +48,6 @@ function renderCustomers() {
     const empty = document.createElement("div");
     empty.textContent = "Belum ada pelanggan.";
     listEl.appendChild(empty);
-    updateGlobalSummary();
     return;
   }
 
@@ -95,28 +74,30 @@ function renderCustomers() {
     // baris info WA
     const meta = document.createElement("div");
     meta.className = "customer-meta";
-    meta.textContent = `WA: ${c.phone || "-"}`;
+    meta.textContent = `WA: ${c.phone}`;
 
-    // baris hutang per pelanggan
-    const { cust, me } = splitDebt(c.total);
+    // hitung hutang saya & hutang pelanggan
+    const { myDebt, customerDebt } = splitDebt(c.total);
 
-    const myDebtLine = document.createElement("div");
-    myDebtLine.className = "customer-debt customer-debt-my";
-    myDebtLine.textContent = "Hutang saya " + formatRupiah(me);
+    // baris hutang saya
+    const debtRowMy = document.createElement("div");
+    debtRowMy.className = "customer-debt-row";
+    debtRowMy.innerHTML =
+      `Hutang saya <span class="debt-green">${formatRupiah(myDebt)}</span>`;
 
-    const custDebtLine = document.createElement("div");
-    custDebtLine.className = "customer-debt customer-debt-cust";
-    custDebtLine.textContent = "Hutang pelanggan " + formatRupiah(cust);
+    // baris hutang pelanggan
+    const debtRowCust = document.createElement("div");
+    debtRowCust.className = "customer-debt-row";
+    debtRowCust.innerHTML =
+      `Hutang pelanggan <span class="debt-red">${formatRupiah(customerDebt)}</span>`;
 
     card.appendChild(topRow);
     card.appendChild(meta);
-    card.appendChild(myDebtLine);
-    card.appendChild(custDebtLine);
+    card.appendChild(debtRowMy);
+    card.appendChild(debtRowCust);
 
     listEl.appendChild(card);
   });
-
-  updateGlobalSummary();
 }
 
 // filter by nama
@@ -136,7 +117,7 @@ function applyFilter() {
 
 // ================== LOAD LIST PELANGGAN ==================
 
-async function loadCustomers(initialPhone) {
+async function loadCustomers() {
   try {
     const res = await fetch(API_LIST_CUSTOMERS);
     const data = await res.json().catch(() => ({}));
@@ -146,17 +127,6 @@ async function loadCustomers(initialPhone) {
     customers = data.customers;
     filteredCustomers = [...customers];
     applyFilter();
-
-    // kalau datang dari admin.html?phone=xxx otomatis buka customer tsb
-    if (initialPhone) {
-      const digits = String(initialPhone).replace(/\D/g, "");
-      const target = customers.find((c) =>
-        String(c.phone || "").replace(/\D/g, "") === digits
-      );
-      if (target) {
-        openCustomer(target);
-      }
-    }
   } catch (err) {
     console.error(err);
     alert("Gagal memuat daftar pelanggan");
@@ -187,15 +157,15 @@ function renderDetail() {
   if (!currentCustomer) return;
 
   const nameEl = document.getElementById("detailName");
-  const custDebtEl = document.getElementById("detailCustDebt");
-  const myDebtEl = document.getElementById("detailMyDebt");
+  const totalEl = document.getElementById("detailTotal");
   const historyEl = document.getElementById("detailHistory");
 
   if (nameEl) nameEl.textContent = currentCustomer.name || "(tanpa nama)";
 
-  const { cust, me } = splitDebt(currentCustomer.total || 0);
-  if (custDebtEl) custDebtEl.textContent = formatRupiah(cust);
-  if (myDebtEl) myDebtEl.textContent = formatRupiah(me);
+  // kalau detailTotal ada, tampilkan net total (masih merah seperti sebelumnya)
+  if (totalEl) {
+    totalEl.textContent = formatRupiah(currentCustomer.total || 0);
+  }
 
   if (!historyEl) return;
   historyEl.innerHTML = "";
@@ -218,10 +188,7 @@ function renderDetail() {
 
     const dateDiv = document.createElement("div");
     dateDiv.className = "history-date";
-
-    // dukung h.time (baru) dan h.date (data lama)
-    const timeValue = h.time || h.date || Date.now();
-    const d = new Date(timeValue);
+    const d = new Date(h.date || h.time || Date.now());
     dateDiv.textContent = d.toLocaleString("id-ID");
 
     const amountDiv = document.createElement("div");
@@ -342,16 +309,12 @@ async function saveTrx() {
 // ================== INIT ==================
 
 document.addEventListener("DOMContentLoaded", () => {
-  // proteksi: wajib admin_logged_in
+  // proteksi: hanya bisa diakses kalau admin sudah login
   const logged = localStorage.getItem("admin_logged_in");
   if (logged !== "1") {
     window.location.href = "/admin.html";
     return;
   }
-
-  // baca ?phone=... dari URL (kalau datang dari tombol BON di admin)
-  const params = new URLSearchParams(window.location.search);
-  const initialPhone = params.get("phone") || "";
 
   // tombol + pelanggan baru
   document
@@ -398,5 +361,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // pertama kali: tampilkan list
   showScreen("list");
-  loadCustomers(initialPhone);
+  loadCustomers();
 });
