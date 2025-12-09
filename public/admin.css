@@ -217,7 +217,7 @@ body {
 
 .user-field-value {
   margin-top: 2px;
-  font-size: 14px;
+  font-size: 10px;
   color: #111827;
 }
 
@@ -281,11 +281,8 @@ body {
 }
 .user-phone-strong,
 .user-phone-strong a {
-  font-weight: 700;
+  font-weight: 500;     /* tidak terlalu tebal */
+  font-size: 11px;      /* override ukuran */
   color: #16a34a;
   text-decoration: none;
-}
-
-.user-phone-strong a:active {
-  opacity: 0.7;
 }
