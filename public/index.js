@@ -262,7 +262,7 @@ function parseAlamatGabungan(alamatGabungan) {
       const u = window.__AX_USER;
       if (!u || !u.phone) return;
       window.location.href =
-        "/bon.html?phone=" + encodeURIComponent(u.phone);
+        "/debt.html?phone=" + encodeURIComponent(u.phone);
     });
   }
 
