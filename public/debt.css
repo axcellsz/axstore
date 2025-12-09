@@ -85,8 +85,12 @@ body {
   gap: 24px;
 }
 
-.summary-block {
-  flex: 1;
+.summary-block:first-child {
+  text-align: left;
+}
+
+.summary-block:last-child {
+  text-align: right;
 }
 
 .summary-label {
