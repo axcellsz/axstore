@@ -911,6 +911,86 @@ export default {
         await env.BON_DATA.put(key, JSON.stringify(obj));
         return json({ ok: true, message: "Transaksi tersimpan" });
       }
+      
+// =================== EDIT / DELETE TRANSAKSI ===================
+
+// EDIT TRANSAKSI
+// body: { phone, index, amount, note?, date? }
+if (path === "/api/bon/edit-trx" && request.method === "POST") {
+  const body = await request.json().catch(() => null);
+  if (!body) return json({ ok: false, message: "Invalid JSON" }, 400);
+
+  let { phone, index, amount, note, date } = body;
+  if (!phone || typeof index !== "number" || typeof amount !== "number") {
+    return json({ ok: false, message: "Data tidak lengkap" }, 400);
+  }
+
+  phone = phone.replace(/\D/g, "");
+  const key = "cust:" + phone;
+
+  const raw = await env.BON_DATA.get(key);
+  if (!raw)
+    return json({ ok: false, message: "Pelanggan tidak ditemukan" }, 404);
+
+  const obj = JSON.parse(raw);
+  if (!Array.isArray(obj.history) || !obj.history[index]) {
+    return json({ ok: false, message: "Transaksi tidak ditemukan" }, 404);
+  }
+
+  // update transaksi
+  obj.history[index].amount = amount;
+  if (typeof note === "string") obj.history[index].note = note;
+  if (date) obj.history[index].date = date;
+
+  // HITUNG ULANG TOTAL DARI SEMUA TRANSAKSI
+  let total = 0;
+  for (const h of obj.history) {
+    if (h.type === "give") total += h.amount;
+    else if (h.type === "receive") total -= h.amount;
+  }
+  obj.total = total;
+
+  await env.BON_DATA.put(key, JSON.stringify(obj));
+  return json({ ok: true, message: "Transaksi berhasil diperbarui" });
+}
+
+// HAPUS TRANSAKSI
+// body: { phone, index }
+if (path === "/api/bon/delete-trx" && request.method === "POST") {
+  const body = await request.json().catch(() => null);
+  if (!body) return json({ ok: false, message: "Invalid JSON" }, 400);
+
+  let { phone, index } = body;
+  if (!phone || typeof index !== "number") {
+    return json({ ok: false, message: "Data tidak lengkap" }, 400);
+  }
+
+  phone = phone.replace(/\D/g, "");
+  const key = "cust:" + phone;
+
+  const raw = await env.BON_DATA.get(key);
+  if (!raw)
+    return json({ ok: false, message: "Pelanggan tidak ditemukan" }, 404);
+
+  const obj = JSON.parse(raw);
+  if (!Array.isArray(obj.history) || !obj.history[index]) {
+    return json({ ok: false, message: "Transaksi tidak ditemukan" }, 404);
+  }
+
+  // hapus transaksi
+  obj.history.splice(index, 1);
+
+  // HITUNG ULANG TOTAL
+  let total = 0;
+  for (const h of obj.history) {
+    if (h.type === "give") total += h.amount;
+    else if (h.type === "receive") total -= h.amount;
+  }
+  obj.total = total;
+
+  await env.BON_DATA.put(key, JSON.stringify(obj));
+  return json({ ok: true, message: "Transaksi berhasil dihapus" });
+}
 
       // =================== FORM HANDLERS (REGISTER & RESET) ===================
 
