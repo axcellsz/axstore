@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catatan Hutang</title>
+
+  <link rel="stylesheet" href="/debt.css" />
+  <script src="/debt.js" defer></script>
+</head>
+<body>
+
+  <!-- TOAST / ALERT KECIL -->
+  <div id="toast" class="toast" hidden></div>
+
+  <div class="debt-page">
+
+    <!-- HEADER ATAS -->
+    <header class="debt-header">
+      <button type="button" class="back-btn" onclick="goBack()">
+        <span class="back-icon">←</span>
+      </button>
+      <div class="header-text">
+        <h1>Catatan hutang</h1>
+        <div id="header-subtitle" class="header-subtitle"></div>
+      </div>
+    </header>
+
+    <!-- KARTU RINGKASAN HUTANG -->
+    <section class="card debt-summary-card">
+      <div class="summary-label">Total hutang anda</div>
+      <div id="total-debt-amount" class="summary-amount">Rp 0</div>
+      <div id="summary-note" class="summary-note"></div>
+    </section>
+
+    <!-- RIWAYAT TRANSAKSI -->
+    <section class="card debt-history-card">
+      <div class="section-title">Riwayat transaksi</div>
+      <div id="debt-history-list" class="debt-history-list">
+        <!-- item transaksi di-render via JS -->
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>
