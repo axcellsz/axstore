@@ -19,7 +19,7 @@ function formatRupiah(num) {
 function splitDebt(total) {
   const t = Number(total || 0);
   return {
-    myDebt: t < 0 ? -t : 0,       // kalau total negatif → saya berhutang
+    myDebt: t < 0 ? -t : 0,       // kalau total negatif → saya berhutang (t disimpan negatif)
     customerDebt: t > 0 ? t : 0,  // kalau total positif → pelanggan berhutang
   };
 }
@@ -36,6 +36,77 @@ function showScreen(name) {
   if (screenInput) screenInput.hidden = name !== "input";
 }
 
+// ================== RENDER RINGKASAN ==================
+
+function renderSummaryCard() {
+  // Hitung total dari semua customers (gunakan customers, bukan filteredCustomers,
+  // karena ringkasan harus menampilkan keseluruhan)
+  let totalMy = 0;
+  let totalCust = 0;
+
+  for (const c of customers || []) {
+    const s = splitDebt(c.total);
+    totalMy += s.myDebt;
+    totalCust += s.customerDebt;
+  }
+
+  // Buat elemen ringkasan
+  const wrap = document.createElement("div");
+  wrap.className = "customer-card summary-card";
+  wrap.style.marginBottom = "12px";
+  wrap.style.padding = "12px 14px";
+
+  // Judul ringkasan
+  const title = document.createElement("div");
+  title.style.fontWeight = "700";
+  title.style.fontSize = "16px";
+  title.style.marginBottom = "8px";
+  title.textContent = "Ringkasan";
+
+  // Baris Hutang saya
+  const rowMy = document.createElement("div");
+  rowMy.style.display = "flex";
+  rowMy.style.justifyContent = "space-between";
+  rowMy.style.alignItems = "center";
+  rowMy.style.marginBottom = "6px";
+
+  const labelMy = document.createElement("div");
+  labelMy.textContent = "Hutang saya";
+  labelMy.style.color = "#374151"; // warna label hitam keabu-abuan
+
+  const valMy = document.createElement("div");
+  valMy.textContent = formatRupiah(totalMy);
+  valMy.style.color = "#16a34a"; // hijau
+  valMy.style.fontWeight = "700";
+
+  rowMy.appendChild(labelMy);
+  rowMy.appendChild(valMy);
+
+  // Baris Hutang pelanggan
+  const rowCust = document.createElement("div");
+  rowCust.style.display = "flex";
+  rowCust.style.justifyContent = "space-between";
+  rowCust.style.alignItems = "center";
+
+  const labelCust = document.createElement("div");
+  labelCust.textContent = "Hutang pelanggan";
+  labelCust.style.color = "#374151"; // warna label hitam keabu-abuan
+
+  const valCust = document.createElement("div");
+  valCust.textContent = formatRupiah(totalCust);
+  valCust.style.color = "#ef4444"; // merah
+  valCust.style.fontWeight = "700";
+
+  rowCust.appendChild(labelCust);
+  rowCust.appendChild(valCust);
+
+  wrap.appendChild(title);
+  wrap.appendChild(rowMy);
+  wrap.appendChild(rowCust);
+
+  return wrap;
+}
+
 // ================== RENDER LIST PELANGGAN ==================
 
 function renderCustomers() {
@@ -43,6 +114,10 @@ function renderCustomers() {
   if (!listEl) return;
 
   listEl.innerHTML = "";
+
+  // Sisipkan ringkasan (pakai customers, bukan filtered)
+  const summaryEl = renderSummaryCard();
+  listEl.appendChild(summaryEl);
 
   if (!filteredCustomers.length) {
     const empty = document.createElement("div");
@@ -76,20 +151,21 @@ function renderCustomers() {
     meta.className = "customer-meta";
     meta.textContent = `WA: ${c.phone}`;
 
-    // hitung hutang saya & hutang pelanggan
+    // hitung hutang saya & hutang pelanggan untuk tiap customer
     const { myDebt, customerDebt } = splitDebt(c.total);
 
-    // baris hutang saya
+    // baris hutang saya (label hitam + angka hijau)
     const debtRowMy = document.createElement("div");
     debtRowMy.className = "customer-debt-row";
+    debtRowMy.style.marginTop = "8px";
     debtRowMy.innerHTML =
-      `Hutang saya <span class="debt-green">${formatRupiah(myDebt)}</span>`;
+      `<span style="color:#374151">Hutang saya</span> <span style="color:#16a34a; font-weight:700"> ${formatRupiah(myDebt)}</span>`;
 
-    // baris hutang pelanggan
+    // baris hutang pelanggan (label hitam + angka merah)
     const debtRowCust = document.createElement("div");
     debtRowCust.className = "customer-debt-row";
     debtRowCust.innerHTML =
-      `Hutang pelanggan <span class="debt-red">${formatRupiah(customerDebt)}</span>`;
+      `<span style="color:#374151">Hutang pelanggan</span> <span style="color:#ef4444; font-weight:700"> ${formatRupiah(customerDebt)}</span>`;
 
     card.appendChild(topRow);
     card.appendChild(meta);
@@ -190,19 +266,19 @@ function renderDetail() {
     dateDiv.className = "history-date";
     const d = new Date(h.date || h.time || Date.now());
 
-const bulan = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-];
+    const bulan = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
 
-const tgl = d.getDate();
-const bln = bulan[d.getMonth()];
-const thn = d.getFullYear();
+    const tgl = d.getDate();
+    const bln = bulan[d.getMonth()];
+    const thn = d.getFullYear();
 
-const jam = String(d.getHours()).padStart(2, "0");
-const menit = String(d.getMinutes()).padStart(2, "0");
+    const jam = String(d.getHours()).padStart(2, "0");
+    const menit = String(d.getMinutes()).padStart(2, "0");
 
-dateDiv.textContent = `${tgl} ${bln} ${thn} ${jam}:${menit}`;
+    dateDiv.textContent = `${tgl} ${bln} ${thn} ${jam}:${menit}`;
     const amountDiv = document.createElement("div");
     amountDiv.className = "history-amount";
     amountDiv.textContent = formatRupiah(h.amount || 0);
