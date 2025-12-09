@@ -392,9 +392,24 @@ body {
 .debt-link {
   margin-top: 6px;
   font-size: 13px;
+  font-weight: 600;
   color: #0d6efd;
   text-decoration: underline;
   cursor: pointer;
+
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.debt-link:focus,
+.debt-link:active {
+  outline: none;
+  box-shadow: none;
+}
+
+.debt-link:active {
+  opacity: 0.6;
 }
 
 /* DETAIL PROFIL */
