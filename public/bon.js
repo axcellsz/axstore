@@ -4,6 +4,10 @@ const API_CREATE_CUSTOMER = "/api/bon/create-customer";
 const API_GET_CUSTOMER = "/api/bon/get";
 const API_ADD_TRX = "/api/bon/add-trx";
 
+// endpoint baru untuk hapus & edit
+const API_DELETE_CUSTOMER = "/api/bon/delete-customer";
+const API_UPDATE_CUSTOMER = "/api/bon/update-customer";
+
 let customers = [];
 let filteredCustomers = [];
 let currentCustomer = null; // {phone,name,total,history}
@@ -115,10 +119,31 @@ function renderCustomers() {
     debtRowCust.innerHTML =
       `Hutang pelanggan <span class="debt-red">${formatRupiah(customerDebt)}</span>`;
 
+    // baris aksi text: hapus | edit
+    const actionsRow = document.createElement("div");
+    actionsRow.className = "customer-debt-row"; // pakai gaya teks yang sama
+    const deleteSpan = document.createElement("span");
+    deleteSpan.textContent = "hapus";
+    deleteSpan.style.cursor = "pointer";
+
+    const sepText = document.createTextNode(" | ");
+
+    const editSpan = document.createElement("span");
+    editSpan.textContent = "edit";
+    editSpan.style.cursor = "pointer";
+
+    deleteSpan.addEventListener("click", () => deleteCustomer(c));
+    editSpan.addEventListener("click", () => editCustomer(c));
+
+    actionsRow.appendChild(deleteSpan);
+    actionsRow.appendChild(sepText);
+    actionsRow.appendChild(editSpan);
+
     card.appendChild(topRow);
     card.appendChild(meta);
     card.appendChild(debtRowMy);
     card.appendChild(debtRowCust);
+    card.appendChild(actionsRow);
 
     listEl.appendChild(card);
   });
@@ -286,6 +311,80 @@ async function saveCustomer() {
   } catch (err) {
     console.error(err);
     alert("Gagal menyimpan pelanggan");
+  }
+}
+
+// ================== HAPUS & EDIT PELANGGAN ==================
+
+async function deleteCustomer(cust) {
+  if (!cust || !cust.phone) return;
+
+  const ok = confirm(
+    `Hapus pelanggan "${cust.name || "(tanpa nama)"}" (${cust.phone}) dari daftar hutang?`
+  );
+  if (!ok) return;
+
+  try {
+    const res = await fetch(API_DELETE_CUSTOMER, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: cust.phone }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.message || "Gagal menghapus pelanggan");
+    }
+
+    await loadCustomers();
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan saat menghapus pelanggan");
+  }
+}
+
+async function editCustomer(cust) {
+  if (!cust || !cust.phone) return;
+
+  const currentName = cust.name || "";
+  const currentPhone = cust.phone || "";
+
+  const newName = prompt("Nama pelanggan:", currentName);
+  if (newName === null) return; // dibatalkan
+  const trimmedName = newName.trim();
+  if (!trimmedName) {
+    alert("Nama tidak boleh kosong.");
+    return;
+  }
+
+  const newPhone = prompt("No WhatsApp:", currentPhone);
+  if (newPhone === null) return; // dibatalkan
+  const trimmedPhone = newPhone.trim();
+  if (!trimmedPhone) {
+    alert("No WhatsApp tidak boleh kosong.");
+    return;
+  }
+
+  try {
+    const res = await fetch(API_UPDATE_CUSTOMER, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        oldPhone: cust.phone,
+        name: trimmedName,
+        phone: trimmedPhone,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.message || "Gagal mengubah data pelanggan");
+    }
+
+    await loadCustomers();
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan saat mengubah data pelanggan");
   }
 }
 
