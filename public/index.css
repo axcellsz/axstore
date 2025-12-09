@@ -371,7 +371,7 @@ body {
 
 /* ====== HUTANG (card mirip kuota) ====== */
 .profile-debt-card {
-  background: #fef2f2;        /* sedikit merah muda */
+  background: #f9fafb;        /* sedikit merah muda */
   border-radius: 12px;
   padding: 12px 14px;
   margin-bottom: 12px;
@@ -379,12 +379,11 @@ body {
 
 .debt-title {
   font-size: 12px;
-  color: #b91c1c;
+  color: #6b7280;
 }
 
 .debt-amount {
-  margin-top: 4px;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   color: #dc2626;             /* merah hutang */
 }
