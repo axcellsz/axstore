@@ -1,66 +1,58 @@
-/* ==========================
-   RESET & BASE
-========================== */
+/* ========= RESET ========= */
 * {
   box-sizing: border-box;
 }
 
-html,
 body {
   margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   background: #f3f4f6;
 }
 
-/* ==========================
-   LAYOUT HALAMAN
-========================== */
+/* ========= ALERT ========= */
+.alert {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  max-width: 260px;
+  padding: 8px 10px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+}
 
+/* ========= PAGE CONTAINER ========= */
 .debt-page {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
+  max-width: 720px;
+  margin: 0 auto;
   padding: 16px 16px 32px;
 }
 
-.debt-container {
-  width: 100%;
-  max-width: 720px;
-}
-
-/* ==========================
-   HEADER
-========================== */
-
+/* ========= HEADER ========= */
 .debt-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 4px 16px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
-.debt-back-btn {
-  width: 42px;
-  height: 42px;
+.back-btn {
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
-  border: none;
-  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 18px;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
-}
-
-.debt-back-btn svg {
-  width: 20px;
-  height: 20px;
 }
 
 .debt-header-text h1 {
@@ -70,170 +62,133 @@ body {
   color: #111827;
 }
 
-.debt-phone {
+.debt-subtitle {
   margin-top: 2px;
-  font-size: 12px;
-  color: #6b7280;
-}
-
-/* ==========================
-   KARTU UMUM
-========================== */
-
-.debt-card {
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-  padding: 14px 16px;
-}
-
-/* supaya jarak antar card konsisten */
-.debt-main > .debt-card + .debt-card {
-  margin-top: 12px;
-}
-
-.debt-main {
-  margin-top: 4px;
-}
-
-/* ==========================
-   RINGKASAN TOTAL HUTANG
-========================== */
-
-.debt-summary-card {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.debt-summary-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.debt-summary-label {
   font-size: 13px;
   color: #6b7280;
 }
 
-.debt-summary-value {
+/* ========= CARD GENERIC ========= */
+.card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  margin-bottom: 12px;
+}
+
+/* ========= CARD RINGKASAN ========= */
+.card-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.summary-block {
+  flex: 1;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.summary-amount {
   margin-top: 6px;
   font-size: 20px;
   font-weight: 700;
 }
 
-.debt-summary-value.debt-red {
-  color: #dc2626;
+.summary-amount-debt {
+  color: #ef4444;
 }
 
-.debt-summary-value.debt-green {
+.summary-amount-overpay {
   color: #16a34a;
 }
 
-/* garis tipis tengah */
-.debt-summary-divider {
-  width: 1px;
-  background: #e5e7eb;
-}
-
-/* ==========================
-   RIWAYAT TRANSAKSI
-========================== */
-
-.debt-history-card-title {
+/* ========= CARD RIWAYAT ========= */
+.card-history .history-header h2 {
+  margin: 0 0 8px;
   font-size: 16px;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 8px;
 }
 
-.debt-history-empty {
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-empty {
   font-size: 13px;
   color: #9ca3af;
 }
 
-/* item riwayat */
-
-.debt-history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* Item riwayat */
+.history-item {
+  padding: 8px 0;
+  border-top: 1px solid #e5e7eb;
 }
 
-.debt-history-item {
-  position: relative;
-  border-radius: 16px;
-  background: #f9fafb;
-  padding: 10px 12px;
-  overflow: hidden;
+.history-item:first-child {
+  border-top: none;
 }
 
-/* strip warna di kiri */
-.debt-history-item::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #e5e7eb;
-}
-
-/* warna beda untuk hutang vs bayar */
-.debt-history-item.debt-give::before {
-  background: #ef4444;
-}
-
-.debt-history-item.debt-receive::before {
-  background: #22c55e;
-}
-
-.debt-history-header-row {
+/* tanggal + jumlah */
+.history-top-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 8px;
+  align-items: baseline;
+  gap: 10px;
 }
 
-.debt-history-date {
-  font-size: 12px;
+.history-date {
+  font-size: 13px;
   color: #6b7280;
 }
 
-.debt-history-amount {
+.history-amount {
   font-size: 15px;
   font-weight: 600;
-  color: #dc2626;
 }
 
-/* jika ingin pembayaran hijau */
-.debt-history-item.debt-receive .debt-history-amount {
-  color: #16a34a;
+/* warna tergantung tipe */
+.history-item.give .history-amount {
+  color: #ef4444; /* hutang baru */
 }
 
-.debt-history-note {
-  margin-top: 4px;
+.history-item.receive .history-amount {
+  color: #16a34a; /* pembayaran */
+}
+
+.history-note {
+  margin-top: 3px;
   font-size: 14px;
   color: #111827;
 }
 
-/* ==========================
-   RESPONSIVE
-========================== */
+/* INFO TIPE (hutang baru / pembayaran) */
+.history-type {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
 
+/* ========= RESPONSIVE ========= */
 @media (max-width: 480px) {
-  .debt-page {
-    padding: 12px 12px 28px;
+  .card {
+    border-radius: 16px;
+    padding: 12px 14px;
   }
 
-  .debt-card {
-    border-radius: 18px;
-    padding: 14px 14px;
-  }
-
-  .debt-summary-value {
+  .summary-amount {
     font-size: 18px;
+  }
+
+  .debt-header-text h1 {
+    font-size: 20px;
   }
 }
