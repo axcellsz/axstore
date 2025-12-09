@@ -342,6 +342,46 @@ label {
   color: #4b5563;
 }
 
+/* ==========================
+   AKSI EDIT / HAPUS TRANSAKSI
+========================== */
+
+.history-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.history-action {
+  border: none;
+  padding: 4px 12px;
+  font-size: 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #374151;
+  line-height: 1.4;
+}
+
+/* tombol edit */
+.history-edit {
+  background: #e5e7eb;
+}
+
+.history-edit:active {
+  background: #d1d5db;
+}
+
+/* tombol hapus */
+.history-delete {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.history-delete:active {
+  background: #fecaca;
+}
+
 /* pakai class row & warna yang sama dengan global summary */
 .bon-summary .bon-summary-row {
   margin-top: 2px;
