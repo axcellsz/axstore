@@ -122,24 +122,24 @@ function renderCustomers() {
       `Hutang pelanggan <span class="debt-red">${formatRupiah(customerDebt)}</span>`;
 
     // baris aksi text: hapus | edit
+// baris aksi: tombol edit / hapus (gaya sama seperti di riwayat transaksi)
     const actionsRow = document.createElement("div");
-    actionsRow.className = "customer-debt-row"; // pakai gaya teks yang sama
-    const deleteSpan = document.createElement("span");
-    deleteSpan.textContent = "hapus";
-    deleteSpan.style.cursor = "pointer";
+    actionsRow.className = "history-actions"; // pakai kelas yang sudah ada di detail
 
-    const sepText = document.createTextNode(" | ");
+    const btnEdit = document.createElement("button");
+    btnEdit.type = "button";
+    btnEdit.className = "history-action history-edit"; // sama seperti tombol edit transaksi
+    btnEdit.textContent = "edit";
+    btnEdit.addEventListener("click", () => editCustomer(c));
 
-    const editSpan = document.createElement("span");
-    editSpan.textContent = "edit";
-    editSpan.style.cursor = "pointer";
+    const btnDelete = document.createElement("button");
+    btnDelete.type = "button";
+    btnDelete.className = "history-action history-delete"; // sama seperti tombol hapus transaksi
+    btnDelete.textContent = "hapus";
+    btnDelete.addEventListener("click", () => deleteCustomer(c));
 
-    deleteSpan.addEventListener("click", () => deleteCustomer(c));
-    editSpan.addEventListener("click", () => editCustomer(c));
-
-    actionsRow.appendChild(deleteSpan);
-    actionsRow.appendChild(sepText);
-    actionsRow.appendChild(editSpan);
+    actionsRow.appendChild(btnEdit);
+    actionsRow.appendChild(btnDelete);
 
     card.appendChild(topRow);
     card.appendChild(meta);
