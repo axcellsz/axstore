@@ -71,29 +71,70 @@
       </div>
 
       <div id="profile-extra" class="profile-extra">
-  <div id="profile-quota-card" class="profile-quota-card" style="display:none;">
-    <div class="quota-title">Sisa kuota</div>
-    <div class="quota-value">
-      <span id="quota-amount" class="quota-amount">-</span>
-      <span id="quota-exp" class="quota-exp"></span>
-    </div>
-  </div>
+      <!-- CARD KUOTA -->
+      <div id="profile-quota-card" class="profile-quota-card" style="display:none;">
+        <div class="quota-title">Sisa kuota</div>
+        <div class="quota-value">
+          <span id="quota-amount" class="quota-amount">-</span>
+          <span id="quota-exp" class="quota-exp"></span>
+        </div>
+      </div>
 
-  <!-- CARD HUTANG – baru -->
-  <div id="profile-debt-card" class="profile-debt-card" style="display:none;">
-    <div class="debt-title">Hutang anda sebesar</div>
-    <div id="debt-amount" class="debt-amount">Rp 0</div>
-    <div id="debt-link" class="debt-link">
-      Lihat catatan hutang
-    </div>
-  </div>
-  <!-- END CARD HUTANG -->
+      <!-- CARD HUTANG -->
+      <div id="profile-debt-card" class="profile-debt-card" style="display:none;">
+        <div class="debt-title">Hutang anda sebesar</div>
+        <div id="debt-amount" class="debt-amount">Rp 0</div>
+        <button id="debt-link" class="debt-link" type="button">
+          Lihat catatan hutang
+        </button>
+      </div>
 
-  <div id="profile-detail-toggle" class="profile-detail-list" style="display:none; margin-top:12px;">
-    ...
-  </div>
-  ...
-</div>
+      <!-- TOGGLE DETAIL PROFIL -->
+      <div
+        id="profile-detail-toggle"
+        class="profile-detail-list"
+        style="display:none; margin-top:12px;"
+      >
+        <div class="detail-row">
+          <div class="detail-label">Detail profil</div>
+          <div class="detail-value">
+            <span id="detail-profil-text">Lihat detail lengkap</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOX DETAIL PROFIL -->
+      <div
+        id="profile-detail-box"
+        class="profile-detail-list"
+        style="display:none;"
+      >
+        <div class="detail-row">
+          <div class="detail-label">Nama lengkap</div>
+          <div class="detail-value" id="detail-fullName">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Email</div>
+          <div class="detail-value" id="detail-email">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Nomor XL</div>
+          <div class="detail-value" id="detail-nomorXL">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Jenis kuota</div>
+          <div class="detail-value" id="detail-jenisKuota">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Alamat</div>
+          <div class="detail-value" id="detail-alamat">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Status profil</div>
+          <div class="detail-value" id="info-status">-</div>
+        </div>
+      </div>
+    </div>
 
       <div id="profile-detail-toggle" class="profile-detail-list" style="display:none; margin-top:12px;">
         <div class="detail-row">
