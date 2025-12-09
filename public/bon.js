@@ -3,6 +3,8 @@ const API_LIST_CUSTOMERS = "/api/bon/list-customers";
 const API_CREATE_CUSTOMER = "/api/bon/create-customer";
 const API_GET_CUSTOMER = "/api/bon/get";
 const API_ADD_TRX = "/api/bon/add-trx";
+const API_EDIT_TRX = "/api/bon/edit-trx";
+const API_DELETE_TRX = "/api/bon/delete-trx";
 
 // endpoint baru untuk hapus & edit
 const API_DELETE_CUSTOMER = "/api/bon/delete-customer";
@@ -232,7 +234,7 @@ function renderDetail() {
     return;
   }
 
-  history.forEach((h) => {
+history.forEach((h, index) => {
     const item = document.createElement("div");
     item.className =
       "history-item " + (h.type === "give" ? "history-give" : "history-receive");
@@ -271,11 +273,130 @@ function renderDetail() {
     noteDiv.textContent =
       h.note || (h.type === "give" ? "Berikan (hutang baru)" : "Terima (pembayaran)");
 
+    // ====== baris aksi: edit / hapus ======
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "history-actions";
+
+    const btnEdit = document.createElement("button");
+    btnEdit.type = "button";
+    btnEdit.className = "history-action history-edit";
+    btnEdit.textContent = "edit";
+    btnEdit.addEventListener("click", () => editTransaction(index));
+
+    const btnDelete = document.createElement("button");
+    btnDelete.type = "button";
+    btnDelete.className = "history-action history-delete";
+    btnDelete.textContent = "hapus";
+    btnDelete.addEventListener("click", () => deleteTransaction(index));
+
+    actionsDiv.appendChild(btnEdit);
+    actionsDiv.appendChild(btnDelete);
+    // =====================================
+
     item.appendChild(header);
     item.appendChild(noteDiv);
+    item.appendChild(actionsDiv);
 
     historyEl.appendChild(item);
   });
+  
+  // ================== EDIT / HAPUS TRANSAKSI ==================
+
+async function editTransaction(index) {
+  if (!currentCustomer) return;
+  const trx = (currentCustomer.history || [])[index];
+  if (!trx) return;
+
+  // jumlah baru
+  const amountStr = prompt(
+    "Jumlah baru (Rp, angka saja):",
+    String(trx.amount || 0)
+  );
+  if (amountStr === null) return; // batal
+  const amount = Number(amountStr);
+  if (!amount || amount <= 0) {
+    alert("Jumlah harus lebih besar dari 0");
+    return;
+  }
+
+  // catatan baru (boleh kosong)
+  const noteStr = prompt(
+    "Catatan (boleh dikosongkan):",
+    trx.note || ""
+  );
+  const note = noteStr === null ? trx.note || "" : noteStr;
+
+  // ubah tanggal (opsional)
+  const dateStr = prompt(
+    "Ubah tanggal? format: YYYY-MM-DD HH:MM\nKosongkan jika tidak diubah:",
+    ""
+  );
+
+  const body = {
+    phone: currentCustomer.phone,
+    index,
+    amount,
+    note,
+  };
+
+  if (dateStr && dateStr.trim()) {
+    const parsed = new Date(dateStr.replace(" ", "T"));
+    if (isNaN(parsed.getTime())) {
+      alert("Format tanggal tidak dikenali, tanggal tidak diubah");
+    } else {
+      body.date = parsed.toISOString();
+    }
+  }
+
+  try {
+    const res = await fetch(API_EDIT_TRX, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.message || "Gagal mengedit transaksi");
+    }
+
+    // reload detail (total & riwayat akan ikut ter-update)
+    await openCustomer({ phone: currentCustomer.phone });
+  } catch (err) {
+    console.error(err);
+    alert("Gagal mengedit transaksi");
+  }
+}
+
+async function deleteTransaction(index) {
+  if (!currentCustomer) return;
+  const trx = (currentCustomer.history || [])[index];
+  if (!trx) return;
+
+  const yakin = confirm("Yakin ingin menghapus transaksi ini?");
+  if (!yakin) return;
+
+  try {
+    const res = await fetch(API_DELETE_TRX, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: currentCustomer.phone,
+        index,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.message || "Gagal menghapus transaksi");
+    }
+
+    // reload detail
+    await openCustomer({ phone: currentCustomer.phone });
+  } catch (err) {
+    console.error(err);
+    alert("Gagal menghapus transaksi");
+  }
 }
 
 // ================== TAMBAH PELANGGAN ==================
