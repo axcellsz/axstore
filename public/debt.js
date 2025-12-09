@@ -1,105 +1,170 @@
+// ========= HELPER =========
 function formatRupiah(num) {
-  return "Rp " + Number(num || 0).toLocaleString("id-ID");
+  const n = Number(num || 0);
+  return "Rp " + n.toLocaleString("id-ID");
 }
 
-function formatDateID(iso) {
-  if (!iso) return "";
+function showAlert(msg) {
+  const box = document.getElementById("alert");
+  if (!box) return;
+  box.textContent = msg || "";
+  box.hidden = !msg;
+}
+
+// format "10 Desember 2025 pukul 01.37"
+function formatDateTimeID(iso) {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  if (isNaN(d.getTime())) return "";
+
+  const bulan = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+
+  const tgl = d.getDate();
+  const bln = bulan[d.getMonth()];
+  const thn = d.getFullYear();
+  const jam = String(d.getHours()).padStart(2, "0");
+  const menit = String(d.getMinutes()).padStart(2, "0");
+
+  return `${tgl} ${bln} ${thn} pukul ${jam}.${menit}`;
+}
+
+// ========= AMBIL PHONE DARI QUERY =========
+function getPhoneFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const phone = params.get("phone");
+  if (!phone) return "";
+  return String(phone).trim();
+}
+
+// ========= RENDER DATA =========
+function renderDebt(data, phone) {
+  const titleEl = document.getElementById("debt-title");
+  const phoneEl = document.getElementById("debt-phone");
+  const totalEl = document.getElementById("summary-total");
+  const overEl = document.getElementById("summary-overpay");
+  const listEl = document.getElementById("history-list");
+
+  if (!listEl) return;
+
+  const name = data.name || "";
+  if (titleEl) {
+    titleEl.textContent = name
+      ? `Catatan hutang ${name}`
+      : "Catatan hutang";
+  }
+  if (phoneEl) phoneEl.textContent = phone || "-";
+
+  const totalRaw = Number(data.total || 0);
+  const totalHutang = totalRaw > 0 ? totalRaw : 0;
+  const overpay = totalRaw < 0 ? -totalRaw : 0;
+
+  if (totalEl) totalEl.textContent = formatRupiah(totalHutang);
+  if (overEl) overEl.textContent = formatRupiah(overpay);
+
+  const history = Array.isArray(data.history) ? data.history.slice() : [];
+
+  listEl.innerHTML = "";
+
+  if (!history.length) {
+    const empty = document.createElement("div");
+    empty.className = "history-empty";
+    empty.textContent = "Belum ada catatan hutang.";
+    listEl.appendChild(empty);
+    return;
+  }
+
+  // urutkan terbaru di atas
+  history.sort((a, b) => {
+    const da = new Date(a.date || a.time || 0).getTime();
+    const db = new Date(b.date || b.time || 0).getTime();
+    return db - da;
+  });
+
+  history.forEach((h) => {
+    const item = document.createElement("div");
+    item.className = "history-item " + (h.type === "receive" ? "receive" : "give");
+
+    const topRow = document.createElement("div");
+    topRow.className = "history-top-row";
+
+    const dateDiv = document.createElement("div");
+    dateDiv.className = "history-date";
+    const dt = formatDateTimeID(h.date || h.time || Date.now());
+    dateDiv.textContent = dt;
+
+    const amountDiv = document.createElement("div");
+    amountDiv.className = "history-amount";
+    amountDiv.textContent = formatRupiah(h.amount || 0);
+
+    topRow.appendChild(dateDiv);
+    topRow.appendChild(amountDiv);
+
+    const noteDiv = document.createElement("div");
+    noteDiv.className = "history-note";
+    noteDiv.textContent =
+      h.note ||
+      (h.type === "receive" ? "Pembayaran" : "Hutang baru");
+
+    const typeDiv = document.createElement("div");
+    typeDiv.className = "history-type";
+    typeDiv.textContent = h.type === "receive" ? "Pembayaran" : "Hutang baru";
+
+    item.appendChild(topRow);
+    item.appendChild(noteDiv);
+    item.appendChild(typeDiv);
+
+    listEl.appendChild(item);
   });
 }
 
-function getPhoneParam() {
-  const p = new URLSearchParams(window.location.search);
-  return p.get("phone");
-}
-
+// ========= LOAD DATA DARI API =========
 async function loadDebt() {
-  const phone = getPhoneParam();
+  const phone = getPhoneFromQuery();
   if (!phone) {
-    document.getElementById("history-list").innerHTML =
-      '<div class="empty">Nomor WhatsApp tidak ditemukan.</div>';
+    showAlert("Nomor WhatsApp tidak ditemukan di URL.");
     return;
   }
-
-  const phoneEl = document.getElementById("debt-phone");
-  if (phoneEl) phoneEl.textContent = "No WA " + phone;
 
   try {
-    const res = await fetch("/api/bon/get?phone=" + encodeURIComponent(phone));
+    const res = await fetch(
+      "/api/bon/get?phone=" + encodeURIComponent(phone)
+    );
     const data = await res.json().catch(() => ({}));
 
-    // cek error sesuai bon.js
     if (!res.ok || data.ok === false) {
-      throw new Error(data.message || "Gagal memuat detail pelanggan");
+      throw new Error(data.message || "Gagal memuat data hutang");
     }
 
-    // di bon.js: currentCustomer = data;
-    // jadi data ini adalah objek customer langsung
-    const customer = data.customer || data || {};
-
-    // set judul dengan nama
-    const title = document.getElementById("debt-title");
-    if (title && customer.name) {
-      title.textContent = "Catatan hutang " + customer.name;
-    }
-
-    const total = Number(customer.total || 0);
-    const totalHutang = total > 0 ? total : 0;
-    const kelebihanBayar = total < 0 ? -total : 0;
-
-    const totalEl = document.getElementById("total-hutang");
-    const lebihEl = document.getElementById("kelebihan-bayar");
-    if (totalEl) totalEl.textContent = formatRupiah(totalHutang);
-    if (lebihEl) lebihEl.textContent = formatRupiah(kelebihanBayar);
-
-    renderHistory(customer.history || []);
+    renderDebt(data, phone);
   } catch (err) {
     console.error(err);
-    document.getElementById("history-list").innerHTML =
-      '<div class="empty">Gagal memuat data hutang</div>';
+    showAlert("Gagal memuat data hutang.");
+    const listEl = document.getElementById("history-list");
+    if (listEl) {
+      listEl.innerHTML = "";
+      const div = document.createElement("div");
+      div.className = "history-empty";
+      div.textContent = "Gagal memuat data hutang";
+      listEl.appendChild(div);
+    }
   }
 }
 
-function renderHistory(history) {
-  const box = document.getElementById("history-list");
-  if (!box) return;
-
-  box.innerHTML = "";
-
-  if (!history.length) {
-    box.innerHTML = '<div class="empty">Belum ada catatan hutang</div>';
-    return;
+// ========= INIT =========
+document.addEventListener("DOMContentLoaded", () => {
+  const backBtn = document.getElementById("btn-back");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      // kalau datang dari index, biasanya history.back() cukup
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "/index.html";
+      }
+    });
   }
 
-  // transaksi terbaru di atas
-  const sorted = history.slice().reverse();
-
-  for (const h of sorted) {
-    const item = document.createElement("div");
-    const isReceive = h.type === "receive";
-    item.className = "history-item " + (isReceive ? "receive" : "give");
-
-    const noteText =
-      h.note || (isReceive ? "Pembayaran hutang" : "Hutang baru");
-
-    item.innerHTML = `
-      <div class="history-date">${formatDateID(h.date || h.time)}</div>
-      <div class="history-note">${noteText}</div>
-      <div class="history-amount ${isReceive ? "receive" : "give"}">
-        ${formatRupiah(h.amount || 0)}
-      </div>
-    `;
-
-    box.appendChild(item);
-  }
-}
-
-// jalankan saat halaman load
-loadDebt();
+  loadDebt();
+});
