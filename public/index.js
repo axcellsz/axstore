@@ -38,6 +38,12 @@ function formatDateID(isoString) {
   return `${day} ${monthName} ${year}`;
 }
 
+/* ========= Helper format rupiah ========= */
+function formatRupiah(num) {
+  const n = Number(num || 0);
+  return "Rp " + n.toLocaleString("id-ID");
+}
+
 /* ========= ALERT ========= */
 let alertTimeout = null;
 
@@ -81,8 +87,9 @@ window.openProfilePanel = function () {
   panel.classList.add("open");
   backdrop.classList.add("show");
 
-  // setiap kali panel dibuka, refresh kuota (pakai cache di worker)
+  // setiap kali panel dibuka, refresh kuota & hutang (pakai cache di worker)
   loadQuota();
+  loadDebt();
 };
 
 window.closeProfilePanel = function () {
@@ -211,10 +218,6 @@ function parseAlamatGabungan(alamatGabungan) {
   // Simpan sesi global
   window.__AX_USER = session;
 
-  // Dashboard welcome dimatikan, card kosong.
-  // const welcome = document.getElementById("welcome");
-  // ...
-
   // isi teks dasar (username & WA)
   const unameSafe = escapeHTML(session.username || session.name || "-");
   const phoneSafe = escapeHTML(session.phone || "-");
@@ -249,6 +252,17 @@ function parseAlamatGabungan(alamatGabungan) {
   if (btnOpenComplete) {
     btnOpenComplete.addEventListener("click", () => {
       if (window.openCompleteProfile) window.openCompleteProfile();
+    });
+  }
+
+  // Link "Lihat catatan hutang"
+  const debtLink = document.getElementById("debt-link");
+  if (debtLink) {
+    debtLink.addEventListener("click", () => {
+      const u = window.__AX_USER;
+      if (!u || !u.phone) return;
+      window.location.href =
+        "/bon.html?phone=" + encodeURIComponent(u.phone);
     });
   }
 
@@ -421,6 +435,48 @@ async function loadQuota() {
     console.error("loadQuota error:", err);
     amountEl.textContent = "-";
     if (expEl) expEl.textContent = "";
+  }
+}
+
+/* ========= LOAD HUTANG DARI BACKEND (/api/bon/get) ========= */
+
+async function loadDebt() {
+  const user = window.__AX_USER;
+  if (!user || !user.phone) return;
+
+  const card = document.getElementById("profile-debt-card");
+  const amountEl = document.getElementById("debt-amount");
+  if (!card || !amountEl) return;
+
+  try {
+    // tampilan loading
+    amountEl.textContent = "...";
+    card.style.display = "block";
+
+    const res = await fetch(
+      "/api/bon/get?phone=" + encodeURIComponent(user.phone)
+    );
+    const data = await res.json().catch(() => ({}));
+
+    // kalau belum ada pelanggan di BON_DATA → sembunyikan card
+    if (!res.ok || data.ok === false) {
+      card.style.display = "none";
+      return;
+    }
+
+    const total = Number(data.total || 0);
+
+    // total > 0 = pelanggan berhutang ke user
+    // total <= 0 = tidak ada hutang pelanggan
+    if (!(total > 0)) {
+      card.style.display = "none";
+      return;
+    }
+
+    amountEl.textContent = formatRupiah(total);
+  } catch (err) {
+    console.error("loadDebt error:", err);
+    card.style.display = "none";
   }
 }
 
