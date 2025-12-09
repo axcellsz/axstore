@@ -1,134 +1,239 @@
+/* ==========================
+   RESET & BASE
+========================== */
 * {
   box-sizing: border-box;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
   background: #f3f4f6;
-  padding: 16px;
-  color: #111827;
 }
 
-/* HEADER */
-.header {
+/* ==========================
+   LAYOUT HALAMAN
+========================== */
+
+.debt-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 16px 16px 32px;
+}
+
+.debt-container {
+  width: 100%;
+  max-width: 720px;
+}
+
+/* ==========================
+   HEADER
+========================== */
+
+.debt-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  padding: 10px 4px 16px;
 }
 
-.btn-back {
+.debt-back-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
   border: none;
-  background: #e5e7eb;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  font-size: 18px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
 }
 
-.header-text {
+.debt-back-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.debt-header-text h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.debt-phone {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ==========================
+   KARTU UMUM
+========================== */
+
+.debt-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  padding: 14px 16px;
+}
+
+/* supaya jarak antar card konsisten */
+.debt-main > .debt-card + .debt-card {
+  margin-top: 12px;
+}
+
+.debt-main {
+  margin-top: 4px;
+}
+
+/* ==========================
+   RINGKASAN TOTAL HUTANG
+========================== */
+
+.debt-summary-card {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.debt-summary-col {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.title {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.subtitle {
-  font-size: 12px;
+.debt-summary-label {
+  font-size: 13px;
   color: #6b7280;
 }
 
-/* CARD */
-.card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 14px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-}
-
-/* SUMMARY */
-.summary-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.summary-item .label {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.summary-item .value {
-  margin-top: 4px;
+.debt-summary-value {
+  margin-top: 6px;
   font-size: 20px;
   font-weight: 700;
 }
 
-.value.danger {
+.debt-summary-value.debt-red {
   color: #dc2626;
 }
 
-.value.success {
+.debt-summary-value.debt-green {
   color: #16a34a;
 }
 
-/* RIWAYAT */
-.section-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 10px;
+/* garis tipis tengah */
+.debt-summary-divider {
+  width: 1px;
+  background: #e5e7eb;
 }
 
-.history-list {
+/* ==========================
+   RIWAYAT TRANSAKSI
+========================== */
+
+.debt-history-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.debt-history-empty {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* item riwayat */
+
+.debt-history-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
-.history-item {
-  border-left: 4px solid #e5e7eb;
-  padding-left: 10px;
+.debt-history-item {
+  position: relative;
+  border-radius: 16px;
+  background: #f9fafb;
+  padding: 10px 12px;
+  overflow: hidden;
 }
 
-.history-item.give {
-  border-left-color: #dc2626;
+/* strip warna di kiri */
+.debt-history-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #e5e7eb;
 }
 
-.history-item.receive {
-  border-left-color: #16a34a;
+/* warna beda untuk hutang vs bayar */
+.debt-history-item.debt-give::before {
+  background: #ef4444;
 }
 
-.history-date {
+.debt-history-item.debt-receive::before {
+  background: #22c55e;
+}
+
+.debt-history-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.debt-history-date {
   font-size: 12px;
   color: #6b7280;
 }
 
-.history-note {
-  margin-top: 2px;
-  font-size: 14px;
-}
-
-.history-amount {
-  margin-top: 4px;
+.debt-history-amount {
+  font-size: 15px;
   font-weight: 600;
-}
-
-.history-amount.give {
   color: #dc2626;
 }
 
-.history-amount.receive {
+/* jika ingin pembayaran hijau */
+.debt-history-item.debt-receive .debt-history-amount {
   color: #16a34a;
 }
 
-.empty {
-  font-size: 13px;
-  color: #6b7280;
+.debt-history-note {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #111827;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
+
+@media (max-width: 480px) {
+  .debt-page {
+    padding: 12px 12px 28px;
+  }
+
+  .debt-card {
+    border-radius: 18px;
+    padding: 14px 14px;
+  }
+
+  .debt-summary-value {
+    font-size: 18px;
+  }
 }
