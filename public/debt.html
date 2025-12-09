@@ -10,35 +10,57 @@
 </head>
 <body>
 
-  <!-- HEADER -->
-  <div class="header">
-    <button class="btn-back" onclick="history.back()">←</button>
-    <div class="header-text">
-      <div id="debt-title" class="title">Catatan hutang</div>
-      <div id="debt-phone" class="subtitle"></div>
-    </div>
+  <!-- ALERT GLOBAL (opsional, dipakai JS kalau perlu) -->
+  <div id="alert" class="alert" hidden></div>
+
+  <div class="debt-page">
+
+    <!-- ============ HEADER ============ -->
+    <header class="debt-header">
+      <button id="btn-back" type="button" class="back-btn" aria-label="Kembali">
+        ←
+      </button>
+
+      <div class="debt-header-text">
+        <!-- Judul akan diisi JS: "Catatan hutang {nama}" atau default -->
+        <h1 id="debt-title">Catatan hutang</h1>
+        <div class="debt-subtitle">
+          No WA <span id="debt-phone">-</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ CARD RINGKASAN ============ -->
+    <section class="card card-summary">
+      <div class="summary-row">
+        <div class="summary-block">
+          <div class="summary-label">Total hutang</div>
+          <div id="summary-total" class="summary-amount summary-amount-debt">
+            Rp 0
+          </div>
+        </div>
+
+        <div class="summary-block">
+          <div class="summary-label">Kelebihan bayar</div>
+          <div id="summary-overpay" class="summary-amount summary-amount-overpay">
+            Rp 0
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CARD RIWAYAT ============ -->
+    <section class="card card-history">
+      <div class="history-header">
+        <h2>Riwayat transaksi</h2>
+      </div>
+
+      <!-- kontainer isi riwayat, diisi oleh JS -->
+      <div id="history-list" class="history-list">
+        <div class="history-empty">Memuat data hutang...</div>
+      </div>
+    </section>
+
   </div>
-
-  <!-- RINGKASAN -->
-  <div class="card summary-card">
-    <div class="summary-item">
-      <div class="label">Total hutang</div>
-      <div id="total-hutang" class="value danger">Rp 0</div>
-    </div>
-
-    <div class="summary-item">
-      <div class="label">Kelebihan bayar</div>
-      <div id="kelebihan-bayar" class="value success">Rp 0</div>
-    </div>
-  </div>
-
-  <!-- RIWAYAT -->
-  <div class="card">
-    <div class="section-title">Riwayat transaksi</div>
-    <div id="history-list" class="history-list">
-      <div class="empty">Memuat data...</div>
-    </div>
-  </div>
-
 </body>
 </html>
