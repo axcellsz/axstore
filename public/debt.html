@@ -10,37 +10,34 @@
 </head>
 <body>
 
-  <!-- TOAST / ALERT KECIL -->
-  <div id="toast" class="toast" hidden></div>
+  <!-- HEADER -->
+  <div class="header">
+    <button class="btn-back" onclick="history.back()">←</button>
+    <div class="header-text">
+      <div id="debt-title" class="title">Catatan hutang</div>
+      <div id="debt-phone" class="subtitle"></div>
+    </div>
+  </div>
 
-  <div class="debt-page">
+  <!-- RINGKASAN -->
+  <div class="card summary-card">
+    <div class="summary-item">
+      <div class="label">Total hutang</div>
+      <div id="total-hutang" class="value danger">Rp 0</div>
+    </div>
 
-    <!-- HEADER ATAS -->
-    <header class="debt-header">
-      <button type="button" class="back-btn" onclick="goBack()">
-        <span class="back-icon">←</span>
-      </button>
-      <div class="header-text">
-        <h1>Catatan hutang</h1>
-        <div id="header-subtitle" class="header-subtitle"></div>
-      </div>
-    </header>
+    <div class="summary-item">
+      <div class="label">Kelebihan bayar</div>
+      <div id="kelebihan-bayar" class="value success">Rp 0</div>
+    </div>
+  </div>
 
-    <!-- KARTU RINGKASAN HUTANG -->
-    <section class="card debt-summary-card">
-      <div class="summary-label">Total hutang anda</div>
-      <div id="total-debt-amount" class="summary-amount">Rp 0</div>
-      <div id="summary-note" class="summary-note"></div>
-    </section>
-
-    <!-- RIWAYAT TRANSAKSI -->
-    <section class="card debt-history-card">
-      <div class="section-title">Riwayat transaksi</div>
-      <div id="debt-history-list" class="debt-history-list">
-        <!-- item transaksi di-render via JS -->
-      </div>
-    </section>
-
+  <!-- RIWAYAT -->
+  <div class="card">
+    <div class="section-title">Riwayat transaksi</div>
+    <div id="history-list" class="history-list">
+      <div class="empty">Memuat data...</div>
+    </div>
   </div>
 
 </body>
