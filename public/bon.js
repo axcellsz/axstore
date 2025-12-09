@@ -15,13 +15,17 @@ function formatRupiah(num) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-// pecah total menjadi: hutang saya & hutang pelanggan
-function splitDebt(total) {
-  const t = Number(total || 0);
-  return {
-    myDebt: t < 0 ? -t : 0,       // kalau total negatif → saya berhutang
-    customerDebt: t > 0 ? t : 0,  // kalau total positif → pelanggan berhutang
-  };
+// pisah total menjadi hutang saya & hutang pelanggan
+function splitDebt(totalRaw) {
+  const t = Number(totalRaw || 0);
+  if (t > 0) {
+    // pelanggan berhutang ke saya
+    return { hutangPelanggan: t, hutangSaya: 0 };
+  } else if (t < 0) {
+    // saya berhutang ke pelanggan
+    return { hutangPelanggan: 0, hutangSaya: -t };
+  }
+  return { hutangPelanggan: 0, hutangSaya: 0 };
 }
 
 function showScreen(name) {
@@ -34,6 +38,26 @@ function showScreen(name) {
   if (screenAdd) screenAdd.hidden = name !== "add";
   if (screenDetail) screenDetail.hidden = name !== "detail";
   if (screenInput) screenInput.hidden = name !== "input";
+}
+
+// ================== RINGKASAN DI LIST ==================
+
+function updateListSummary() {
+  const myEl = document.getElementById("sumMyDebt");
+  const custEl = document.getElementById("sumCustomerDebt");
+  if (!myEl || !custEl) return;
+
+  let totalMy = 0;
+  let totalCust = 0;
+
+  for (const c of customers) {
+    const { hutangPelanggan, hutangSaya } = splitDebt(c.total || 0);
+    totalMy += hutangSaya;
+    totalCust += hutangPelanggan;
+  }
+
+  myEl.textContent = formatRupiah(totalMy);
+  custEl.textContent = formatRupiah(totalCust);
 }
 
 // ================== RENDER LIST PELANGGAN ==================
@@ -76,25 +100,36 @@ function renderCustomers() {
     meta.className = "customer-meta";
     meta.textContent = `WA: ${c.phone}`;
 
-    // hitung hutang saya & hutang pelanggan
-    const { myDebt, customerDebt } = splitDebt(c.total);
+    // baris hutang saya & hutang pelanggan
+    const debtRows = document.createElement("div");
+    const { hutangPelanggan, hutangSaya } = splitDebt(c.total || 0);
 
-    // baris hutang saya
-    const debtRowMy = document.createElement("div");
-    debtRowMy.className = "customer-debt-row";
-    debtRowMy.innerHTML =
-      `Hutang saya <span class="debt-green">${formatRupiah(myDebt)}</span>`;
+    const rowMy = document.createElement("div");
+    rowMy.className = "customer-debt-row";
+    const rowMyLabel = document.createElement("span");
+    rowMyLabel.textContent = "Hutang saya ";
+    const rowMyAmount = document.createElement("span");
+    rowMyAmount.className = "customer-debt-my-amount";
+    rowMyAmount.textContent = formatRupiah(hutangSaya);
+    rowMy.appendChild(rowMyLabel);
+    rowMy.appendChild(rowMyAmount);
 
-    // baris hutang pelanggan
-    const debtRowCust = document.createElement("div");
-    debtRowCust.className = "customer-debt-row";
-    debtRowCust.innerHTML =
-      `Hutang pelanggan <span class="debt-red">${formatRupiah(customerDebt)}</span>`;
+    const rowCust = document.createElement("div");
+    rowCust.className = "customer-debt-row";
+    const rowCustLabel = document.createElement("span");
+    rowCustLabel.textContent = "Hutang pelanggan ";
+    const rowCustAmount = document.createElement("span");
+    rowCustAmount.className = "customer-debt-cust-amount";
+    rowCustAmount.textContent = formatRupiah(hutangPelanggan);
+    rowCust.appendChild(rowCustLabel);
+    rowCust.appendChild(rowCustAmount);
+
+    debtRows.appendChild(rowMy);
+    debtRows.appendChild(rowCust);
 
     card.appendChild(topRow);
     card.appendChild(meta);
-    card.appendChild(debtRowMy);
-    card.appendChild(debtRowCust);
+    card.appendChild(debtRows);
 
     listEl.appendChild(card);
   });
@@ -126,7 +161,8 @@ async function loadCustomers() {
     }
     customers = data.customers;
     filteredCustomers = [...customers];
-    applyFilter();
+    applyFilter();       // render list
+    updateListSummary(); // update ringkasan atas
   } catch (err) {
     console.error(err);
     alert("Gagal memuat daftar pelanggan");
@@ -157,14 +193,20 @@ function renderDetail() {
   if (!currentCustomer) return;
 
   const nameEl = document.getElementById("detailName");
-  const totalEl = document.getElementById("detailTotal");
+  const hutangPelangganEl = document.getElementById("detailCustDebt");
+  const hutangSayaEl = document.getElementById("detailMyDebt");
   const historyEl = document.getElementById("detailHistory");
 
   if (nameEl) nameEl.textContent = currentCustomer.name || "(tanpa nama)";
 
-  // kalau detailTotal ada, tampilkan net total (masih merah seperti sebelumnya)
-  if (totalEl) {
-    totalEl.textContent = formatRupiah(currentCustomer.total || 0);
+  const { hutangPelanggan, hutangSaya } = splitDebt(
+    currentCustomer.total || 0
+  );
+  if (hutangPelangganEl) {
+    hutangPelangganEl.textContent = formatRupiah(hutangPelanggan);
+  }
+  if (hutangSayaEl) {
+    hutangSayaEl.textContent = formatRupiah(hutangSaya);
   }
 
   if (!historyEl) return;
@@ -188,21 +230,19 @@ function renderDetail() {
 
     const dateDiv = document.createElement("div");
     dateDiv.className = "history-date";
+
     const d = new Date(h.date || h.time || Date.now());
+    const bulan = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    const tgl = d.getDate();
+    const bln = bulan[d.getMonth()];
+    const thn = d.getFullYear();
+    const jam = String(d.getHours()).padStart(2, "0");
+    const menit = String(d.getMinutes()).padStart(2, "0");
+    dateDiv.textContent = `${tgl} ${bln} ${thn} ${jam}:${menit}`;
 
-const bulan = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-];
-
-const tgl = d.getDate();
-const bln = bulan[d.getMonth()];
-const thn = d.getFullYear();
-
-const jam = String(d.getHours()).padStart(2, "0");
-const menit = String(d.getMinutes()).padStart(2, "0");
-
-dateDiv.textContent = `${tgl} ${bln} ${thn} ${jam}:${menit}`;
     const amountDiv = document.createElement("div");
     amountDiv.className = "history-amount";
     amountDiv.textContent = formatRupiah(h.amount || 0);
@@ -310,8 +350,10 @@ async function saveTrx() {
       throw new Error(data.message || "Gagal menyimpan transaksi");
     }
 
-    // reload detail dan kembali ke screen detail
+    // reload detail & daftar (supaya ringkasan dan list ter-update)
     await openCustomer({ phone: currentCustomer.phone });
+    await loadCustomers();
+    showScreen("detail");
   } catch (err) {
     console.error(err);
     alert("Gagal menyimpan transaksi");
@@ -321,7 +363,7 @@ async function saveTrx() {
 // ================== INIT ==================
 
 document.addEventListener("DOMContentLoaded", () => {
-  // proteksi: hanya bisa diakses kalau admin sudah login
+  // cek sesi admin
   const logged = localStorage.getItem("admin_logged_in");
   if (logged !== "1") {
     window.location.href = "/admin.html";
@@ -371,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("btnSaveTrx")
     ?.addEventListener("click", saveTrx);
 
-  // pertama kali: tampilkan list
+  // pertama kali: tampilkan list & ringkasan
   showScreen("list");
   loadCustomers();
 });
