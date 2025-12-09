@@ -751,6 +751,114 @@ export default {
         return json({ ok: true, message: "Pelanggan tersimpan" });
       }
 
+      // UPDATE DATA PELANGGAN (nama / nomor WA)
+      if (path === "/api/bon/update-customer" && request.method === "POST") {
+        const body = await request.json().catch(() => null);
+        if (!body)
+          return json({ ok: false, message: "Invalid JSON" }, 400);
+
+        let { oldPhone, name, phone } = body;
+        if (!oldPhone) {
+          return json(
+            { ok: false, message: "oldPhone wajib diisi" },
+            400
+          );
+        }
+
+        // normalisasi nomor lama
+        oldPhone = oldPhone.replace(/\D/g, "");
+        if (!oldPhone.startsWith("62")) {
+          if (oldPhone.startsWith("0")) oldPhone = "62" + oldPhone.slice(1);
+        }
+        const oldKey = "cust:" + oldPhone;
+
+        const raw = await env.BON_DATA.get(oldKey);
+        if (!raw) {
+          return json({ ok: false, message: "Pelanggan tidak ditemukan" }, 404);
+        }
+
+        const obj = JSON.parse(raw);
+
+        // update nama kalau diisi
+        if (typeof name === "string" && name.trim()) {
+          obj.name = name.trim();
+        }
+
+        // kalau phone baru diisi dan beda, pindahkan key
+        if (phone && typeof phone === "string") {
+          let newPhone = phone.replace(/\D/g, "");
+          if (!newPhone.startsWith("62")) {
+            if (newPhone.startsWith("0")) {
+              newPhone = "62" + newPhone.slice(1);
+            }
+          }
+
+          if (!newPhone) {
+            return json(
+              { ok: false, message: "Format nomor baru tidak valid" },
+              400
+            );
+          }
+
+          const newKey = "cust:" + newPhone;
+
+          if (newKey !== oldKey) {
+            const existNew = await env.BON_DATA.get(newKey);
+            if (existNew) {
+              return json(
+                {
+                  ok: false,
+                  message:
+                    "Nomor WhatsApp baru sudah terdaftar untuk pelanggan lain",
+                },
+                400
+              );
+            }
+
+            obj.phone = newPhone;
+            await env.BON_DATA.put(newKey, JSON.stringify(obj));
+            await env.BON_DATA.delete(oldKey);
+
+            return json({ ok: true, message: "Pelanggan diperbarui" });
+          } else {
+            // nomor sama, hanya nama berubah
+            obj.phone = newPhone;
+            await env.BON_DATA.put(oldKey, JSON.stringify(obj));
+            return json({ ok: true, message: "Pelanggan diperbarui" });
+          }
+        } else {
+          // tidak ada perubahan nomor, simpan nama saja
+          await env.BON_DATA.put(oldKey, JSON.stringify(obj));
+          return json({ ok: true, message: "Pelanggan diperbarui" });
+        }
+      }
+
+      // HAPUS PELANGGAN
+      if (path === "/api/bon/delete-customer" && request.method === "POST") {
+        const body = await request.json().catch(() => null);
+        if (!body)
+          return json({ ok: false, message: "Invalid JSON" }, 400);
+
+        let { phone } = body;
+        if (!phone) {
+          return json({ ok: false, message: "phone wajib diisi" }, 400);
+        }
+
+        phone = phone.replace(/\D/g, "");
+        if (!phone.startsWith("62")) {
+          if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+        }
+        const key = "cust:" + phone;
+
+        const exist = await env.BON_DATA.get(key);
+        if (!exist) {
+          return json({ ok: false, message: "Pelanggan tidak ditemukan" }, 404);
+        }
+
+        await env.BON_DATA.delete(key);
+        return json({ ok: true, message: "Pelanggan dihapus" });
+      }
+
       // DETAIL PELANGGAN
       if (path === "/api/bon/get" && request.method === "GET") {
         let phone = url.searchParams.get("phone");
