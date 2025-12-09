@@ -579,6 +579,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // baca query phone dari URL, misal /bon.html?phone=6281915141412
+  const params = new URLSearchParams(window.location.search);
+  const initialPhoneRaw = params.get("phone") || "";
+  // simpan hanya digit, supaya sama dengan format di BON_DATA
+  const initialPhone = initialPhoneRaw.replace(/\D/g, "");
+
   // tombol + pelanggan baru
   document
     .getElementById("btnAddCustomer")
@@ -624,5 +630,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // pertama kali: tampilkan list
   showScreen("list");
-  loadCustomers();
+
+  // load customers, lalu kalau ada phone dari URL dan pelanggannya ketemu → buka detail
+  loadCustomers().then(() => {
+    if (!initialPhone) return;
+
+    const cust = customers.find(
+      (c) => (c.phone || "").replace(/\D/g, "") === initialPhone
+    );
+    if (cust) {
+      // langsung buka detail pelanggan
+      openCustomer(cust);
+    }
+    // kalau tidak ketemu, dibiarkan saja di tampilan list
+  });
 });
