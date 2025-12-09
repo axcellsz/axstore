@@ -299,7 +299,7 @@ history.forEach((h, index) => {
 
     historyEl.appendChild(item);
   });
-  
+}  
   // ================== EDIT / HAPUS TRANSAKSI ==================
 
 async function editTransaction(index) {
