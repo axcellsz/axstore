@@ -6,13 +6,13 @@ const API_ADD_TRX = "/api/bon/add-trx";
 const API_EDIT_TRX = "/api/bon/edit-trx";
 const API_DELETE_TRX = "/api/bon/delete-trx";
 
-// endpoint baru untuk hapus & edit
+// endpoint baru untuk hapus & edit customer
 const API_DELETE_CUSTOMER = "/api/bon/delete-customer";
 const API_UPDATE_CUSTOMER = "/api/bon/update-customer";
 
 let customers = [];
 let filteredCustomers = [];
-let currentCustomer = null; // {phone,name,total,history}
+let currentCustomer = null; // {phone, name, total, history}
 
 // ================== HELPER ==================
 
@@ -25,8 +25,8 @@ function formatRupiah(num) {
 function splitDebt(total) {
   const t = Number(total || 0);
   return {
-    myDebt: t < 0 ? -t : 0,       // kalau total negatif → saya berhutang
-    customerDebt: t > 0 ? t : 0,  // kalau total positif → pelanggan berhutang
+    myDebt: t < 0 ? -t : 0,      // kalau total negatif → saya berhutang
+    customerDebt: t > 0 ? t : 0, // kalau total positif → pelanggan berhutang
   };
 }
 
@@ -121,20 +121,19 @@ function renderCustomers() {
     debtRowCust.innerHTML =
       `Hutang pelanggan <span class="debt-red">${formatRupiah(customerDebt)}</span>`;
 
-    // baris aksi text: hapus | edit
-// baris aksi: tombol edit / hapus (gaya sama seperti di riwayat transaksi)
+    // baris aksi: tombol edit / hapus (pakai gaya sama seperti di riwayat transaksi)
     const actionsRow = document.createElement("div");
-    actionsRow.className = "history-actions"; // pakai kelas yang sudah ada di detail
+    actionsRow.className = "history-actions";
 
     const btnEdit = document.createElement("button");
     btnEdit.type = "button";
-    btnEdit.className = "history-action history-edit"; // sama seperti tombol edit transaksi
+    btnEdit.className = "history-action history-edit";
     btnEdit.textContent = "edit";
     btnEdit.addEventListener("click", () => editCustomer(c));
 
     const btnDelete = document.createElement("button");
     btnDelete.type = "button";
-    btnDelete.className = "history-action history-delete"; // sama seperti tombol hapus transaksi
+    btnDelete.className = "history-action history-delete";
     btnDelete.textContent = "hapus";
     btnDelete.addEventListener("click", () => deleteCustomer(c));
 
@@ -234,10 +233,11 @@ function renderDetail() {
     return;
   }
 
-history.forEach((h, index) => {
+  history.forEach((h, index) => {
     const item = document.createElement("div");
     item.className =
-      "history-item " + (h.type === "give" ? "history-give" : "history-receive");
+      "history-item " +
+      (h.type === "give" ? "history-give" : "history-receive");
 
     const header = document.createElement("div");
     header.className = "history-header";
@@ -248,8 +248,18 @@ history.forEach((h, index) => {
 
     // format: 20 Maret 2025 13:30
     const bulan = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ];
 
     const tgl = d.getDate();
@@ -271,7 +281,10 @@ history.forEach((h, index) => {
     const noteDiv = document.createElement("div");
     noteDiv.className = "history-note";
     noteDiv.textContent =
-      h.note || (h.type === "give" ? "Berikan (hutang baru)" : "Terima (pembayaran)");
+      h.note ||
+      (h.type === "give"
+        ? "Berikan (hutang baru)"
+        : "Terima (pembayaran)");
 
     // ====== baris aksi: edit / hapus ======
     const actionsDiv = document.createElement("div");
@@ -299,8 +312,9 @@ history.forEach((h, index) => {
 
     historyEl.appendChild(item);
   });
-}  
-  // ================== EDIT / HAPUS TRANSAKSI ==================
+}
+
+// ================== EDIT / HAPUS TRANSAKSI ==================
 
 async function editTransaction(index) {
   if (!currentCustomer) return;
@@ -320,10 +334,7 @@ async function editTransaction(index) {
   }
 
   // catatan baru (boleh kosong)
-  const noteStr = prompt(
-    "Catatan (boleh dikosongkan):",
-    trx.note || ""
-  );
+  const noteStr = prompt("Catatan (boleh dikosongkan):", trx.note || "");
   const note = noteStr === null ? trx.note || "" : noteStr;
 
   // ubah tanggal (opsional)
